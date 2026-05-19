@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Favicon — same torii-bridge motif as the header mark, simplified for
+  the 16/32 px raster targets browsers actually render. Vermillion arch
+  on navy ground; piers and waterline in paper cream. The arch is the
+  only element that has to read at 16 px, so everything else is
+  intentionally lighter weight.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"
+     role="img" aria-label="Taigan Bridge">
+  <title>Taigan Bridge</title>
+  <rect width="32" height="32" rx="6" fill="#0E2A4F"/>
+  <!-- Bridge arch -->
+  <path d="M 5 21 Q 16 7 27 21"
+        fill="none" stroke="#D86948" stroke-width="2.4" stroke-linecap="round"/>
+  <!-- Bridge deck -->
+  <line x1="7" y1="21" x2="25" y2="21"
+        stroke="#F7F4EC" stroke-width="0.9" stroke-linecap="round"/>
+  <!-- Piers -->
+  <rect x="6.5" y="21" width="1.6" height="6" fill="#F7F4EC"/>
+  <rect x="23.9" y="21" width="1.6" height="6" fill="#F7F4EC"/>
+  <!-- Water line -->
+  <line x1="3" y1="27" x2="29" y2="27"
+        stroke="#F7F4EC" stroke-width="0.7" stroke-linecap="round" opacity="0.85"/>
+  <!-- Reflection ghost arch -->
+  <path d="M 5 27 Q 16 32 27 27"
+        fill="none" stroke="#D86948" stroke-width="0.7" stroke-linecap="round"
+        stroke-dasharray="1.4 1.6" opacity="0.55"/>
+</svg>

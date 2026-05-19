@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Taigan Bridge — square profile picture (no text variant).
+
+  Designed for circular profile-pic crops on Ko-fi, Buy Me a Coffee,
+  social media, etc. The bridge mark sits inside the safe circle so
+  the full silhouette is visible whether the host platform crops to a
+  circle (most common) or shows the square (Slack, etc.).
+
+  Composition:
+    800 × 800 px square (viewBox 800 800)
+    Navy ground (#0E2A4F)
+    Vermillion arch (#D86948 — the brighter shu-iro the favicon uses;
+      reads better on navy than the darker arch color used on the
+      cream-background header mark)
+    Cream piers / deck / waterline (#F7F4EC)
+    Ghost reflection arch below the waterline
+
+  Safe area: everything stays within a 600 × 600 box centered on the
+  canvas, so a 75% circular crop never clips the mark.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"
+     role="img" aria-label="Taigan Bridge">
+  <title>Taigan Bridge</title>
+
+  <!-- Background — full square so Slack-style square crops fill -->
+  <rect width="800" height="800" fill="#0E2A4F"/>
+
+  <!-- ─── Bridge mark, centered + scaled into the safe area ────── -->
+  <!-- Source mark viewBox is 84 × 60. We center it at (400, 400)
+       with a uniform scale that puts the mark inside a ~560 px box.
+       Scale = 7 → 588 wide × 420 tall.  Offset by (-294, -210) to
+       center: translate(400-84*7/2, 400-60*7/2) = (106, 190). -->
+  <g transform="translate(106, 190) scale(7)">
+    <!-- Bridge arch (vermillion / 朱色) -->
+    <path d="M 9 38 Q 42 8 75 38"
+          fill="none" stroke="#D86948" stroke-width="3.4" stroke-linecap="round"/>
+    <!-- Bridge deck -->
+    <line x1="14" y1="38" x2="70" y2="38"
+          stroke="#F7F4EC" stroke-width="1.4" stroke-linecap="round"/>
+    <!-- Left pier -->
+    <rect x="12.5" y="38" width="3" height="13" fill="#F7F4EC"/>
+    <!-- Right pier -->
+    <rect x="68.5" y="38" width="3" height="13" fill="#F7F4EC"/>
+    <!-- Pier foundations (slight flare at the waterline) -->
+    <path d="M 10.5 51 L 17 51 L 16 53.2 L 11.5 53.2 Z" fill="#F7F4EC"/>
+    <path d="M 67 51 L 73.5 51 L 72.5 53.2 L 68 53.2 Z" fill="#F7F4EC"/>
+    <!-- Water line -->
+    <line x1="3" y1="51" x2="81" y2="51"
+          stroke="#F7F4EC" stroke-width="1.2" stroke-linecap="round" opacity="0.85"/>
+    <!-- Reflected arch — inverted, dashed, vermillion ghost -->
+    <path d="M 9 51 Q 42 60 75 51"
+          fill="none" stroke="#D86948" stroke-width="1" stroke-linecap="round"
+          stroke-dasharray="2 2.5" opacity="0.55"/>
+    <!-- Surface ripples -->
+    <line x1="22" y1="56" x2="34" y2="56"
+          stroke="#F7F4EC" stroke-width="0.6" stroke-linecap="round" opacity="0.45"/>
+    <line x1="50" y1="56" x2="62" y2="56"
+          stroke="#F7F4EC" stroke-width="0.6" stroke-linecap="round" opacity="0.45"/>
+    <line x1="36" y1="58.5" x2="48" y2="58.5"
+          stroke="#F7F4EC" stroke-width="0.5" stroke-linecap="round" opacity="0.32"/>
+  </g>
+</svg>

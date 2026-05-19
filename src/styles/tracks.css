@@ -1,0 +1,45 @@
+/* Taigan Bridge — track-specific theming
+ *
+ * Each "track" (SOFA, Veteran, Long-Term Resident, Family, Property)
+ * gets a distinct accent color. Apply via the data-track attribute
+ * on a card or section.
+ */
+
+[data-track="sofa"]      { --tb-track: var(--tb-track-sofa); }
+[data-track="veteran"]   { --tb-track: var(--tb-track-veteran); }
+[data-track="resident"]  { --tb-track: var(--tb-track-resident); }
+[data-track="family"]    { --tb-track: var(--tb-track-family); }
+[data-track="property"]  { --tb-track: var(--tb-track-property); }
+[data-track="tax"]       { --tb-track: var(--tb-track-tax); }
+[data-track="estate"]    { --tb-track: var(--tb-track-estate); }
+[data-track="ai"]        { --tb-track: var(--tb-track-ai); }
+[data-track="history"]   { --tb-track: var(--tb-track-history); }
+[data-track="health"]    { --tb-track: var(--tb-track-health); }
+[data-track="fx"]        { --tb-track: var(--tb-track-fx); }
+[data-track="retire"]    { --tb-track: var(--tb-track-retire); }
+[data-track="share"]     { --tb-track: var(--tb-track-share); }
+[data-track="consult"]   { --tb-track: var(--tb-track-consult); }
+[data-track="core"]      { --tb-track: var(--tb-slate); }
+
+[data-track] {
+  border-top: 3px solid var(--tb-track, var(--tb-navy));
+}
+
+[data-track] .tb-badge--track {
+  background: var(--tb-track, var(--tb-navy));
+  color: #fff;
+  border-color: transparent;
+}
+
+.tb-track-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-sp-2);
+  margin-bottom: var(--tb-sp-4);
+}
+
+.tb-track-strip .tb-badge {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.7rem;
+}

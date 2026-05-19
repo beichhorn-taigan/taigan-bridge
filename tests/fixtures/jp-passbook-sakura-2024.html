@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Synthetic 通帳 — 鈴木 さくら — 平成30年〜令和6年</title>
+<!--
+  TEST FIXTURE — PURELY SYNTHETIC.
+  Not a real account. Not a real person. The bank name is real
+  (ゆうちょ銀行) but the account number, holder, and transactions
+  are fabricated for testing the Taigan Bridge FBAR upload feature.
+
+  This fixture exercises:
+    - Multi-year extraction (平成30年 / 2018 through 令和6年 / 2024)
+    - 和暦 (Japanese era calendar) date conversion
+    - Per-year max balance computation from the running 差引残高 column
+    - Era boundary handling (平成→令和 changeover on 2019-05-01)
+
+  Open this file in a browser, take a screenshot of the passbook
+  block (Win+Shift+S on Windows / Cmd+Shift+4 on macOS), then
+  upload it via FBAR Tracker → Accounts → ⬆ Upload bank document.
+
+  Expected extraction:
+    institution_name:        "ゆうちょ銀行" / "Japan Post Bank"
+    country:                 "JP"
+    currency:                "JPY"
+    account_type:            "bank"
+    account_number:          "12340-67890123" or similar
+    account_holder_name_jp:  "鈴木 さくら"
+    years_covered (per-year max balance):
+      2018 (平成30年):  ~ ¥420,000   — under threshold
+      2019 (令和元年):  ~ ¥575,000   — under threshold
+      2020 (令和2年):   ~ ¥720,000   — under threshold
+      2021 (令和3年):   ~ ¥1,420,000 — OVER threshold
+      2022 (令和4年):   ~ ¥1,560,000 — OVER threshold
+      2023 (令和5年):   ~ ¥1,640,000 — OVER threshold
+      2024 (令和6年):   ~ ¥1,657,668 — OVER threshold
+    All dates in extraction must be Western YYYY-MM-DD.
+-->
+<style>
+  body {
+    margin: 0; padding: 32px;
+    background: #cdd5c4;
+    font-family: 'Yu Mincho', 'Hiragino Mincho Pro', 'MS Mincho', serif;
+    color: #1a1a1a;
+  }
+  .passbook {
+    width: 820px; margin: 0 auto;
+    background: #f5f1e3;
+    border: 2px solid #6b6b6b;
+    padding: 24px 28px 32px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  }
+  .header {
+    border-bottom: 1px solid #888;
+    padding-bottom: 12px; margin-bottom: 14px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+  }
+  .bank {
+    font-size: 22px; font-weight: 700; letter-spacing: 0.05em;
+  }
+  .bank-en {
+    font-size: 11px; color: #555; margin-top: 2px;
+    font-family: Arial, sans-serif;
+  }
+  .meta {
+    text-align: right; font-size: 12px; line-height: 1.5;
+  }
+  .holder {
+    font-size: 16px; margin: 8px 0 6px;
+  }
+  .holder .ja { font-weight: 600; }
+  .holder .en { font-size: 11px; color: #555; margin-left: 8px; font-family: Arial, sans-serif; }
+  .acct-line {
+    font-size: 11px; color: #444; margin-bottom: 14px;
+    font-family: 'Courier New', monospace;
+  }
+  table {
+    width: 100%; border-collapse: collapse; font-size: 11.5px;
+  }
+  th, td {
+    border: 1px solid #999; padding: 3px 6px;
+    text-align: right; vertical-align: middle;
+  }
+  th {
+    background: #e6decd; font-weight: 600; text-align: center;
+    font-size: 10.5px; letter-spacing: 0.05em;
+  }
+  td.date { text-align: center; font-family: 'Courier New', monospace; font-size: 10.5px; }
+  td.memo { text-align: left; font-size: 10.5px; color: #333; }
+  td.amt { font-family: 'Courier New', monospace; }
+  tr.year-divider td {
+    background: #ddd5c0; text-align: center; font-weight: 600;
+    font-size: 11px; letter-spacing: 0.1em;
+    padding: 4px 6px; border-top: 2px solid #888;
+  }
+  .footer-note {
+    margin-top: 16px; font-size: 10px; color: #555; text-align: right;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+<div class="passbook">
+  <div class="header">
+    <div>
+      <div class="bank">ゆうちょ銀行</div>
+      <div class="bank-en">JAPAN POST BANK CO., LTD.</div>
+    </div>
+    <div class="meta">
+      総合口座通帳<br>
+      普通貯金<br>
+      記号 12340 番号 67890123
+    </div>
+  </div>
+
+  <div class="holder">
+    <span class="ja">お なまえ ・ 鈴木 さくら</span>
+    <span class="en">SAKURA SUZUKI ／ スズキ サクラ</span>
+  </div>
+  <div class="acct-line">記号番号 12340-67890123-1 ／ 開設 平成29年4月3日 ／ 印 ㊞</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:90px">年月日</th>
+        <th style="width:140px">摘要</th>
+        <th style="width:95px">お支払金額</th>
+        <th style="width:95px">お預り金額</th>
+        <th style="width:115px">差引残高</th>
+        <th>取扱店</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <tr class="year-divider"><td colspan="6">平成30年 (2018) ／ 繰越開始</td></tr>
+      <tr><td class="date">平30.01.10</td><td class="memo">繰越</td><td class="amt"></td><td class="amt"></td><td class="amt">¥120,400</td><td>—</td></tr>
+      <tr><td class="date">平30.04.05</td><td class="memo">フリコミ オトウサン</td><td class="amt"></td><td class="amt">¥30,000</td><td class="amt">¥150,400</td><td>立川支店</td></tr>
+      <tr><td class="date">平30.07.20</td><td class="memo">オシトクラ ソフ</td><td class="amt"></td><td class="amt">¥200,000</td><td class="amt">¥350,400</td><td>立川支店</td></tr>
+      <tr><td class="date">平30.10.15</td><td class="memo">フリコミ オトウサン</td><td class="amt"></td><td class="amt">¥30,000</td><td class="amt">¥380,400</td><td>立川支店</td></tr>
+      <tr><td class="date">平30.12.30</td><td class="memo">オダイ オトシダマ</td><td class="amt"></td><td class="amt">¥40,000</td><td class="amt">¥420,400</td><td>立川支店</td></tr>
+
+      <tr class="year-divider"><td colspan="6">平成31年→令和元年 (2019) ／ 元号変更 5/1</td></tr>
+      <tr><td class="date">平31.02.15</td><td class="memo">フリコミ オトウサン</td><td class="amt"></td><td class="amt">¥30,000</td><td class="amt">¥450,400</td><td>立川支店</td></tr>
+      <tr><td class="date">平31.04.20</td><td class="memo">フリコミ オトウサン</td><td class="amt"></td><td class="amt">¥30,000</td><td class="amt">¥480,400</td><td>立川支店</td></tr>
+      <tr><td class="date">令01.07.10</td><td class="memo">オシトクラ ソフ</td><td class="amt"></td><td class="amt">¥75,000</td><td class="amt">¥555,400</td><td>立川支店</td></tr>
+      <tr><td class="date">令元.10.15</td><td class="memo">フリコミ オトウサン</td><td class="amt"></td><td class="amt">¥20,000</td><td class="amt">¥575,400</td><td>立川支店</td></tr>
+      <tr><td class="date">令01.12.31</td><td class="memo">リソク</td><td class="amt"></td><td class="amt">¥3</td><td class="amt">¥575,403</td><td>立川支店</td></tr>
+
+      <tr class="year-divider"><td colspan="6">令和2年 (2020)</td></tr>
+      <tr><td class="date">令02.03.05</td><td class="memo">オダイ ガッコウ</td><td class="amt">¥15,000</td><td class="amt"></td><td class="amt">¥560,403</td><td>立川支店</td></tr>
+      <tr><td class="date">令02.05.15</td><td class="memo">フリコミ オトウサン</td><td class="amt"></td><td class="amt">¥30,000</td><td class="amt">¥590,403</td><td>立川支店</td></tr>
+      <tr><td class="date">令02.08.10</td><td class="memo">オシトクラ ソボ</td><td class="amt"></td><td class="amt">¥80,000</td><td class="amt">¥670,403</td><td>立川支店</td></tr>
+      <tr><td class="date">令02.11.20</td><td class="memo">フリコミ オトウサン トクベツ</td><td class="amt"></td><td class="amt">¥50,000</td><td class="amt">¥720,403</td><td>立川支店</td></tr>
+      <tr><td class="date">令02.12.31</td><td class="memo">リソク</td><td class="amt"></td><td class="amt">¥4</td><td class="amt">¥720,407</td><td>立川支店</td></tr>
+
+      <tr class="year-divider"><td colspan="6">令和3年 (2021)</td></tr>
+      <tr><td class="date">令03.01.15</td><td class="memo">フリコミ オトウサン</td><td class="amt"></td><td class="amt">¥30,000</td><td class="amt">¥750,407</td><td>立川支店</td></tr>
+      <tr><td class="date">令03.04.05</td><td class="memo">オシトクラ ソフ ガクシ</td><td class="amt"></td><td class="amt">¥500,000</td><td class="amt">¥1,250,407</td><td>立川支店</td></tr>
+      <tr><td class="date">令03.07.15</td><td class="memo">フリコミ オトウサン</td><td class="amt"></td><td class="amt">¥30,000</td><td class="amt">¥1,280,407</td><td>立川支店</td></tr>
+      <tr><td class="date">令03.10.20</td><td class="memo">フリコミ オトウサン</td><td class="amt"></td><td class="amt">¥140,000</td><td class="amt">¥1,420,407</td><td>立川支店</td></tr>
+      <tr><td class="date">令03.12.31</td><td class="memo">リソク</td><td class="amt"></td><td class="amt">¥7</td><td class="amt">¥1,420,414</td><td>立川支店</td></tr>
+
+      <tr class="year-divider"><td colspan="6">令和4年 (2022)</td></tr>
+      <tr><td class="date">令04.03.10</td><td class="memo">オダイ ガッコウ</td><td class="amt">¥30,000</td><td class="amt"></td><td class="amt">¥1,390,414</td><td>立川支店</td></tr>
+      <tr><td class="date">令04.06.15</td><td class="memo">フリコミ オトウサン</td><td class="amt"></td><td class="amt">¥30,000</td><td class="amt">¥1,420,414</td><td>立川支店</td></tr>
+      <tr><td class="date">令04.09.20</td><td class="memo">フリコミ オトウサン トクベツ</td><td class="amt"></td><td class="amt">¥120,000</td><td class="amt">¥1,540,414</td><td>立川支店</td></tr>
+      <tr><td class="date">令04.12.15</td><td class="memo">フリコミ オトウサン</td><td class="amt"></td><td class="amt">¥20,000</td><td class="amt">¥1,560,414</td><td>立川支店</td></tr>
+      <tr><td class="date">令04.12.31</td><td class="memo">リソク</td><td class="amt"></td><td class="amt">¥8</td><td class="amt">¥1,560,422</td><td>立川支店</td></tr>
+
+      <tr class="year-divider"><td colspan="6">令和5年 (2023)</td></tr>
+      <tr><td class="date">令05.04.10</td><td class="memo">フリコミ オトウサン</td><td class="amt"></td><td class="amt">¥30,000</td><td class="amt">¥1,590,422</td><td>立川支店</td></tr>
+      <tr><td class="date">令05.08.15</td><td class="memo">オシトクラ ソボ</td><td class="amt"></td><td class="amt">¥80,000</td><td class="amt">¥1,670,422</td><td>立川支店</td></tr>
+      <tr><td class="date">令05.10.04</td><td class="memo">オダイ ピアノ</td><td class="amt">¥35,000</td><td class="amt"></td><td class="amt">¥1,635,422</td><td>立川支店</td></tr>
+      <tr><td class="date">令05.12.20</td><td class="memo">フリコミ オトウサン</td><td class="amt"></td><td class="amt">¥10,000</td><td class="amt">¥1,645,422</td><td>立川支店</td></tr>
+      <tr><td class="date">令05.12.31</td><td class="memo">リソク</td><td class="amt"></td><td class="amt">¥10</td><td class="amt">¥1,645,432</td><td>立川支店</td></tr>
+
+      <tr class="year-divider"><td colspan="6">令和6年 (2024)</td></tr>
+      <tr><td class="date">令06.01.15</td><td class="memo">フリコミ オトウサン</td><td class="amt"></td><td class="amt">¥30,000</td><td class="amt">¥1,675,432</td><td>立川支店</td></tr>
+      <tr><td class="date">令06.04.05</td><td class="memo">オシトクラ ソフ</td><td class="amt"></td><td class="amt">¥50,000</td><td class="amt">¥1,725,432</td><td>立川支店</td></tr>
+      <tr><td class="date">令06.07.20</td><td class="memo">オダイ サマーキャンプ</td><td class="amt">¥85,000</td><td class="amt"></td><td class="amt">¥1,640,432</td><td>立川支店</td></tr>
+      <tr><td class="date">令06.10.15</td><td class="memo">フリコミ オトウサン</td><td class="amt"></td><td class="amt">¥30,000</td><td class="amt">¥1,670,432</td><td>立川支店</td></tr>
+      <tr><td class="date">令06.11.04</td><td class="memo">オダイ ピアノ レッスン</td><td class="amt">¥45,000</td><td class="amt"></td><td class="amt">¥1,625,432</td><td>立川支店</td></tr>
+      <tr><td class="date">令06.12.15</td><td class="memo">フリコミ オトウサン</td><td class="amt"></td><td class="amt">¥30,000</td><td class="amt">¥1,655,432</td><td>立川支店</td></tr>
+      <tr><td class="date">令06.12.31</td><td class="memo">リソク</td><td class="amt"></td><td class="amt">¥18</td><td class="amt">¥1,655,450</td><td>立川支店</td></tr>
+
+    </tbody>
+  </table>
+
+  <div class="footer-note">通帳記入 令和7年1月7日 ／ 立川支店 取扱</div>
+</div>
+</body>
+</html>

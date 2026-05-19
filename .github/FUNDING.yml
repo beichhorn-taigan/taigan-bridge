@@ -1,0 +1,31 @@
+# Taigan Bridge — funding sources
+#
+# GitHub auto-renders a 💖 Sponsor button on the repo page that links
+# to the platforms listed below. All three reach the same person;
+# visitors pick whichever flow they prefer. GitHub Sponsors is listed
+# first so it appears at the top of the auto-rendered menu.
+#
+# Schema reference:
+#   https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
+
+github: beichhorn-taigan
+ko_fi: taiganbridge
+buy_me_a_coffee: TaiganBridge
+
+# Notes on case-sensitivity:
+#   - github       — your GitHub username (or up to 4 usernames as a list)
+#   - ko_fi        — lowercase ("ko-fi.com/taiganbridge")
+#   - buy_me_a_coffee — case-preserving ("buymeacoffee.com/TaiganBridge")
+#
+# GitHub Sponsors setup:
+#   Before the "github:" key shows a working sponsor link, you must
+#   apply at https://github.com/sponsors and be approved. Approval
+#   can take 1–2 weeks. Until then the entry in this file is inert
+#   (the auto-rendered menu will show Ko-fi + BMaC only). Approval
+#   doesn't require code changes — once accepted, the GitHub
+#   Sponsors entry activates automatically.
+#
+# Keep these keys aligned with the URLs hard-coded in
+# src/scripts/about-overlays.js (the in-app tip jar) so the GitHub
+# sponsor button and the in-app "Buy me a coffee" link always point
+# to the same accounts.

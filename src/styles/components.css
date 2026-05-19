@@ -1,0 +1,973 @@
+/* Taigan Bridge — components */
+
+/* --- Card ---------------------------------------------------------- */
+
+.tb-card {
+  background: var(--tb-bg-elev);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius-3);
+  padding: var(--tb-sp-5);
+  box-shadow: var(--tb-shadow-1);
+  margin-bottom: var(--tb-sp-4);
+}
+
+.tb-card h2:first-child,
+.tb-card h3:first-child { margin-top: 0; }
+
+.tb-card-grid {
+  display: grid;
+  gap: var(--tb-sp-4);
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.tb-card.is-locked {
+  opacity: 0.55;
+  filter: grayscale(0.4);
+}
+
+.tb-card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-sp-2);
+  margin-bottom: var(--tb-sp-2);
+  font-size: var(--tb-fs-12);
+  color: var(--tb-text-soft);
+}
+/* When .tb-card-meta is applied to a <p> (subtitle text), override
+ * the flex layout — paragraphs need to flow as text. The flex layout
+ * with `gap` between every flex item breaks text flow when inline
+ * elements (e.g., glossary-annotated terms or JP-term ruby spans)
+ * are inserted into the paragraph. Block display restores normal
+ * inline flow with no inter-word gaps. */
+p.tb-card-meta {
+  display: block;
+  line-height: var(--tb-lh-body);
+}
+
+/* --- Button -------------------------------------------------------- */
+
+.tb-btn {
+  --bg: var(--tb-navy);
+  --fg: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tb-sp-2);
+  padding: var(--tb-sp-3) var(--tb-sp-4);
+  font: inherit;
+  font-weight: 500;
+  font-size: var(--tb-fs-14);
+  border: 1px solid transparent;
+  border-radius: var(--tb-radius-2);
+  background: var(--bg);
+  color: var(--fg);
+  cursor: pointer;
+  transition: transform var(--tb-motion-fast) var(--tb-ease),
+              background var(--tb-motion-fast) var(--tb-ease),
+              box-shadow var(--tb-motion-fast) var(--tb-ease);
+  text-decoration: none;
+}
+
+.tb-btn:hover { background: var(--tb-navy-soft); }
+.tb-btn:active { transform: translateY(1px); }
+.tb-btn:focus-visible { outline: 2px solid var(--tb-navy); outline-offset: 2px; }
+.tb-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+.tb-btn--secondary {
+  --bg: transparent;
+  --fg: var(--tb-text);
+  border-color: var(--tb-border);
+}
+.tb-btn--secondary:hover {
+  --bg: var(--tb-bg);
+  border-color: var(--tb-text-soft);
+}
+
+.tb-btn--ghost {
+  --bg: transparent;
+  --fg: var(--tb-text-soft);
+}
+.tb-btn--ghost:hover { --fg: var(--tb-text); background: transparent; }
+
+.tb-btn--danger {
+  --bg: var(--tb-error);
+  --fg: #fff;
+}
+.tb-btn--danger:hover { filter: brightness(0.92); }
+
+.tb-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-sp-2);
+  margin-top: var(--tb-sp-4);
+}
+
+/* --- Input --------------------------------------------------------- */
+
+.tb-field {
+  display: block;
+  margin-bottom: var(--tb-sp-4);
+}
+
+.tb-field-label {
+  display: block;
+  font-weight: 500;
+  font-size: var(--tb-fs-14);
+  margin-bottom: var(--tb-sp-1);
+  color: var(--tb-text);
+}
+
+.tb-field-help {
+  margin-top: var(--tb-sp-1);
+  font-size: var(--tb-fs-12);
+  color: var(--tb-text-soft);
+}
+
+.tb-input,
+.tb-select,
+.tb-textarea {
+  display: block;
+  width: 100%;
+  padding: var(--tb-sp-3);
+  font: inherit;
+  font-size: var(--tb-fs-14);
+  background: var(--tb-bg);
+  color: var(--tb-text);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius-2);
+  transition: border-color var(--tb-motion-fast) var(--tb-ease),
+              box-shadow var(--tb-motion-fast) var(--tb-ease);
+}
+
+.tb-input:focus,
+.tb-select:focus,
+.tb-textarea:focus {
+  outline: none;
+  border-color: var(--tb-navy);
+  box-shadow: 0 0 0 3px rgba(14, 42, 79, 0.15);
+}
+
+.tb-textarea { min-height: 120px; resize: vertical; }
+
+/* Native date / time picker icons render dark-on-dark in Chrome's
+   dark mode. Invert and brighten so they're visible against the
+   dark input background. App-controlled — see tokens.css. */
+:root[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
+:root[data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+:root[data-theme="dark"] input[type="month"]::-webkit-calendar-picker-indicator,
+:root[data-theme="dark"] input[type="time"]::-webkit-calendar-picker-indicator,
+:root[data-theme="dark"] input[type="week"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.85) opacity(0.85);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 3px;
+}
+:root[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator:hover,
+:root[data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+:root[data-theme="dark"] input[type="month"]::-webkit-calendar-picker-indicator:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  filter: invert(1);
+}
+/* Number-input spinner buttons are also lossy in dark mode. */
+:root[data-theme="dark"] input[type="number"]::-webkit-inner-spin-button,
+:root[data-theme="dark"] input[type="number"]::-webkit-outer-spin-button {
+  filter: invert(0.85) opacity(0.85);
+}
+
+.tb-radio-group,
+.tb-checkbox-group {
+  display: grid;
+  gap: var(--tb-sp-2);
+}
+
+.tb-radio,
+.tb-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--tb-sp-3);
+  padding: var(--tb-sp-3);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius-2);
+  background: var(--tb-bg);
+  color: var(--tb-text);
+  font-size: var(--tb-fs-14);
+  cursor: pointer;
+  transition: border-color var(--tb-motion-fast) var(--tb-ease),
+              background var(--tb-motion-fast) var(--tb-ease);
+}
+
+/* Make sure label text inside the option is full-strength.
+   Some browsers (Chrome on Windows in particular) apply muted
+   user-agent colors to <label> descendants in dark mode unless
+   we name the color explicitly. */
+.tb-radio > div,
+.tb-checkbox > div { color: var(--tb-text); }
+.tb-radio > div > div:first-child,
+.tb-checkbox > div > div:first-child {
+  color: var(--tb-text);
+  font-weight: 500;
+  line-height: var(--tb-lh-tight);
+}
+.tb-radio small,
+.tb-checkbox small {
+  display: block;
+  margin-top: 2px;
+  color: var(--tb-text-soft);
+}
+
+.tb-radio:hover,
+.tb-checkbox:hover { border-color: var(--tb-text-soft); }
+
+.tb-radio input,
+.tb-checkbox input { margin-top: 2px; }
+
+.tb-radio.is-selected,
+.tb-checkbox.is-selected {
+  border-color: var(--tb-navy);
+  background: var(--tb-bg-elev);
+  box-shadow: var(--tb-shadow-1);
+}
+
+/* --- Modal --------------------------------------------------------- */
+
+.tb-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(14, 24, 38, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--tb-sp-5);
+  z-index: 100;
+  backdrop-filter: blur(2px);
+}
+
+.tb-modal {
+  background: var(--tb-bg-elev);
+  border-radius: var(--tb-radius-3);
+  box-shadow: var(--tb-shadow-3);
+  max-width: 640px;
+  width: 100%;
+  max-height: 80vh;
+  overflow: auto;
+  padding: var(--tb-sp-6);
+}
+
+.tb-modal h1 { font-size: var(--tb-fs-22); }
+.tb-modal h2 { font-size: var(--tb-fs-18); margin-top: var(--tb-sp-5); }
+
+.tb-modal-close {
+  position: sticky;
+  top: 0;
+  float: right;
+  background: transparent;
+  border: 0;
+  font-size: var(--tb-fs-22);
+  cursor: pointer;
+  color: var(--tb-text-soft);
+}
+
+/* Markdown body inside overlay modals (License, Changelog).
+   Compact but still readable — these are reference docs the user
+   skims rather than reads cover-to-cover. */
+.tb-md-body { font-size: var(--tb-fs-14); line-height: 1.55; color: var(--tb-text); }
+.tb-md-body h1 { font-size: var(--tb-fs-18); margin: var(--tb-sp-4) 0 var(--tb-sp-2); color: var(--tb-text); }
+.tb-md-body h2 { font-size: var(--tb-fs-16); margin: var(--tb-sp-4) 0 var(--tb-sp-2); color: var(--tb-text);
+  border-bottom: 1px solid var(--tb-border); padding-bottom: 4px; }
+.tb-md-body h3 { font-size: var(--tb-fs-14); margin: var(--tb-sp-3) 0 var(--tb-sp-1); font-weight: 700;
+  color: var(--tb-text-soft); text-transform: uppercase; letter-spacing: 0.04em; }
+.tb-md-body h4, .tb-md-body h5, .tb-md-body h6 { font-size: var(--tb-fs-14); margin: var(--tb-sp-3) 0 var(--tb-sp-1); }
+.tb-md-body p { margin: 0 0 var(--tb-sp-2); }
+.tb-md-body ul, .tb-md-body ol { margin: 0 0 var(--tb-sp-2); padding-left: var(--tb-sp-5); }
+.tb-md-body li { margin-bottom: 4px; }
+.tb-md-body code {
+  font-family: var(--tb-font-mono);
+  font-size: 0.92em;
+  background: var(--tb-bg);
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--tb-border);
+}
+.tb-md-body hr { margin: var(--tb-sp-4) 0; border: 0; border-top: 1px solid var(--tb-border); }
+.tb-md-body a { color: var(--tb-navy); }
+.tb-md-body a:hover { text-decoration: underline; }
+
+/* --- Wizard / progress -------------------------------------------- */
+
+.tb-wizard-progress {
+  display: flex;
+  gap: var(--tb-sp-1);
+  margin-bottom: var(--tb-sp-5);
+}
+
+.tb-wizard-step {
+  flex: 1;
+  height: 4px;
+  background: var(--tb-border);
+  border-radius: var(--tb-radius-pill);
+  transition: background var(--tb-motion-base) var(--tb-ease);
+}
+
+.tb-wizard-step.is-done { background: var(--tb-navy); }
+.tb-wizard-step.is-current { background: var(--tb-navy-soft); }
+
+.tb-wizard-question {
+  font-size: var(--tb-fs-22);
+  font-weight: 600;
+  margin-bottom: var(--tb-sp-2);
+}
+
+.tb-wizard-help {
+  color: var(--tb-text-soft);
+  margin-bottom: var(--tb-sp-5);
+}
+
+/* --- Module SVG icons ---------------------------------------------- */
+/* TB.icons.get(moduleId) returns an inline SVG with class "tb-icon".
+   Theme behavior:
+     • Stroke inherits from `color` (currentColor) so a parent setting
+       `color: var(--tb-track-tax)` will tint the whole icon to match.
+     • Vermillion accent details (one per icon) carry their own
+       stroke="var(--tb-accent)" so they stay vermillion across all
+       track themes — a unified "this is the distinguishing detail."
+     • In dark mode, --tb-accent stays terracotta; the strokes follow
+       the brighter track colors automatically. */
+
+.tb-icon {
+  display: inline-block;
+  vertical-align: middle;
+  /* Default size — most callers override via opts.size. */
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  /* Crisp 1px strokes on hi-dpi displays. */
+  shape-rendering: geometricPrecision;
+  transition: color var(--tb-motion-fast) var(--tb-ease);
+}
+
+/* Header icon buttons — square aspect, centered icon, subtle hover
+   tint. Keeps the search / print / view-mode / theme buttons visually
+   coherent with the new module SVG icons (no more emoji silhouettes). */
+.tb-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tb-sp-2);
+  padding: 6px 10px;
+  min-height: 36px;
+  color: var(--tb-text-soft);
+  transition: color var(--tb-motion-fast) var(--tb-ease),
+              background var(--tb-motion-fast) var(--tb-ease);
+}
+.tb-icon-btn:hover {
+  color: var(--tb-text);
+}
+.tb-icon-btn:focus-visible {
+  outline: 2px solid var(--tb-accent);
+  outline-offset: 2px;
+}
+
+.tb-icon-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Reserves space at the size we hydrate the SVG to (20px). Prevents
+     layout-shift between initial paint and TB.icons hydration. */
+  width: 20px;
+  height: 20px;
+  line-height: 0;
+}
+
+/* When the icon sits next to text in a header, give it a hair of
+   breathing room so the descender on letters doesn't crash into it. */
+h1 .tb-icon, h2 .tb-icon, h3 .tb-icon {
+  vertical-align: -0.18em;
+}
+
+/* --- Search palette (⌘K / Ctrl+K) ---------------------------------- */
+
+.tb-search-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(14, 24, 38, 0.55);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12vh;
+  padding-left: var(--tb-sp-4);
+  padding-right: var(--tb-sp-4);
+  z-index: 200;             /* above the regular modal layer (z 100) */
+  backdrop-filter: blur(3px);
+  animation: tb-search-fade-in 120ms var(--tb-ease);
+}
+
+@keyframes tb-search-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.tb-search-panel {
+  width: 100%;
+  max-width: 640px;
+  max-height: 70vh;
+  background: var(--tb-bg-elev);
+  border-radius: var(--tb-radius-3);
+  box-shadow: var(--tb-shadow-3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--tb-border);
+}
+
+.tb-search-header {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-sp-3);
+  padding: var(--tb-sp-3) var(--tb-sp-4);
+  border-bottom: 1px solid var(--tb-border);
+  background: var(--tb-bg-elev);
+}
+
+.tb-search-icon {
+  font-size: 1.25rem;
+  flex: 0 0 auto;
+  opacity: 0.85;
+}
+
+.tb-search-input {
+  flex: 1 1 auto;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--tb-text);
+  font-family: var(--tb-font-sans);
+  font-size: var(--tb-fs-18);
+  padding: 4px 0;
+}
+
+.tb-search-input::placeholder {
+  color: var(--tb-text-soft);
+  font-weight: 400;
+}
+
+.tb-search-kbd {
+  font-family: var(--tb-font-mono);
+  font-size: 11px;
+  padding: 2px 6px;
+  border: 1px solid var(--tb-border);
+  border-radius: 4px;
+  background: var(--tb-bg);
+  color: var(--tb-text-soft);
+  box-shadow: 0 1px 0 var(--tb-border);
+  margin-left: 2px;
+}
+
+.tb-search-results {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--tb-sp-1) 0;
+}
+
+.tb-search-grouplabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--tb-text-soft);
+  padding: var(--tb-sp-3) var(--tb-sp-4) var(--tb-sp-1);
+  position: sticky;
+  top: 0;
+  background: var(--tb-bg-elev);
+  z-index: 1;
+}
+
+.tb-search-row {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-sp-3);
+  padding: var(--tb-sp-2) var(--tb-sp-4);
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: background var(--tb-motion-fast) var(--tb-ease),
+              border-color var(--tb-motion-fast) var(--tb-ease);
+}
+
+.tb-search-row:hover,
+.tb-search-row.is-active {
+  background: rgba(14, 42, 79, 0.06);
+  border-left-color: var(--tb-accent);
+}
+
+[data-theme="dark"] .tb-search-row:hover,
+[data-theme="dark"] .tb-search-row.is-active {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tb-search-row__icon {
+  font-size: 1.15rem;
+  width: 1.6em;
+  text-align: center;
+  flex: 0 0 auto;
+  opacity: 0.85;
+}
+
+.tb-search-row__main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.tb-search-row__title {
+  font-size: var(--tb-fs-14);
+  font-weight: 500;
+  color: var(--tb-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.tb-search-row__sub {
+  font-size: 11px;
+  color: var(--tb-text-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+.tb-search-row__kind {
+  flex: 0 0 auto;
+  font-family: var(--tb-font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  padding: 2px 6px;
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-bg);
+  color: var(--tb-text-soft);
+  border: 1px solid var(--tb-border);
+}
+
+.tb-search-mark {
+  background: rgba(183, 71, 42, 0.18);   /* terracotta accent tinted */
+  color: inherit;
+  padding: 0 1px;
+  border-radius: 2px;
+}
+
+.tb-search-empty {
+  padding: var(--tb-sp-5) var(--tb-sp-4);
+  text-align: center;
+  color: var(--tb-text-soft);
+  font-size: var(--tb-fs-14);
+}
+
+.tb-search-clear-row {
+  padding: var(--tb-sp-2) var(--tb-sp-4);
+  text-align: right;
+  border-top: 1px dashed var(--tb-border);
+}
+
+.tb-search-clear {
+  font-size: 11px;
+  color: var(--tb-text-soft);
+}
+
+.tb-search-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--tb-sp-2) var(--tb-sp-4);
+  border-top: 1px solid var(--tb-border);
+  background: var(--tb-bg);
+  font-size: 11px;
+  color: var(--tb-text-soft);
+  flex-wrap: wrap;
+  gap: var(--tb-sp-2);
+}
+
+.tb-search-meta {
+  font-family: var(--tb-font-mono);
+}
+
+/* Header search button — sits between print and theme toggle.
+   Picks up hover/focus from the .tb-btn ghost variant. The kbd hint
+   inside is hidden on small screens. */
+.tb-search-trigger .tb-search-trigger__hint {
+  margin-left: var(--tb-sp-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+  .tb-search-trigger .tb-search-trigger__hint { display: none; }
+  .tb-search-backdrop { padding-top: 6vh; }
+  .tb-search-panel { max-height: 80vh; }
+  .tb-search-input { font-size: var(--tb-fs-16); }
+}
+
+/* Print: never show the palette. */
+@media print {
+  .tb-search-backdrop { display: none !important; }
+}
+
+/* --- Badges -------------------------------------------------------- */
+
+.tb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tb-sp-1);
+  padding: 2px var(--tb-sp-2);
+  border-radius: var(--tb-radius-pill);
+  font-size: var(--tb-fs-12);
+  font-weight: 500;
+  background: var(--tb-bg);
+  border: 1px solid var(--tb-border);
+  color: var(--tb-text);
+}
+
+.tb-disclaimer-inline {
+  border-left: 3px solid var(--tb-warn);
+  padding: var(--tb-sp-3) var(--tb-sp-4);
+  background: rgba(185, 122, 26, 0.08);
+  border-radius: var(--tb-radius-2);
+  font-size: var(--tb-fs-14);
+  margin: var(--tb-sp-4) 0;
+  color: var(--tb-text);
+}
+
+/* --- Dropzone (drag-and-drop file upload) -------------------------
+ * Applied via TB.utils.attachFileDrop. Any element wrapped becomes a
+ * drop target with a colored highlight + overlay text on dragover.
+ * The overlay text comes from the data-dropzone-text attribute so
+ * each site can customize ("Drop passport here", "Drop FBAR statement
+ * here", etc.). Uses position: relative + ::after overlay so the
+ * existing card content stays in place.
+ */
+.tb-dropzone {
+  position: relative;
+  transition: background var(--tb-motion-fast) var(--tb-ease),
+              border-color var(--tb-motion-fast) var(--tb-ease);
+}
+.tb-dropzone-active {
+  background: rgba(14, 42, 79, 0.06);
+}
+.tb-dropzone-active::after {
+  content: attr(data-dropzone-text);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(14, 42, 79, 0.92);
+  color: #fff;
+  font-weight: 700;
+  font-size: var(--tb-fs-22);
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 100;
+  outline: 3px dashed rgba(255, 255, 255, 0.85);
+  outline-offset: -8px;
+}
+:root[data-theme="dark"] .tb-dropzone-active {
+  background: rgba(111, 160, 214, 0.10);
+}
+:root[data-theme="dark"] .tb-dropzone-active::after {
+  background: rgba(30, 63, 110, 0.96);
+}
+
+/* --- Currency pair (Projections USD/JPY toggle) -------------------
+ * Every USD value in Projections is rendered with its JPY equivalent
+ * as a smaller, dim secondary value. Clicking the secondary toggles
+ * which currency is primary across the whole module.
+ *
+ * Two variants:
+ *   .tb-currency-pair--stacked (default) — primary at full size on top,
+ *     secondary much smaller below, slightly indented to the right.
+ *     Used in tiles, table cells, hover panel — everywhere a value
+ *     stands alone. Solves the truncation problem from the previous
+ *     inline parenthetical design.
+ *   .tb-currency-pair--inline — primary then "(secondary)" on the
+ *     same line. Used in flowing paragraphs (lifetime tax callouts,
+ *     verdict line) where stacking would break sentence flow.
+ */
+
+/* Common styling — both variants share the secondary's color/cursor */
+.tb-currency-secondary {
+  color: var(--tb-text-soft);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background var(--tb-motion-fast) var(--tb-ease),
+              color var(--tb-motion-fast) var(--tb-ease);
+  /* clamp font size so it stays readable in tiny table cells AND
+   * doesn't blow up next to large tile numbers. min 9px / max 16px. */
+  font-size: clamp(9px, 0.62em, 16px);
+}
+.tb-currency-secondary:hover {
+  background: rgba(14, 42, 79, 0.08);
+  color: var(--tb-navy);
+}
+:root[data-theme="dark"] .tb-currency-secondary:hover {
+  background: rgba(111, 160, 214, 0.12);
+}
+
+/* Stacked layout — primary on top, secondary below at smaller size,
+ * slightly indented to the right (padding-left) so it visually
+ * "tucks under" the primary number. */
+.tb-currency-pair--stacked {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  vertical-align: middle;
+  line-height: 1.1;
+}
+.tb-currency-pair--stacked .tb-currency-primary {
+  /* Inherit parent font-size + weight unchanged. */
+  white-space: nowrap;
+}
+.tb-currency-pair--stacked .tb-currency-secondary {
+  padding: 0 4px 0 12px;   /* indent right under the primary */
+  margin-top: 1px;
+  white-space: nowrap;
+  font-weight: 400;        /* always lighter than primary */
+}
+
+/* Inline layout — secondary follows primary on the same line in
+ * smaller text. Used in flowing prose. */
+.tb-currency-pair--inline {
+  display: inline;
+  white-space: nowrap;
+}
+.tb-currency-pair--inline .tb-currency-secondary {
+  padding: 0 2px;
+  margin-left: 2px;
+  font-size: clamp(10px, 0.78em, 16px);  /* a bit larger when inline */
+}
+
+/* --- Slider (custom range input) ----------------------------------
+ * Used by Projections (and any future module needing live-feedback
+ * scalar input). The CSS overrides the native <input type="range">
+ * styling cross-browser so we get the dual-track look (filled portion
+ * in accent color, remainder in slate). The track-fill effect is
+ * implemented with a CSS variable `--tb-slider-pct` set by JS on
+ * input events to a 0-100 number — no JS animation needed.
+ */
+.tb-slider {
+  display: block;
+  margin: var(--tb-sp-2) 0 var(--tb-sp-1);
+}
+.tb-slider-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--tb-sp-2);
+  margin-bottom: var(--tb-sp-1);
+}
+.tb-slider-label {
+  font-weight: 600;
+  font-size: var(--tb-fs-12);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--tb-text-soft);
+}
+.tb-slider-value {
+  font-family: var(--tb-font-mono);
+  font-weight: 700;
+  font-size: var(--tb-fs-22);
+  color: var(--tb-accent);
+  margin-left: auto;
+}
+.tb-slider-side {
+  font-family: var(--tb-font-mono);
+  font-size: var(--tb-fs-12);
+  color: var(--tb-text-soft);
+}
+
+.tb-slider input[type="range"] {
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  width: 100%;
+  height: 8px;
+  background: linear-gradient(
+    to right,
+    var(--tb-accent) 0%,
+    var(--tb-accent) calc(var(--tb-slider-pct, 0) * 1%),
+    var(--tb-border) calc(var(--tb-slider-pct, 0) * 1%),
+    var(--tb-border) 100%
+  );
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+  margin: 0;
+}
+.tb-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--tb-bg-elev);
+  border: 2px solid var(--tb-accent);
+  cursor: grab;
+  transition: transform var(--tb-motion-fast) var(--tb-ease);
+}
+.tb-slider input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--tb-bg-elev);
+  border: 2px solid var(--tb-accent);
+  cursor: grab;
+}
+.tb-slider input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); cursor: grabbing; }
+.tb-slider input[type="range"]:focus-visible {
+  outline: 2px solid var(--tb-navy);
+  outline-offset: 4px;
+}
+
+.tb-slider-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--tb-sp-1);
+  font-size: var(--tb-fs-12);
+  color: var(--tb-text-soft);
+  font-family: var(--tb-font-mono);
+}
+.tb-slider-help {
+  margin-top: var(--tb-sp-1);
+  font-size: var(--tb-fs-12);
+  color: var(--tb-text-soft);
+}
+
+/* Variant: green accent (e.g., SS start age — investing-good-thing color) */
+.tb-slider--success input[type="range"] {
+  background: linear-gradient(
+    to right,
+    var(--tb-success) 0%,
+    var(--tb-success) calc(var(--tb-slider-pct, 0) * 1%),
+    var(--tb-border) calc(var(--tb-slider-pct, 0) * 1%),
+    var(--tb-border) 100%
+  );
+}
+.tb-slider--success input[type="range"]::-webkit-slider-thumb { border-color: var(--tb-success); }
+.tb-slider--success input[type="range"]::-moz-range-thumb    { border-color: var(--tb-success); }
+.tb-slider--success .tb-slider-value { color: var(--tb-success); }
+
+/* Variant: navy accent */
+.tb-slider--navy input[type="range"] {
+  background: linear-gradient(
+    to right,
+    var(--tb-navy) 0%,
+    var(--tb-navy) calc(var(--tb-slider-pct, 0) * 1%),
+    var(--tb-border) calc(var(--tb-slider-pct, 0) * 1%),
+    var(--tb-border) 100%
+  );
+}
+.tb-slider--navy input[type="range"]::-webkit-slider-thumb { border-color: var(--tb-navy); }
+.tb-slider--navy input[type="range"]::-moz-range-thumb    { border-color: var(--tb-navy); }
+.tb-slider--navy .tb-slider-value { color: var(--tb-navy); }
+
+/* --- Glossary terms (click for definition) ------------------------ */
+/* Inline pseudo-link styled to look like text but signal clickability.
+ * Dotted bottom border distinguishes from regular links (solid). The
+ * ⓘ pseudo-element appears on hover so the link doesn't visually
+ * crowd the surrounding sentence in normal reading.
+ */
+button.tb-glossary-term {
+  display: inline;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: help;
+  border-bottom: 1px dotted var(--tb-navy);
+  transition: color var(--tb-motion-fast) var(--tb-ease),
+              background var(--tb-motion-fast) var(--tb-ease);
+}
+button.tb-glossary-term:hover,
+button.tb-glossary-term:focus-visible {
+  color: var(--tb-navy);
+  background: rgba(14, 42, 79, 0.06);
+  outline: none;
+}
+button.tb-glossary-term:hover::after,
+button.tb-glossary-term:focus-visible::after {
+  content: 'ⓘ';
+  font-size: 0.7em;
+  vertical-align: super;
+  margin-left: 1px;
+  color: var(--tb-navy);
+  opacity: 0.8;
+}
+:root[data-theme="dark"] button.tb-glossary-term {
+  border-bottom-color: var(--tb-navy);
+}
+:root[data-theme="dark"] button.tb-glossary-term:hover,
+:root[data-theme="dark"] button.tb-glossary-term:focus-visible {
+  background: rgba(111, 160, 214, 0.10);
+}
+
+/* --- JP term annotations (ruby / furigana / tooltip) --------------- */
+
+/* Furigana above the kanji. Hidden in Japanese UI — native readers
+   don't need phonetic help on their own script. */
+ruby.tb-jp {
+  ruby-align: center;
+  cursor: help;
+  /* Subtle dotted underline signals "hover me for English" */
+  border-bottom: 1px dotted var(--tb-text-soft);
+  display: inline-ruby;
+}
+ruby.tb-jp rt {
+  font-size: 0.56em;
+  color: var(--tb-text-soft);
+  font-family: var(--tb-font-jp);
+  letter-spacing: 0;
+  line-height: 1.1;
+}
+/* Hide furigana in Japanese UI mode — the html[lang=ja] attribute
+   is set by the boot script whenever the user switches to Japanese. */
+:lang(ja) ruby.tb-jp rt { display: none; }
+
+/* Floating tooltip — appears near the cursor when hovering a [data-jp-en]. */
+.tb-jp-tooltip {
+  position: fixed;
+  background: var(--tb-ink);
+  color: var(--tb-bg);
+  padding: 4px 10px 5px;
+  border-radius: var(--tb-radius-1);
+  font-size: var(--tb-fs-12);
+  font-family: var(--tb-font-sans);
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity var(--tb-motion-fast) var(--tb-ease);
+  max-width: 260px;
+  white-space: normal;
+  box-shadow: var(--tb-shadow-2);
+  line-height: var(--tb-lh-body);
+}
+.tb-jp-tooltip.is-visible { opacity: 1; }
+
+/* --- Definition list (used by Profile) ----------------------------- */
+
+.tb-dl {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) 2fr;
+  gap: var(--tb-sp-2) var(--tb-sp-4);
+  margin: 0;
+}
+.tb-dl dt { color: var(--tb-text-soft); font-size: var(--tb-fs-14); }
+.tb-dl dd { margin: 0; font-size: var(--tb-fs-14); }
+
+@media (max-width: 600px) {
+  .tb-dl { grid-template-columns: 1fr; gap: 0 0; }
+  .tb-dl dt { margin-top: var(--tb-sp-2); }
+}

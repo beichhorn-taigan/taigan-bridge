@@ -1,0 +1,519 @@
+/* Taigan Bridge — base styles */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--tb-bg);
+  color: var(--tb-text);
+  font-family: var(--tb-font-sans);
+  font-size: var(--tb-fs-16);
+  line-height: var(--tb-lh-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:lang(ja),
+[lang="ja"] { font-family: var(--tb-font-jp), var(--tb-font-en); }
+
+h1, h2, h3, h4 {
+  font-family: var(--tb-font-sans);
+  font-weight: 600;
+  line-height: var(--tb-lh-tight);
+  margin: 0 0 var(--tb-sp-3);
+  color: var(--tb-text);
+}
+h1 { font-size: var(--tb-fs-28); letter-spacing: -0.01em; }
+h2 { font-size: var(--tb-fs-22); }
+h3 { font-size: var(--tb-fs-18); }
+h4 { font-size: var(--tb-fs-16); }
+
+p { margin: 0 0 var(--tb-sp-3); color: var(--tb-text); }
+small { font-size: var(--tb-fs-12); color: var(--tb-text-soft); }
+
+/* Belt-and-suspenders: Chrome on Windows in dark mode sometimes
+   applies muted user-agent colors to inherited text elements unless
+   we name the color explicitly on each container. This keeps body
+   text legible whether the OS is in light or dark mode. */
+li, dd, dt, td, th, label { color: var(--tb-text); }
+section, article, aside, header, footer, main, nav { color: var(--tb-text); }
+
+a {
+  color: var(--tb-navy);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--tb-motion-fast) var(--tb-ease);
+}
+a:hover { border-bottom-color: currentColor; }
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--tb-border);
+  margin: var(--tb-sp-5) 0;
+}
+
+code, pre, kbd {
+  font-family: var(--tb-font-mono);
+  font-size: 0.95em;
+}
+
+::selection { background: var(--tb-navy); color: #fff; }
+
+/* --- Layout primitives --------------------------------------------- */
+
+.tb-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.tb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tb-sp-4);
+  padding: var(--tb-sp-3) var(--tb-sp-5);
+  border-bottom: 1px solid var(--tb-border);
+  background: var(--tb-bg-elev);
+  height: var(--tb-header-h);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* --- Brand lockup --------------------------------------------------
+   Three components, left → right:
+     1. Mark (.tb-brand-mark) — torii-bridge SVG, currentColor + accent
+     2. English stack (.tb-brand-name__en) — "Taigan" lead + "BRIDGE" tag
+     3. Japanese name (.tb-brand-name__jp) — 対岸 in vermillion
+   The whole lockup behaves as a single inline-flex group so
+   alignment stays glued to the SVG baseline regardless of font size.
+*/
+
+.tb-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tb-sp-3);
+  text-decoration: none;
+  color: inherit;
+  border-bottom: none; /* override generic <a> underline */
+}
+.tb-brand:hover { border-bottom: none; }
+
+.tb-brand-mark {
+  width: 44px;
+  height: auto;
+  flex: 0 0 auto;
+  display: block;
+  transition: transform var(--tb-motion-base) var(--tb-ease);
+}
+.tb-brand:hover .tb-brand-mark {
+  transform: translateY(-1px);
+}
+
+/* SVG part colors driven by theme variables — no filter inversion hack. */
+.tb-brand-mark__arch       { stroke: var(--tb-accent); }
+.tb-brand-mark__reflection { stroke: var(--tb-accent); opacity: 0.45; }
+.tb-brand-mark__deck       { stroke: var(--tb-navy); }
+.tb-brand-mark__pier       { fill:   var(--tb-navy); }
+.tb-brand-mark__water      { stroke: var(--tb-navy); opacity: 0.85; }
+.tb-brand-mark__ripple     { stroke: var(--tb-navy); opacity: 0.4; }
+.tb-brand-mark__ripple--fade { opacity: 0.28; }
+
+.tb-brand-name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tb-sp-3);
+  line-height: 1;
+}
+
+.tb-brand-name__en {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  line-height: 1;
+}
+
+.tb-brand-name__title {
+  font-family: var(--tb-font-en);
+  font-weight: 700;
+  font-size: 1.5rem;            /* 24px — slightly chunkier than the old 16px bold */
+  letter-spacing: -0.018em;
+  color: var(--tb-navy);
+  line-height: 0.95;
+}
+
+.tb-brand-name__sub {
+  font-family: var(--tb-font-en);
+  font-weight: 500;
+  font-size: 0.6875rem;         /* 11px — small caps tag under "Taigan" */
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--tb-text-soft);
+  line-height: 1;
+}
+
+.tb-brand-name__jp {
+  font-family: var(--tb-font-jp);
+  font-weight: 500;
+  font-size: 1.5rem;            /* matches the English title size */
+  letter-spacing: 0.06em;
+  color: var(--tb-accent);
+  line-height: 1;
+  /* Visual divider: a vermillion-tinted dotted vertical between the
+     English block and the kanji. Keeps the two scripts intentionally
+     paired without a heavy border line. */
+  padding-left: var(--tb-sp-3);
+  border-left: 1px dotted var(--tb-accent);
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Dark-mode polish: piers disappear into the navy header background
+   in dark theme since --tb-navy is light blue there. We want them to
+   stay visible — switch to the soft ink variable. */
+[data-theme="dark"] .tb-brand-mark__deck,
+[data-theme="dark"] .tb-brand-mark__pier,
+[data-theme="dark"] .tb-brand-mark__water,
+[data-theme="dark"] .tb-brand-mark__ripple {
+  /* Re-route to the high-contrast text token, which IS legible on
+     the dark elevated surface. */
+  stroke: var(--tb-text);
+  fill:   var(--tb-text);
+}
+[data-theme="dark"] .tb-brand-mark__water { opacity: 0.7; }
+[data-theme="dark"] .tb-brand-mark__ripple { opacity: 0.35; }
+[data-theme="dark"] .tb-brand-name__title { color: var(--tb-text); }
+
+.tb-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-sp-2);
+}
+
+.tb-main {
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: var(--tb-max-width);
+  margin: 0 auto;
+  padding: var(--tb-sp-6) var(--tb-sp-5);
+}
+
+/* Inserted by sample-data.js whenever the loaded state carries the
+   _demo marker. Sticky strip across the top of the page that makes
+   it impossible to confuse the fictional household with real data
+   — important for screenshots and walkthroughs. */
+.tb-demo-banner {
+  background: #B97A1A;
+  color: #fff;
+  padding: 10px 16px;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 99997;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.tb-demo-banner strong { font-weight: 800; letter-spacing: 0.02em; }
+.tb-demo-banner__exit {
+  background: rgba(0,0,0,0.18);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.45);
+  padding: 4px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.tb-demo-banner__exit:hover { background: rgba(0,0,0,0.35); }
+
+/* Inserted by integrity.js when brand markers are missing —
+   indicates the build has been tampered with / republished without
+   permission. Sticks to the top of the viewport above EVERYTHING
+   so it's hard to miss / hard to hide via single CSS-rule strip. */
+.tb-tamper-banner {
+  background: #B7472A;
+  color: #fff;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.5;
+  border-bottom: 3px solid #6E2A18;
+  position: sticky;
+  top: 0;
+  z-index: 99998;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+.tb-tamper-banner strong { font-weight: 800; letter-spacing: 0.02em; }
+
+.tb-disclaimer-banner {
+  background: var(--tb-navy);
+  color: #fff;
+  padding: var(--tb-sp-2) var(--tb-sp-5);
+  font-size: var(--tb-fs-12);
+  text-align: center;
+  letter-spacing: 0.02em;
+  /* Flex layout so the live FX rate can sit on the right while the
+     centered disclaimer text stays centered on wide viewports.
+     Wraps to a stacked layout on narrow screens. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tb-sp-3);
+  flex-wrap: wrap;
+  position: relative;
+}
+
+/* Live USD/JPY indicator on the right side of the disclaimer banner.
+   Mid-market reference (Frankfurter / ECB). Visually muted relative
+   to the disclaimer text — informational, not actionable. */
+.tb-live-fx {
+  position: absolute;
+  right: var(--tb-sp-5);
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--tb-font-mono);
+  font-size: var(--tb-fs-12);
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+  cursor: help;
+}
+.tb-live-fx[hidden] { display: none !important; }
+.tb-live-fx__label {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+}
+.tb-live-fx__rate {
+  font-weight: 700;
+}
+.tb-live-fx__source {
+  font-size: 10px;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+/* On narrow viewports drop absolute positioning so the live rate
+   wraps below the disclaimer instead of overlapping it. */
+@media (max-width: 640px) {
+  .tb-live-fx {
+    position: static;
+    transform: none;
+  }
+}
+
+.tb-footer {
+  border-top: 1px solid var(--tb-border);
+  padding: var(--tb-sp-5);
+  text-align: center;
+  color: var(--tb-text-soft);
+  font-size: var(--tb-fs-12);
+  background: var(--tb-bg-elev);
+}
+
+.tb-footer a { color: var(--tb-text-soft); }
+.tb-footer .tb-build-meta {
+  font-family: var(--tb-font-mono);
+  letter-spacing: 0.04em;
+}
+
+/* --- Mobile / responsive ------------------------------------------- */
+
+/* Tablet — most important breakpoint for reduced padding + font scale.
+   At <= 768px the nav switches to a more compact layout and the main
+   container loses its outer breathing room. */
+@media (max-width: 768px) {
+  :root {
+    --tb-fs-28: 1.5rem;     /* 28px → 24px */
+    --tb-fs-22: 1.2rem;     /* 22px → ~19px */
+  }
+  .tb-main { padding: var(--tb-sp-4) var(--tb-sp-3); }
+  .tb-header { padding: var(--tb-sp-2) var(--tb-sp-3); gap: var(--tb-sp-2); }
+  .tb-card { padding: var(--tb-sp-4); }
+  /* Drop the kanji on tablet+phone — the mark + "Taigan / BRIDGE"
+     stack already conveys the brand. */
+  .tb-brand-name__jp { display: none; }
+  .tb-brand-mark { width: 38px; }
+  .tb-brand-name__title { font-size: 1.25rem; }
+}
+
+/* Phone — full-width tiles, single-column grid, tighter spacing. */
+@media (max-width: 540px) {
+  :root {
+    --tb-fs-28: 1.4rem;
+    --tb-fs-22: 1.15rem;
+    --tb-sp-5: 16px;        /* 24 → 16 */
+    --tb-sp-6: 20px;        /* 32 → 20 */
+  }
+  .tb-main { padding: var(--tb-sp-3) var(--tb-sp-2); }
+  .tb-card { padding: var(--tb-sp-3); margin-bottom: var(--tb-sp-3); }
+  /* Phone: also drop the BRIDGE subtag — keep just the mark + "Taigan". */
+  .tb-brand-name__sub { display: none; }
+  .tb-brand-name__title { font-size: 1.125rem; }
+  .tb-brand-mark { width: 32px; }
+  /* Card grid — tiles already responsive via auto-fill minmax(260px),
+     but on phones force single-column for better readability. */
+  .tb-card-grid { grid-template-columns: 1fr; gap: var(--tb-sp-3); }
+  /* Modals fill viewport on phones (with small margins). */
+  .tb-modal { width: calc(100% - var(--tb-sp-3) * 2); margin: var(--tb-sp-3); }
+  /* Tighten the dashboard track-strip chips. */
+  .tb-track-strip { gap: var(--tb-sp-1); }
+  /* Wrap header nav buttons. */
+  .tb-nav { flex-wrap: wrap; }
+}
+
+/* --- Print --------------------------------------------------------- */
+
+@media print {
+  /* Strip chrome */
+  .tb-header, .tb-footer, .tb-nav, .tb-disclaimer-banner,
+  .tb-modal-backdrop, .tb-loading,
+  details > summary,
+  [data-print-hide],
+  .tb-btn { display: none !important; }
+
+  /* Force-show details bodies (would otherwise hide when collapsed) */
+  details > * { display: block !important; }
+
+  /* Reset surfaces to print-friendly white */
+  body, .tb-main {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .tb-main { max-width: 100%; padding: 0; }
+  .tb-card {
+    background: #fff !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    margin-bottom: 12pt;
+  }
+  /* Force readable colors on text — print should be strict black on white */
+  .tb-card *:not(.tb-badge):not(a) {
+    color: #000 !important;
+  }
+  .tb-field-help, .tb-card-meta {
+    color: #555 !important;
+  }
+  /* Track stripe at top of cards — keep but render in grayscale */
+  [data-track] {
+    border-top-color: #999 !important;
+  }
+  /* Links print as plain text + URL */
+  a { text-decoration: underline; color: #000 !important; }
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 80%;
+    color: #555;
+  }
+  a[href^="#"]::after { content: ""; }
+
+  /* When the user clicks "Print this card", we add data-print-only to
+     the body and the target card gets data-print-target. Hide
+     everything else in tb-main. */
+  body[data-print-only] .tb-main > *:not([data-print-target]) {
+    display: none !important;
+  }
+  body[data-print-only] .tb-main > [data-print-target] {
+    display: block !important;
+  }
+
+  /* Page numbering + meta footer for printed pages */
+  @page {
+    margin: 0.6in;
+    size: letter;
+  }
+
+  /* h2 / h3 stay together with following paragraph */
+  h1, h2, h3 { page-break-after: avoid; }
+  table { page-break-inside: avoid; }
+
+  /* Hide the customize panel on print — it's interactive UI */
+  details { page-break-inside: avoid; }
+}
+
+/* --- Loading ------------------------------------------------------- */
+
+.tb-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--tb-text-soft);
+  font-size: var(--tb-fs-14);
+  letter-spacing: 0.04em;
+}
+
+/* --- Visually hidden ----------------------------------------------- */
+
+.tb-sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Accessibility overrides (driven by Settings → Accessibility) -- */
+
+/* High-contrast: bump border weight, darken muted text, lift card
+   backgrounds away from the page background, and add a focus ring
+   that's clearly visible against any track theme. */
+:root[data-tb-contrast="high"] {
+  --tb-text-soft: #1f2937;
+  --tb-border: #1f2937;
+  --tb-bg: #ffffff;
+}
+:root[data-tb-contrast="high"] .tb-card {
+  border-width: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2) inset;
+}
+:root[data-tb-contrast="high"] a {
+  text-decoration: underline;
+}
+:root[data-tb-contrast="high"] :focus-visible {
+  outline: 3px solid #ff7a00;
+  outline-offset: 2px;
+}
+:root[data-tb-contrast="high"] .tb-btn {
+  border-width: 2px;
+}
+
+/* Reduced motion: collapse all transitions and animations. Honors the
+   user's explicit toggle in Settings, on top of the existing
+   prefers-reduced-motion media query. */
+:root[data-tb-motion="reduced"] *,
+:root[data-tb-motion="reduced"] *::before,
+:root[data-tb-motion="reduced"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

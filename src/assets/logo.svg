@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Taigan Bridge mark v0.29
+    A bridge whose arch echoes a torii's curved kasagi (笠木) — vermillion
+    over navy piers spanning a thin water line, with a ghost-arch reflection
+    on the surface below. The vermillion is 朱色 (shu-iro), the same red
+    seen on Itsukushima and Fushimi Inari toriis. The form reads first as
+    a bridge, second as a torii — the Pacific crossing as cultural threshold.
+
+    Designed to render on either light (paper) or dark backgrounds. The
+    file uses hard-coded brand colors; the inline copy in index.html uses
+    CSS variables so it adapts to the active theme.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 84 60"
+     role="img" aria-label="Taigan Bridge mark">
+  <title>Taigan Bridge</title>
+  <!-- Bridge arch (vermillion / 朱色) -->
+  <path d="M 9 38 Q 42 8 75 38"
+        fill="none" stroke="#B7472A" stroke-width="3.4" stroke-linecap="round"/>
+  <!-- Bridge deck — straight beam between pier tops -->
+  <line x1="14" y1="38" x2="70" y2="38"
+        stroke="#0E2A4F" stroke-width="1.4" stroke-linecap="round"/>
+  <!-- Left pier -->
+  <rect x="12.5" y="38" width="3" height="13" fill="#0E2A4F"/>
+  <!-- Right pier -->
+  <rect x="68.5" y="38" width="3" height="13" fill="#0E2A4F"/>
+  <!-- Pier foundations (slight flare at the waterline) -->
+  <path d="M 10.5 51 L 17 51 L 16 53.2 L 11.5 53.2 Z" fill="#0E2A4F"/>
+  <path d="M 67 51 L 73.5 51 L 72.5 53.2 L 68 53.2 Z" fill="#0E2A4F"/>
+  <!-- Water line -->
+  <line x1="3" y1="51" x2="81" y2="51"
+        stroke="#0E2A4F" stroke-width="1.2" stroke-linecap="round" opacity="0.85"/>
+  <!-- Reflected arch — inverted, dashed, vermillion ghost -->
+  <path d="M 9 51 Q 42 60 75 51"
+        fill="none" stroke="#B7472A" stroke-width="1" stroke-linecap="round"
+        stroke-dasharray="2 2.5" opacity="0.45"/>
+  <!-- Surface ripples -->
+  <line x1="22" y1="56" x2="34" y2="56"
+        stroke="#0E2A4F" stroke-width="0.6" stroke-linecap="round" opacity="0.4"/>
+  <line x1="50" y1="56" x2="62" y2="56"
+        stroke="#0E2A4F" stroke-width="0.6" stroke-linecap="round" opacity="0.4"/>
+  <line x1="36" y1="58.5" x2="48" y2="58.5"
+        stroke="#0E2A4F" stroke-width="0.5" stroke-linecap="round" opacity="0.28"/>
+</svg>

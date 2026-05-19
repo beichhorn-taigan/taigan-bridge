@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Synthetic Online Banking Dashboard — Sony Bank — Alex Tanaka</title>
+<!--
+  TEST FIXTURE — PURELY SYNTHETIC.
+  Not a real account. Not a real person. Sony Bank is a real
+  institution but this dashboard is fabricated for testing the
+  Taigan Bridge FBAR upload feature.
+
+  Open this file in a browser, take a screenshot of the dashboard
+  block (Win+Shift+S on Windows / Cmd+Shift+4 on macOS), then
+  upload it via FBAR Tracker → Accounts → ⬆ Upload bank document.
+
+  Expected extraction:
+    institution_name: "Sony Bank" / "ソニー銀行"
+    country:          "JP"
+    currency:         "JPY"  (or USD if vision picks the secondary tab — both are visible)
+    account_type:     "bank"
+    account_number:   "012-3456789" or similar
+    account_holder:   "Alex Tanaka" / "アレックス タナカ"
+    year:             2024 (snapshot date 2024-12-31)
+    max_balance_native: 4,820,000 (JPY current balance shown)
+    extraction_notes: should mention dual-currency tabs (JPY + USD)
+    threshold cross:  YES (¥4.82M ≈ $30,700 at 157.20)
+-->
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px;
+    background: #ebeef3;
+    font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', system-ui, sans-serif;
+    color: #1d2330; line-height: 1.4;
+  }
+  .browser-frame {
+    width: 1080px; margin: 0 auto;
+    background: #ffffff; border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    overflow: hidden;
+  }
+  .browser-chrome {
+    background: #dfe3ea; padding: 8px 12px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid #c5cad3;
+  }
+  .browser-chrome .dots { display: flex; gap: 6px; }
+  .browser-chrome .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .browser-chrome .dot.r { background: #ed6a5e; }
+  .browser-chrome .dot.y { background: #f4bf4f; }
+  .browser-chrome .dot.g { background: #61c554; }
+  .browser-chrome .url {
+    flex: 1; background: #fff; padding: 4px 12px;
+    border-radius: 12px; font-size: 11px; color: #4a5267;
+    font-family: 'Courier New', monospace;
+  }
+
+  .topbar {
+    background: #002664; color: #fff;
+    padding: 14px 28px; display: flex;
+    justify-content: space-between; align-items: center;
+  }
+  .topbar .brand {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .topbar .logo {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.01em;
+  }
+  .topbar .logo-jp {
+    font-size: 11px; color: #b8c4dc; margin-top: 2px;
+  }
+  .topbar .user {
+    font-size: 12px; color: #c8d2e4; text-align: right;
+  }
+  .topbar .user .name { color: #fff; font-weight: 500; }
+
+  .greet {
+    padding: 20px 28px; background: #f5f7fb;
+    border-bottom: 1px solid #e1e5ed;
+  }
+  .greet .hello {
+    font-size: 14px; color: #5a6378; margin-bottom: 4px;
+  }
+  .greet .name {
+    font-size: 18px; font-weight: 600; color: #1d2330;
+  }
+  .greet .last-login {
+    font-size: 11px; color: #7a8294; margin-top: 6px;
+  }
+
+  .page-body {
+    padding: 24px 28px;
+  }
+
+  .acct-card {
+    border: 1px solid #d5dae4; border-radius: 6px;
+    overflow: hidden; margin-bottom: 18px;
+  }
+  .acct-head {
+    background: #f5f7fb; padding: 12px 18px;
+    display: flex; justify-content: space-between;
+    border-bottom: 1px solid #d5dae4;
+  }
+  .acct-name {
+    font-weight: 600; font-size: 15px;
+  }
+  .acct-num {
+    font-family: 'Courier New', monospace; color: #5a6378;
+    font-size: 11px; margin-top: 2px;
+  }
+  .acct-tabs {
+    display: flex; gap: 0; padding: 0 18px;
+    border-bottom: 1px solid #d5dae4;
+    background: #fff;
+  }
+  .tab {
+    padding: 10px 18px; border-bottom: 2px solid transparent;
+    font-size: 13px; color: #5a6378; cursor: pointer;
+  }
+  .tab.active {
+    color: #002664; font-weight: 600;
+    border-bottom-color: #002664;
+  }
+  .acct-balance {
+    padding: 22px 18px; display: flex;
+    justify-content: space-between; align-items: flex-end;
+  }
+  .balance-label {
+    font-size: 11px; color: #7a8294;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .balance-value {
+    font-size: 32px; font-weight: 700; color: #1d2330;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: -0.01em;
+  }
+  .balance-value .cur {
+    font-size: 14px; color: #5a6378;
+    font-weight: 500; margin-right: 6px;
+  }
+  .balance-meta {
+    text-align: right; font-size: 11px; color: #5a6378;
+  }
+  .balance-meta .available {
+    color: #1f6f3f; font-weight: 600; font-size: 13px;
+  }
+
+  .panel-row {
+    display: grid; grid-template-columns: 2fr 1fr; gap: 18px;
+  }
+  .panel {
+    border: 1px solid #d5dae4; border-radius: 6px;
+    padding: 18px;
+  }
+  .panel h3 {
+    margin: 0 0 14px; font-size: 13px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: #4a5267; font-weight: 600;
+    padding-bottom: 8px; border-bottom: 1px solid #ebeff5;
+  }
+  table.txns { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.txns td { padding: 8px 4px; border-bottom: 1px solid #ebeff5; }
+  table.txns td.date {
+    width: 90px; color: #7a8294;
+    font-family: 'Courier New', monospace; font-size: 11px;
+  }
+  table.txns td.amt {
+    text-align: right; font-family: 'Courier New', monospace;
+    width: 100px; font-size: 12px;
+  }
+  table.txns td.amt.in { color: #1f6f3f; }
+  table.txns td.amt.out { color: #9a3a2a; }
+
+  .summary-row {
+    display: flex; justify-content: space-between;
+    padding: 6px 0; font-size: 12px;
+  }
+  .summary-row .label { color: #5a6378; }
+  .summary-row .val {
+    font-family: 'Courier New', monospace; font-weight: 500;
+  }
+  .summary-row + .summary-row { border-top: 1px solid #ebeff5; }
+
+  .footer {
+    background: #f5f7fb; padding: 12px 28px;
+    border-top: 1px solid #e1e5ed;
+    font-size: 10px; color: #7a8294; text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="browser-frame">
+  <div class="browser-chrome">
+    <div class="dots">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    </div>
+    <div class="url">🔒 moneykit.sonybank.co.jp/dashboard</div>
+  </div>
+
+  <div class="topbar">
+    <div class="brand">
+      <div>
+        <div class="logo">SONY BANK</div>
+        <div class="logo-jp">ソニー銀行</div>
+      </div>
+    </div>
+    <div class="user">
+      <div class="name">Alex Tanaka 様</div>
+      <div>前回ログイン: 2024年12月30日 09:14</div>
+    </div>
+  </div>
+
+  <div class="greet">
+    <div class="hello">こんにちは</div>
+    <div class="name">Alex Tanaka 様 ／ アレックス タナカ</div>
+    <div class="last-login">残高表示日時: 2024年12月31日 23:58</div>
+  </div>
+
+  <div class="page-body">
+    <div class="acct-card">
+      <div class="acct-head">
+        <div>
+          <div class="acct-name">普通預金 (Sony Bank Wallet)</div>
+          <div class="acct-num">支店 100 / 口座 0123456789</div>
+        </div>
+        <div style="text-align:right;color:#5a6378;font-size:11px;">
+          名義: アレックス タナカ<br>
+          開設日: 2018-06-12
+        </div>
+      </div>
+
+      <div class="acct-tabs">
+        <div class="tab active">JPY 円</div>
+        <div class="tab">USD ドル</div>
+        <div class="tab">EUR ユーロ</div>
+        <div class="tab">外貨定期</div>
+      </div>
+
+      <div class="acct-balance">
+        <div>
+          <div class="balance-label">現在の残高</div>
+          <div class="balance-value"><span class="cur">¥</span>4,820,000</div>
+        </div>
+        <div class="balance-meta">
+          <div>うち拘束中: ¥0</div>
+          <div class="available">出金可能額: ¥4,820,000</div>
+          <div style="margin-top:4px">前月末比: +¥120,400</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-row">
+      <div class="panel">
+        <h3>最近の取引明細</h3>
+        <table class="txns">
+          <tr><td class="date">2024-12-28</td><td>クレジットカード引落 — 楽天カード</td><td class="amt out">−¥138,210</td></tr>
+          <tr><td class="date">2024-12-25</td><td>給与振込 — XYZ株式会社</td><td class="amt in">+¥682,400</td></tr>
+          <tr><td class="date">2024-12-22</td><td>ATM入金 — 立川駅ATM</td><td class="amt in">+¥50,000</td></tr>
+          <tr><td class="date">2024-12-15</td><td>家賃振込 — オーナー山田</td><td class="amt out">−¥185,000</td></tr>
+          <tr><td class="date">2024-12-10</td><td>振込入金 — Wise USD→JPY</td><td class="amt in">+¥376,800</td></tr>
+          <tr><td class="date">2024-12-05</td><td>公共料金 — 東京電力</td><td class="amt out">−¥18,420</td></tr>
+        </table>
+      </div>
+
+      <div class="panel">
+        <h3>サマリー (2024年)</h3>
+        <div class="summary-row"><span class="label">年初残高</span><span class="val">¥3,210,400</span></div>
+        <div class="summary-row"><span class="label">年中最高残高</span><span class="val">¥5,142,800</span></div>
+        <div class="summary-row"><span class="label">最高残高日</span><span class="val">2024-08-22</span></div>
+        <div class="summary-row"><span class="label">年末残高</span><span class="val">¥4,820,000</span></div>
+        <div class="summary-row"><span class="label">年間入金合計</span><span class="val">¥9,238,420</span></div>
+        <div class="summary-row"><span class="label">年間出金合計</span><span class="val">¥7,628,820</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    © 2024 Sony Bank Inc. ソニー銀行株式会社 (登録番号: 関東財務局長(登金)第578号) ／ This page is for personal use only.
+  </div>
+</div>
+</body>
+</html>

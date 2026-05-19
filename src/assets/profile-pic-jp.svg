@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Taigan Bridge — square profile picture, 「対岸」 variant.
+
+  Same bridge mark as profile-pic.svg, but with the 対岸 brand
+  characters set in a serif Japanese face below the bridge.
+
+  Use this variant when:
+    • The host platform displays the FULL SQUARE (Slack workspace
+      icons, GitHub repo OG image, README hero) — the character
+      pair becomes the recognition handle.
+    • Display sizes are 64 px or larger. At 32 px the characters
+      smudge; use the no-text variant (profile-pic.svg) instead.
+
+  The Japanese face stack falls back gracefully — first to a
+  Mac/iOS system serif (Hiragino Mincho), then Windows (Yu Mincho),
+  then a generic serif. If none of those are present (Linux servers
+  rendering OG images), the browser substitutes a default serif which
+  still renders 対岸 acceptably.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"
+     role="img" aria-label="Taigan Bridge 対岸">
+  <title>Taigan Bridge 対岸</title>
+
+  <!-- Background -->
+  <rect width="800" height="800" fill="#0E2A4F"/>
+
+  <!-- Bridge mark — same as profile-pic.svg but shifted UP to leave
+       room for the 対岸 characters below. Scale 6 → 504 × 360.
+       Centered horizontally at 400, vertical band: top 145, bottom 505. -->
+  <g transform="translate(148, 145) scale(6)">
+    <path d="M 9 38 Q 42 8 75 38"
+          fill="none" stroke="#D86948" stroke-width="3.4" stroke-linecap="round"/>
+    <line x1="14" y1="38" x2="70" y2="38"
+          stroke="#F7F4EC" stroke-width="1.4" stroke-linecap="round"/>
+    <rect x="12.5" y="38" width="3" height="13" fill="#F7F4EC"/>
+    <rect x="68.5" y="38" width="3" height="13" fill="#F7F4EC"/>
+    <path d="M 10.5 51 L 17 51 L 16 53.2 L 11.5 53.2 Z" fill="#F7F4EC"/>
+    <path d="M 67 51 L 73.5 51 L 72.5 53.2 L 68 53.2 Z" fill="#F7F4EC"/>
+    <line x1="3" y1="51" x2="81" y2="51"
+          stroke="#F7F4EC" stroke-width="1.2" stroke-linecap="round" opacity="0.85"/>
+    <path d="M 9 51 Q 42 60 75 51"
+          fill="none" stroke="#D86948" stroke-width="1" stroke-linecap="round"
+          stroke-dasharray="2 2.5" opacity="0.55"/>
+    <line x1="22" y1="56" x2="34" y2="56"
+          stroke="#F7F4EC" stroke-width="0.6" stroke-linecap="round" opacity="0.45"/>
+    <line x1="50" y1="56" x2="62" y2="56"
+          stroke="#F7F4EC" stroke-width="0.6" stroke-linecap="round" opacity="0.45"/>
+    <line x1="36" y1="58.5" x2="48" y2="58.5"
+          stroke="#F7F4EC" stroke-width="0.5" stroke-linecap="round" opacity="0.32"/>
+  </g>
+
+  <!-- 対岸 characters — centered below the bridge mark. Using a
+       Japanese serif (mincho) face for the kanji to match the
+       "torii / cultural threshold" tone of the bridge motif. Color
+       is the same cream the piers use, slightly soft so the bridge
+       stays the primary focus. -->
+  <text x="400" y="685"
+        text-anchor="middle"
+        font-family="'Hiragino Mincho ProN', 'Hiragino Mincho Pro', 'Yu Mincho', 'YuMincho', 'MS Mincho', serif"
+        font-size="180"
+        font-weight="600"
+        letter-spacing="20"
+        fill="#F7F4EC">対岸</text>
+</svg>

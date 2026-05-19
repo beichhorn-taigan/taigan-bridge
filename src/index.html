@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Taigan Bridge — financial planning organizer for Americans living in Japan. SOFA, FBAR, retirement, estate. Single-file, browser-only, BYO Claude API key.">
+  <meta name="tb-version" content="0.1.0">
+  <meta name="tb-build-hash" content="DEVBUILD">
+  <meta name="tb-build-date" content="dev">
+  <title>Taigan Bridge | 対岸</title>
+
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+
+  <!-- Theme bootstrap. Runs BEFORE any CSS is parsed so the correct
+       theme class lands on <html> before first paint (no flash of
+       light theme when dark is stored, or vice versa). The OS
+       preference (prefers-color-scheme) is intentionally NOT read —
+       theme is app-controlled, persists per-browser via localStorage,
+       and only changes when the user clicks the header toggle. -->
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('tb-theme');
+        var theme = (stored === 'dark' || stored === 'light') ? stored : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+
+  <link rel="stylesheet" href="styles/tokens.css">
+  <link rel="stylesheet" href="styles/base.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/tracks.css">
+</head>
+<body>
+  <div class="tb-app">
+    <div class="tb-disclaimer-banner">
+      <span data-i18n="banner.disclaimer">Organizational tool only. Not financial, tax, legal, or medical advice.</span>
+      <!-- Live USD/JPY indicator. Populated by boot script after the
+           Frankfurter (ECB mid-market) rate fetch resolves. Stays
+           hidden until a rate is available so we don't render
+           "USD/JPY ¥…" with a missing value. Hover for tooltip
+           explaining the difference vs. the Treasury rate used for
+           FBAR + Asset calculations. -->
+      <span class="tb-live-fx" id="tb-live-fx" hidden>
+        <span class="tb-live-fx__label">USD/JPY</span>
+        <span class="tb-live-fx__rate" data-live-fx-rate>—</span>
+        <span class="tb-live-fx__source" data-live-fx-source></span>
+      </span>
+    </div>
+
+    <header class="tb-header" role="banner">
+      <a class="tb-brand" href="#dashboard" aria-label="Taigan Bridge 対岸">
+        <!-- Inlined so the SVG can resolve CSS custom properties and
+             swap colors with the active theme. The external file at
+             assets/logo.svg is the canonical version (used by the
+             favicon-link fallback, browser bookmarks, and any future
+             OG image / press kit) and stays in sync with this markup. -->
+        <svg class="tb-brand-mark" viewBox="0 0 84 60" aria-hidden="true"
+             xmlns="http://www.w3.org/2000/svg">
+          <path class="tb-brand-mark__arch"
+                d="M 9 38 Q 42 8 75 38"
+                fill="none" stroke-width="3.4" stroke-linecap="round"/>
+          <line class="tb-brand-mark__deck"
+                x1="14" y1="38" x2="70" y2="38"
+                stroke-width="1.4" stroke-linecap="round"/>
+          <rect class="tb-brand-mark__pier" x="12.5" y="38" width="3" height="13"/>
+          <rect class="tb-brand-mark__pier" x="68.5" y="38" width="3" height="13"/>
+          <path class="tb-brand-mark__pier"
+                d="M 10.5 51 L 17 51 L 16 53.2 L 11.5 53.2 Z"/>
+          <path class="tb-brand-mark__pier"
+                d="M 67 51 L 73.5 51 L 72.5 53.2 L 68 53.2 Z"/>
+          <line class="tb-brand-mark__water"
+                x1="3" y1="51" x2="81" y2="51"
+                stroke-width="1.2" stroke-linecap="round"/>
+          <path class="tb-brand-mark__reflection"
+                d="M 9 51 Q 42 60 75 51"
+                fill="none" stroke-width="1" stroke-linecap="round"
+                stroke-dasharray="2 2.5"/>
+          <line class="tb-brand-mark__ripple"
+                x1="22" y1="56" x2="34" y2="56"
+                stroke-width="0.6" stroke-linecap="round"/>
+          <line class="tb-brand-mark__ripple"
+                x1="50" y1="56" x2="62" y2="56"
+                stroke-width="0.6" stroke-linecap="round"/>
+          <line class="tb-brand-mark__ripple tb-brand-mark__ripple--fade"
+                x1="36" y1="58.5" x2="48" y2="58.5"
+                stroke-width="0.5" stroke-linecap="round"/>
+        </svg>
+        <span class="tb-brand-name">
+          <span class="tb-brand-name__en">
+            <span class="tb-brand-name__title">Taigan</span>
+            <span class="tb-brand-name__sub">B&#8202;R&#8202;I&#8202;D&#8202;G&#8202;E</span>
+          </span>
+          <span class="tb-brand-name__jp" lang="ja" aria-hidden="true">対岸</span>
+        </span>
+      </a>
+      <nav class="tb-nav" id="tb-nav" aria-label="Primary">
+        <button class="tb-btn tb-btn--ghost tb-icon-btn tb-search-trigger" id="tb-search-button" type="button"
+                title="Search modules, sections, records, glossary (⌘K / Ctrl+K)"
+                aria-label="Open search">
+          <span class="tb-icon-slot" data-ui-icon="ui-search"></span><span class="tb-search-trigger__hint"><kbd class="tb-search-kbd" id="tb-search-kbd">⌘K</kbd></span>
+        </button>
+        <button class="tb-btn tb-btn--ghost" data-view="dashboard" data-i18n="nav.dashboard">Dashboard</button>
+        <button class="tb-btn tb-btn--ghost" data-view="profile"   data-i18n="nav.profile">Profile</button>
+        <button class="tb-btn tb-btn--ghost" data-view="settings"  data-i18n="nav.settings">Settings</button>
+        <button class="tb-btn tb-btn--ghost" data-view="about"     data-i18n="nav.about">About</button>
+        <button class="tb-btn tb-btn--ghost tb-icon-btn" id="tb-print-button" type="button"
+                title="Print the current view (CSS print stylesheet renders cards in print-friendly form)"
+                aria-label="Print this view"><span class="tb-icon-slot" data-ui-icon="ui-print"></span></button>
+        <button class="tb-btn tb-btn--ghost tb-icon-btn" id="tb-view-mode-toggle" type="button"
+                title="Switch view: your perspective vs. your spouse's"
+                aria-label="Toggle view mode"><span class="tb-icon-slot" data-ui-icon="ui-view-user"></span></button>
+        <button class="tb-btn tb-btn--ghost tb-icon-btn" id="tb-theme-toggle" type="button"
+                title="Toggle light/dark mode (independent of OS settings)"
+                aria-label="Toggle theme"><span class="tb-icon-slot" data-ui-icon="ui-theme-dark"></span></button>
+        <button class="tb-btn tb-btn--secondary" id="tb-lang-toggle" data-i18n="lang.toggle">日本語</button>
+      </nav>
+    </header>
+
+    <main class="tb-main" id="tb-main">
+      <div id="tb-view" class="tb-loading">Loading Taigan Bridge…</div>
+    </main>
+
+    <footer class="tb-footer">
+      <div>
+        <span data-i18n="footer.copyright">© 2026 Benjamin Eichhorn. Free for personal use.</span>
+      </div>
+      <div class="tb-build-meta">
+        v<span data-version>0.1.0</span> ·
+        build <span data-build-hash>DEVBUILD</span> ·
+        <span data-build-date>dev</span>
+      </div>
+      <div>
+        <a href="#license" data-i18n="footer.license">License</a> ·
+        <a href="#changelog" data-i18n="footer.changelog">What's new</a> ·
+        <a href="#about" data-i18n="footer.feedback">Send feedback</a>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Modal mount point. Modals are appended here by app boot code. -->
+  <div id="tb-modal-root"></div>
+
+  <!-- JP term tooltip. Populated and positioned by the boot script. -->
+  <div id="tb-jp-tooltip" class="tb-jp-tooltip" aria-hidden="true"></div>
+
+  <!-- Runtime data (questions, etc.). Loaded before scripts so
+       TB.content is populated before any module starts. Lives as
+       JS rather than JSON so the dev source works under file://
+       too (where fetch is blocked). -->
+  <script src="content/inline.js"></script>
+
+  <!-- Core scripts. Order matters: state → utils → i18n → tracks
+       → ai-client → onboarding → modules → boot. -->
+  <script src="scripts/state.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/i18n.js"></script>
+  <script src="scripts/icons.js"></script>
+  <script src="scripts/glossary.js"></script>
+  <script src="scripts/tracks.js"></script>
+  <script src="scripts/ai-client.js"></script>
+  <script src="scripts/onboarding.js"></script>
+
+  <script src="scripts/customize.js"></script>
+  <script src="scripts/modules/profile.js"></script>
+  <script src="scripts/modules/fbar.js"></script>
+  <script src="scripts/modules/assets.js"></script>
+  <script src="scripts/modules/projections.js"></script>
+  <script src="scripts/modules/sofa-roth.js"></script>
+  <script src="scripts/modules/veteran.js"></script>
+  <script src="scripts/modules/resident.js"></script>
+  <script src="scripts/modules/family.js"></script>
+  <script src="scripts/modules/property.js"></script>
+  <script src="scripts/modules/action-center.js"></script>
+  <script src="scripts/modules/document-vault.js"></script>
+  <script src="scripts/modules/tax-coordinator.js"></script>
+  <script src="scripts/modules/estate.js"></script>
+  <script src="scripts/modules/ask-taigan.js"></script>
+  <script src="scripts/modules/net-worth.js"></script>
+  <script src="scripts/modules/healthcare.js"></script>
+  <script src="scripts/modules/health-tracker.js"></script>
+  <script src="scripts/modules/contacts.js"></script>
+  <script src="scripts/modules/fx-banking.js"></script>
+  <script src="scripts/modules/decumulation.js"></script>
+  <script src="scripts/modules/sharing-backup.js"></script>
+  <script src="scripts/modules/consultations.js"></script>
+  <script src="scripts/modules/settings.js"></script>
+
+  <!-- Universal search palette (⌘K / Ctrl+K). Loads after every module
+       so its index can reach all module exports. -->
+  <script src="scripts/search.js"></script>
+
+  <!-- License / Changelog / Feedback / Tip-jar overlays. Loaded after
+       i18n + utils so the modal renderer can reach TB.utils.el and
+       TB.i18n.t synchronously. The script self-installs a delegated
+       click handler on hash anchors so it works for both the static
+       footer links and the dynamic About-card links. -->
+  <script src="scripts/about-overlays.js"></script>
+
+  <!-- Anti-tamper / forensic integrity check. Loaded last so all
+       brand markers are in place by the time the boot routine runs.
+       Surfaces a "Modified copy detected" banner when the LICENSE
+       link, copyright footer, brand mark, or build-hash meta tags
+       have been stripped — the most common signs of unauthorized
+       republishing. Also installs a Facebook-style DevTools warning
+       and captures a per-install forensic fingerprint into
+       localStorage. None of this leaves the browser. -->
+  <script src="scripts/integrity.js"></script>
+
+  <!-- Demo / sample-data mode. Lets new visitors load a complete
+       fictional household with one click to evaluate the tool
+       without entering real numbers. Self-installs a sticky "DEMO
+       DATA" banner whenever the loaded state carries the demo
+       marker, so screenshots never misrepresent fiction as real
+       records. -->
+  <script src="scripts/sample-data.js"></script>
+
+  <!-- App boot. Lives inline because it's the glue between all of
+       the above and isn't worth its own file. -->
+  <script>
+  (function () {
+    'use strict';
+
+    const VIEW_KEY = 'tb-current-view';
+
+    // Pre-populate language attribute on <html>.
+    document.documentElement.setAttribute(
+      'lang', TB.i18n.getLang() === 'ja' ? 'ja' : 'en',
+    );
+
+    // Modules shown in the dashboard grid. `always` = core modules
+    // every onboarded user sees. `conditional` = track-gated modules
+    // (sofa-roth, veteran, resident, family, property) that appear
+    // when the user's onboarding answers triggered the relevant track.
+    //
+    // We resolve "is this conditional module visible?" by combining
+    // THREE sources (any one trumps):
+    //   1. state.modules.unlocked       — set at onboarding finish
+    //   2. tracks.assign(answers).modules — RE-derived live from
+    //      current onboarding answers, so newly-added conditional
+    //      modules auto-appear for existing users without requiring
+    //      re-onboarding
+    //   3. settings.dashboard_modules.{id} === true — user-forced
+    //      show via the "Customize dashboard" panel (lets users
+    //      explore modules their onboarding didn't unlock)
+    //
+    // settings.dashboard_modules.{id} === false hides a conditional
+    // module the user explicitly doesn't want.
+    // Dashboard module organization. Modules are grouped into 5
+    // semantic categories users can scan by intent. Order within each
+    // group is most-frequently-used first. Each module has a real
+    // one-line description that replaces the generic "Tap to open"
+    // copy. Status-specific modules (status track) are grouped together
+    // at the bottom to keep universal-utility modules visually primary.
+    const MODULE_GROUPS = [
+      {
+        id: 'tax_compliance',
+        label_en: 'Tax & Compliance',
+        label_jp: '税務・コンプライアンス',
+        modules: [
+          { id: 'tax-coordinator', icon: '🗂',
+            desc_en: 'Year-round US + JP filing calendar. Auto-detects which forms apply (1040, FBAR, 8938, 8621, 確定申告) from your data.',
+            desc_jp: '年間 US + JP 申告カレンダー。データから適用申告書(1040・FBAR・8938・8621・確定申告)を自動判定。' },
+          { id: 'fbar', icon: '🏦',
+            desc_en: 'Foreign account reporting (FinCEN 114). $10,000 aggregate threshold tracking with multi-filer support.',
+            desc_jp: '外国口座報告(FinCEN 114)。$10,000 閾値追跡、複数申告者対応。' },
+          { id: 'document-vault', icon: '📂',
+            desc_en: 'Inventory of important documents — wills, passports, tax records — with vision-extraction.',
+            desc_jp: '重要書類のインベントリ — 遺言・パスポート・税務記録 — 画像抽出対応。' },
+        ],
+      },
+      {
+        id: 'wealth_planning',
+        label_en: 'Wealth & Planning',
+        label_jp: '資産・プランニング',
+        modules: [
+          { id: 'assets', icon: '💼',
+            desc_en: 'All accounts in USD/JPY with FBAR sync, target allocation, snapshots, vision-extraction from statements.',
+            desc_jp: '全口座を USD/JPY 表示。FBAR 連携・目標アロケーション・スナップショット・明細書からの画像抽出。' },
+          { id: 'net-worth', icon: '📈',
+            desc_en: 'Net worth chart over time, year-over-year comparison, annual review wizard, year-end report exports.',
+            desc_jp: '純資産推移グラフ・年次比較・年次レビューウィザード・年末レポート出力。' },
+          { id: 'projections', icon: '🔮',
+            desc_en: 'Long-term financial planning with NIIT, IRMAA, state tax, Roth conversion ladder, scenarios.',
+            desc_jp: '長期財務計画:NIIT・IRMAA・州税・Roth 転換ラダー・シナリオ。' },
+          { id: 'fx-banking', icon: '💱',
+            desc_en: 'Transfer cost calculator, platform comparison, rate alerts, FBAR threshold awareness.',
+            desc_jp: '送金コスト計算機・プラットフォーム比較・レートアラート・FBAR 閾値の認識。' },
+          { id: 'decumulation', icon: '🌅',
+            desc_en: 'Retirement: SS claiming strategy, JP pensions, withdrawal sequence (JP-resident-aware), RMD planning.',
+            desc_jp: '退職後:SS 受給戦略・JP 年金・取崩し順序(日本居住考慮)・RMD 計画。' },
+        ],
+      },
+      {
+        id: 'family_estate',
+        label_en: 'Family & Life Events',
+        label_jp: '家族・ライフイベント',
+        modules: [
+          { id: 'family', icon: '👨‍👩‍👧',
+            desc_en: 'Spouse + kids roster, 国籍選択 deadlines, education savings, gift log, US citizenship renunciation planning.',
+            desc_jp: '配偶者・子の構成、国籍選択期限、教育費貯蓄、贈与記録、米国市民権放棄計画。' },
+          { id: 'estate', icon: '🪦',
+            desc_en: 'Cross-border succession: 法定相続人, JP 相続税 estimate, beneficiary review, dual-will strategy, Letter of Instruction.',
+            desc_jp: '国境を越える承継:法定相続人・相続税試算・受取人レビュー・デュアル遺言戦略・遺言補足書。' },
+          { id: 'healthcare', icon: '🏥',
+            desc_en: 'NHI / TRICARE / Medicare / 介護保険 / private intl insurance + end-of-life preferences.',
+            desc_jp: 'NHI・TRICARE・Medicare・介護保険・民間海外保険、および終末期希望。' },
+          { id: 'health-tracker', icon: '🩺',
+            desc_en: 'Exam results, lab values over time, medications, care plan, dental log, preventive screenings. AI vision import for lab PDFs.',
+            desc_jp: '受診結果・経時的な検査値・服薬・ケアプラン・歯科記録・予防検診。検査 PDF からの AI 画像取込対応。' },
+        ],
+      },
+      {
+        id: 'status_specific',
+        label_en: 'Status-Specific',
+        label_jp: 'ステータス別',
+        modules: [
+          { id: 'sofa-roth', icon: '🪖',
+            desc_en: 'Pre-住民票 sequencing for Roth conversions + capital gains during the SOFA window.',
+            desc_jp: '住民票登録前の Roth 転換・キャピタルゲイン実現の順序計画。' },
+          { id: 'veteran', icon: '🎖',
+            desc_en: 'Status-aware VA benefits: GI Bill, TRICARE, FMP, SBP, disability rating, deep-dive guides per status.',
+            desc_jp: 'ステータス別 VA 給付:GI Bill・TRICARE・FMP・SBP・障害認定・状況別詳細ガイド。' },
+          { id: 'resident', icon: '🏘',
+            desc_en: 'Long-term JP resident: 永住権 tracker, 確定申告 prep, Furusato Nozei, mortgage credit, NHI.',
+            desc_jp: '長期日本居住者:永住権・確定申告準備・ふるさと納税・住宅ローン控除・NHI。' },
+          { id: 'property', icon: '🏠',
+            desc_en: 'JP + US property holdings with cross-border tax math: 固定資産税, §121 exclusion, depreciation recapture.',
+            desc_jp: 'JP + US 不動産保有と国境を越える税務:固定資産税・§121 控除・減価償却の戻し入れ。' },
+        ],
+      },
+      {
+        id: 'ai_tools',
+        label_en: 'AI & Tools',
+        label_jp: 'AI・ツール',
+        modules: [
+          { id: 'ask-taigan', icon: '💬',
+            desc_en: 'AI assistant that knows your full Taigan Bridge state. Ask anything specific to YOUR situation.',
+            desc_jp: 'Taigan Bridge の全状態を把握する AI アシスタント。あなたの状況に特化した質問を。' },
+          { id: 'consultations', icon: '👔',
+            desc_en: 'Track CPAs, 税理士, lawyers, immigration attorneys engaged. Per-consultation log + follow-up reminders.',
+            desc_jp: 'CPA・税理士・弁護士・移民専門家の追跡。相談履歴と follow-up リマインダー。' },
+          { id: 'sharing-backup', icon: '🤝',
+            desc_en: 'Generate shareable HTML for spouse, advisor-only JSON for CPA, "if you\'re reading this" survivor mode, full state backup.',
+            desc_jp: '配偶者用 HTML・CPA 用 JSON・遺族向け「これを読んでいる方へ」モード・全状態バックアップを生成。' },
+          { id: 'contacts', icon: '📇',
+            desc_en: 'Unified address book auto-pulled from every module — banks, doctors, insurance, family, plus VA / Embassy / IRS built-ins. AI enhance fills missing info.',
+            desc_jp: '全モジュールから自動収集する統合連絡先 — 銀行・医師・保険・家族 + VA・大使館・IRS の組込連絡先。AI 補完で不足情報を充填。' },
+        ],
+      },
+    ];
+
+    function dashboardModuleIds() {
+      const stored = TB.state.get('modules.unlocked') || [];
+
+      // Re-derive from current onboarding answers — heals stale state
+      // when modules are added between onboarding and dashboard load.
+      let derived = [];
+      try {
+        const answers = TB.state.get('onboarding.answers') || {};
+        if (TB.tracks && typeof TB.tracks.assign === 'function') {
+          derived = TB.tracks.assign(answers).modules || [];
+        }
+      } catch (err) { /* swallow */ }
+
+      const userOverrides = TB.state.get('settings.dashboard_modules') || {};
+      const unlocked = new Set([...stored, ...derived]);
+
+      const always = ['action-center', 'ask-taigan', 'tax-coordinator', 'fbar', 'assets', 'projections', 'decumulation', 'document-vault', 'estate', 'net-worth', 'healthcare', 'health-tracker', 'fx-banking', 'sharing-backup', 'consultations', 'contacts'];
+      const conditional = ['sofa-roth', 'veteran', 'resident', 'family', 'property'];
+      const order = always.concat(conditional);
+      return order.filter((id) => {
+        if (!TB.modules || !TB.modules[id]) return false;
+        // User explicit hide always wins
+        if (userOverrides[id] === false) return false;
+        // User explicit show always wins
+        if (userOverrides[id] === true) return true;
+        // Always-on modules
+        if (always.indexOf(id) !== -1) return true;
+        // Conditional: stored OR re-derived unlocked list
+        return unlocked.has(id);
+      });
+    }
+
+    // Each track maps to a module (when one exists) so clicking the
+    // badge at the top of the dashboard opens the relevant module.
+    function moduleForTrack(tk) {
+      if (tk === 'sofa') return 'sofa-roth';
+      if (tk === 'veteran') return 'veteran';
+      if (tk === 'resident') return 'resident';
+      if (tk === 'family') return 'family';
+      if (tk === 'property') return 'property';
+      return null;
+    }
+
+    function trackForModule(id) {
+      if (id === 'sofa-roth') return 'sofa';
+      if (id === 'veteran') return 'veteran';
+      if (id === 'resident') return 'resident';
+      if (id === 'family') return 'family';
+      if (id === 'property') return 'property';
+      if (id === 'tax-coordinator') return 'tax';
+      if (id === 'estate') return 'estate';
+      if (id === 'ask-taigan') return 'ai';
+      if (id === 'net-worth') return 'history';
+      if (id === 'healthcare') return 'health';
+      if (id === 'health-tracker') return 'health';
+      if (id === 'fx-banking') return 'fx';
+      if (id === 'decumulation') return 'retire';
+      if (id === 'sharing-backup') return 'share';
+      if (id === 'consultations') return 'consult';
+      return 'core';
+    }
+
+    function renderDashboard(host) {
+      const el = TB.utils.el;
+      const t = TB.i18n.t;
+      const lang = TB.i18n.getLang();
+      const tracks = TB.state.get('tracks') || [];
+      const ids = dashboardModuleIds();
+
+      host.innerHTML = '';
+
+      // Personalized title — "{name}'s Dashboard" when the user's
+      // profile.displayName is set; "Your dashboard" as fallback.
+      // For JP: prefer displayNameJa, append "の" instead of "'s".
+      const profile = TB.state.get('profile') || {};
+      const nameEn = (profile.displayName || '').trim();
+      const nameJa = (profile.displayNameJa || profile.displayName || '').trim();
+      let titleText;
+      if (lang === 'ja') {
+        titleText = nameJa
+          ? t('dashboard.title.personal_jp', { name: nameJa })
+          : t('dashboard.title');
+      } else {
+        titleText = nameEn
+          ? t('dashboard.title.personal_en', { name: nameEn })
+          : t('dashboard.title');
+      }
+
+      const header = el('div', { class: 'tb-card', 'data-track': 'core' },
+        el('h1', null, titleText),
+        el('p', { class: 'tb-wizard-help' },
+          lang === 'ja'
+            ? 'モジュールはカテゴリーで整理されています。下のスクロールで全体像を、または「⚙ ダッシュボードをカスタマイズ」で表示・非表示を切替。'
+            : 'Modules are organized by category. Scroll down for the full picture, or use "⚙ Customize dashboard" to show/hide individual modules.',
+        ),
+      );
+      host.appendChild(header);
+
+      // Spouse-view banner — renders only when view_mode === 'spouse'.
+      // Reminds the user what they're looking at (their spouse's
+      // perspective on the household, with JP-side prominent and
+      // US-side muted) and offers a one-click return to user view.
+      const viewMode = TB.state.get('settings.view_mode') || 'user';
+      if (viewMode === 'spouse') {
+        const banner = el('div', {
+          class: 'tb-card',
+          'data-track': 'family',
+          style: {
+            borderLeft: '4px solid var(--tb-track-family)',
+            background: 'rgba(110, 42, 58, 0.06)',
+          },
+        });
+        banner.appendChild(el('div', {
+          style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 'var(--tb-sp-3)', flexWrap: 'wrap' },
+        },
+          el('div', null,
+            el('strong', null, '👥 ' + t('viewmode.banner.title')),
+            el('div', { class: 'tb-card-meta', style: { marginTop: '4px' } },
+              t('viewmode.banner.body')),
+          ),
+          el('button', {
+            class: 'tb-btn tb-btn--secondary',
+            type: 'button',
+            onclick: () => {
+              TB.state.set('settings.view_mode', 'user');
+              const btn = document.getElementById('tb-view-mode-toggle');
+              if (btn) btn.click(); // also fires its own re-render
+              else navigate('dashboard');
+            },
+          }, '↩ ' + t('viewmode.banner.exit')),
+        ));
+        host.appendChild(banner);
+      }
+
+      // Action Center widget — top N actionable items derived from
+      // every module's state. Only rendered when the action-center
+      // module is loaded; quietly skipped otherwise.
+      if (TB.actionCenter && typeof TB.actionCenter.buildWidget === 'function') {
+        host.appendChild(TB.actionCenter.buildWidget());
+      }
+
+      // ── Grouped module display ───────────────────────────────────
+      //
+      // Modules are organized into 5 semantic categories so users can
+      // scan by intent ("I need to do tax stuff" → Tax & Compliance
+      // section) rather than scanning a flat alphabetical wall.
+      //
+      // Each module in MODULE_GROUPS has a real one-line description
+      // (replacing the universal "Tap to open this module" filler).
+      // Track badges are shown as small accents only for status-
+      // specific modules where the audience signal is meaningful.
+      //
+      // Empty groups (no unlocked modules in that category) are
+      // skipped entirely. Within each section the module order is
+      // intentional — most-used first.
+      const visible = new Set(ids.filter((id) => id !== 'action-center'));
+      // In spouse-view mode, re-order groups so the JP-side / household
+      // / family-focused categories surface first. The primary user's
+      // "wealth & planning" tooling de-emphasizes in this view since
+      // those are the user's tools, not the spouse's.
+      const SPOUSE_GROUP_ORDER = ['family_estate', 'status_specific', 'tax_compliance', 'wealth_planning', 'ai_tools'];
+      const orderedGroups = (viewMode === 'spouse')
+        ? MODULE_GROUPS.slice().sort((a, b) => {
+            const ai = SPOUSE_GROUP_ORDER.indexOf(a.id);
+            const bi = SPOUSE_GROUP_ORDER.indexOf(b.id);
+            return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+          })
+        : MODULE_GROUPS;
+      orderedGroups.forEach((group) => {
+        const groupVisibleModules = group.modules.filter((m) => visible.has(m.id));
+        if (groupVisibleModules.length === 0) return;
+
+        // Section header — small uppercase, muted, with subtle
+        // separator line. Conveys structure without competing visually
+        // with the cards below.
+        host.appendChild(el('div', {
+          style: {
+            display: 'flex', alignItems: 'baseline',
+            gap: 'var(--tb-sp-3)',
+            marginTop: 'var(--tb-sp-5)',
+            marginBottom: 'var(--tb-sp-2)',
+          },
+        },
+          el('div', {
+            style: {
+              fontSize: '11px', fontWeight: '600', letterSpacing: '0.08em',
+              textTransform: 'uppercase', color: 'var(--tb-text-soft)',
+            },
+          }, lang === 'ja' ? group.label_jp : group.label_en),
+          el('div', {
+            style: {
+              flex: '1', height: '1px', background: 'var(--tb-border)',
+            },
+          }),
+        ));
+
+        const grid = el('div', { class: 'tb-card-grid' });
+        groupVisibleModules.forEach((m) => {
+          const mod = TB.modules[m.id];
+          if (!mod) return;
+          const tk = trackForModule(m.id);
+          const desc = lang === 'ja' ? m.desc_jp : m.desc_en;
+          // Show track badge only for status-specific modules
+          // (sofa-roth, veteran, resident, family, property) — the
+          // audience signal matters there. For core modules the
+          // top-border accent color is enough.
+          const showBadge = ['sofa', 'veteran', 'resident', 'family', 'property'].indexOf(tk) !== -1;
+          const tile = el('div', {
+            class: 'tb-card',
+            'data-track': tk,
+            role: 'button',
+            tabindex: '0',
+            style: {
+              cursor: 'pointer',
+              transition: 'transform var(--tb-motion-fast) var(--tb-ease), box-shadow var(--tb-motion-fast) var(--tb-ease)',
+            },
+            onclick: () => navigate(m.id),
+            onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') navigate(m.id); },
+            onmouseenter: function () { this.style.transform = 'translateY(-2px)'; this.style.boxShadow = 'var(--tb-shadow-2)'; },
+            onmouseleave: function () { this.style.transform = ''; this.style.boxShadow = ''; },
+          });
+          // Title row with optional track badge. We prefer the SVG icon
+          // set (TB.icons) over the legacy emoji on m.icon — SVGs
+          // render identically on all platforms and carry the brand
+          // vermillion accent. Emoji is still used as a fallback if the
+          // module isn't yet in the icon set.
+          const titleRow = el('div', {
+            style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gap: 'var(--tb-sp-2)', marginBottom: 'var(--tb-sp-2)' },
+          });
+          const titleH = el('h3', {
+            style: { margin: 0, display: 'flex', alignItems: 'center', gap: 'var(--tb-sp-2)' },
+          });
+          const svgIcon = (TB.icons && TB.icons.get) ? TB.icons.get(m.id, { size: 26 }) : null;
+          if (svgIcon) {
+            // Color the icon strokes with the module's track accent so
+            // tiles read as a coherent set (Tax = steel blue, Family =
+            // burgundy, Property = terracotta, etc.) without needing a
+            // separate class per module.
+            svgIcon.style.color = tk ? 'var(--tb-track-' + tk + ')' : 'var(--tb-navy)';
+            svgIcon.style.flex = '0 0 auto';
+            titleH.appendChild(svgIcon);
+          } else if (m.icon) {
+            // Fallback: legacy emoji
+            titleH.appendChild(document.createTextNode(m.icon + ' '));
+          }
+          titleH.appendChild(document.createTextNode(
+            lang === 'ja' ? mod.label_jp : mod.label_en));
+          titleRow.appendChild(titleH);
+          if (showBadge) {
+            titleRow.appendChild(el('span', {
+              class: 'tb-badge tb-badge--track', 'data-track': tk,
+              style: { fontSize: '10px', padding: '1px 6px',
+                textTransform: 'uppercase', letterSpacing: '0.04em' },
+            }, TB.tracks.trackLabel(tk, lang)));
+          }
+          tile.appendChild(titleRow);
+          tile.appendChild(el('p', {
+            style: { margin: 0, fontSize: 'var(--tb-fs-14)',
+              color: 'var(--tb-text-soft)', lineHeight: 'var(--tb-lh-body)' },
+          }, desc || (lang === 'ja' ? '開くにはクリックしてください。' : 'Tap to open this module.')));
+          grid.appendChild(tile);
+        });
+        host.appendChild(grid);
+      });
+
+      // Bottom strip — track-category badges (small, dim) on the left,
+      // Re-run onboarding link on the right. Both are secondary UI:
+      // the badges document which tracks the user's onboarding
+      // unlocked, but day-to-day work happens in the module grid above.
+      const bottomStrip = el('div', {
+        style: {
+          marginTop: 'var(--tb-sp-5)',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 'var(--tb-sp-3)',
+          fontSize: 'var(--tb-fs-12)',
+          color: 'var(--tb-text-soft)',
+        },
+      });
+
+      // Left: track-category badges. Smaller than the original
+      // header strip (font-size 10, lighter padding) so they read as
+      // metadata rather than nav.
+      const trackChips = el('div', {
+        style: {
+          display: 'flex', flexWrap: 'wrap',
+          gap: 'var(--tb-sp-1)', alignItems: 'center',
+        },
+      });
+      trackChips.appendChild(el('span', {
+        style: { color: 'var(--tb-text-soft)', marginRight: 'var(--tb-sp-1)', textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '10px' },
+      }, t('dashboard.tracks.label') + ':'));
+      tracks.forEach((tk) => {
+        const targetMod = moduleForTrack(tk);
+        const baseStyle = {
+          fontSize: '10px',
+          padding: '1px 6px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.04em',
+        };
+        if (targetMod && TB.modules && TB.modules[targetMod]) {
+          trackChips.appendChild(el('button', {
+            class: 'tb-badge tb-badge--track',
+            type: 'button',
+            'data-track': tk,
+            title: t('dashboard.track.openModule'),
+            style: Object.assign({ cursor: 'pointer', border: '0', font: 'inherit' }, baseStyle),
+            onclick: () => navigate(targetMod),
+          }, TB.tracks.trackLabel(tk, lang)));
+        } else {
+          trackChips.appendChild(el('span', {
+            class: 'tb-badge tb-badge--track', 'data-track': tk, style: baseStyle,
+          }, TB.tracks.trackLabel(tk, lang)));
+        }
+      });
+      bottomStrip.appendChild(trackChips);
+
+      // Right: Customize dashboard + Re-run onboarding links
+      const rightLinks = el('div', { style: { display: 'flex', gap: 'var(--tb-sp-3)', alignItems: 'center', flexWrap: 'wrap' } });
+      rightLinks.appendChild(el('a', {
+        href: '#',
+        style: { color: 'var(--tb-text-soft)', whiteSpace: 'nowrap' },
+        onclick: (e) => {
+          e.preventDefault();
+          openDashboardCustomizeModal(host);
+        },
+      }, '⚙ ' + t('dashboard.customize')));
+      rightLinks.appendChild(el('a', {
+        href: '#',
+        style: { color: 'var(--tb-text-soft)', whiteSpace: 'nowrap' },
+        onclick: (e) => {
+          e.preventDefault();
+          document.dispatchEvent(new CustomEvent('tb:start-onboarding'));
+        },
+      }, '↻ ' + t('dashboard.rerun')));
+      bottomStrip.appendChild(rightLinks);
+
+      host.appendChild(bottomStrip);
+    }
+
+    // Modal listing every registered module with a tri-state per-module
+    // visibility toggle (Auto / Show / Hide). Lets users explore modules
+    // their onboarding didn't unlock, and hide ones they don't care about.
+    function openDashboardCustomizeModal(dashboardHost) {
+      const el = TB.utils.el;
+      const t = TB.i18n.t;
+      const lang = TB.i18n.getLang();
+      const root = document.getElementById('tb-modal-root');
+      const overrides = Object.assign({}, TB.state.get('settings.dashboard_modules') || {});
+
+      const backdrop = el('div', { class: 'tb-modal-backdrop' });
+      const modal = el('div', { class: 'tb-modal', style: { maxWidth: '640px' } });
+      backdrop.appendChild(modal);
+      function close() { root.innerHTML = ''; }
+      backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
+
+      modal.appendChild(el('h2', { style: { marginTop: 0 } }, '⚙ ' + t('dashboard.customize.title')));
+      modal.appendChild(el('p', { class: 'tb-card-meta' }, t('dashboard.customize.intro')));
+
+      const allModules = Object.keys(TB.modules || {})
+        .filter((mid) => mid !== 'settings' && mid !== 'profile')
+        .sort((a, b) => {
+          const la = TB.modules[a].label_en || a;
+          const lb = TB.modules[b].label_en || b;
+          return la.localeCompare(lb);
+        });
+
+      const list = el('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', marginTop: 'var(--tb-sp-3)' } });
+      allModules.forEach((mid) => {
+        const mod = TB.modules[mid];
+        const cur = overrides[mid];
+        const state = cur === true ? 'on' : cur === false ? 'off' : 'auto';
+
+        const row = el('div', {
+          style: {
+            display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+            padding: 'var(--tb-sp-2) var(--tb-sp-3)',
+            background: 'var(--tb-bg)', borderRadius: 'var(--tb-radius-1)',
+            gap: 'var(--tb-sp-3)', flexWrap: 'wrap',
+          },
+        });
+        const labelWrap = el('div', { style: { flex: '1', minWidth: '180px' } });
+        const titleLine = el('div', {
+          style: { display: 'flex', alignItems: 'center', gap: '8px' },
+        });
+        const customizeIcon = (TB.icons && TB.icons.get) ? TB.icons.get(mid, { size: 18 }) : null;
+        if (customizeIcon) {
+          customizeIcon.style.color = 'var(--tb-text-soft)';
+          customizeIcon.style.flex = '0 0 auto';
+          titleLine.appendChild(customizeIcon);
+        }
+        titleLine.appendChild(el('span', { style: { fontWeight: '600' } },
+          (lang === 'ja' ? mod.label_jp : mod.label_en) || mid));
+        labelWrap.appendChild(titleLine);
+        labelWrap.appendChild(el('div', { class: 'tb-field-help', style: { marginTop: '2px', fontFamily: 'var(--tb-font-mono)', fontSize: 'var(--tb-fs-12)' } }, mid));
+        row.appendChild(labelWrap);
+        const sel = el('select', {
+          class: 'tb-select',
+          style: { maxWidth: '140px' },
+          onchange: (e) => {
+            const v = e.target.value;
+            if (v === 'auto') delete overrides[mid];
+            else if (v === 'on')  overrides[mid] = true;
+            else if (v === 'off') overrides[mid] = false;
+            TB.state.set('settings.dashboard_modules', overrides);
+          },
+        },
+          el('option', { value: 'auto', selected: state === 'auto' }, t('customize.opt.auto')),
+          el('option', { value: 'on',   selected: state === 'on' },   t('customize.opt.on')),
+          el('option', { value: 'off',  selected: state === 'off' },  t('customize.opt.off')),
+        );
+        row.appendChild(sel);
+        list.appendChild(row);
+      });
+      modal.appendChild(list);
+
+      const btnRow = el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--tb-sp-4)' } });
+      btnRow.appendChild(el('button', { class: 'tb-btn tb-btn--ghost', type: 'button',
+        style: { padding: '4px 12px', fontSize: 'var(--tb-fs-12)' },
+        onclick: () => {
+          if (confirm(t('dashboard.customize.confirm_reset'))) {
+            TB.state.set('settings.dashboard_modules', {});
+            close();
+            renderDashboard(dashboardHost);
+          }
+        } }, '↺ ' + t('dashboard.customize.reset')));
+      btnRow.appendChild(el('button', { class: 'tb-btn', type: 'button',
+        onclick: () => { close(); renderDashboard(dashboardHost); } }, t('dashboard.customize.done')));
+      modal.appendChild(btnRow);
+
+      root.innerHTML = '';
+      root.appendChild(backdrop);
+    }
+
+    function renderAbout(host) {
+      host.innerHTML = '';
+      const el = TB.utils.el;
+      const card = el('div', { class: 'tb-card', 'data-track': 'core' });
+
+      // Prefer build-inlined content; fall back to fetch in dev mode;
+      // final fallback is a minimal inline string so file:// always
+      // shows something sensible.
+      const inlined = (window.TB && window.TB.content && window.TB.content.aboutHtml) || null;
+      card.innerHTML = inlined || aboutHtmlFallback();
+      stampMeta(card);
+      host.appendChild(card);
+
+      if (!inlined) {
+        fetch('content/about.html', { cache: 'no-store' })
+          .then((r) => r.ok ? r.text() : null)
+          .then((text) => {
+            if (!text) return;
+            card.innerHTML = text;
+            stampMeta(card);
+          })
+          .catch(() => { /* file:// — fallback is fine. */ });
+      }
+    }
+
+    function stampMeta(scope) {
+      const v = document.querySelector('meta[name="tb-version"]')?.content || '';
+      const h = document.querySelector('meta[name="tb-build-hash"]')?.content || '';
+      const d = document.querySelector('meta[name="tb-build-date"]')?.content || '';
+      scope.querySelectorAll('[data-version]').forEach((e) => e.textContent = v);
+      scope.querySelectorAll('[data-build-hash]').forEach((e) => e.textContent = h);
+      scope.querySelectorAll('[data-build-date]').forEach((e) => e.textContent = d);
+    }
+
+    function aboutHtmlFallback() {
+      // Minimal inline About — replaced at runtime by content/about.html
+      // when available.
+      return '<h1>About Taigan Bridge 対岸</h1>' +
+             '<p><strong>Taigan</strong> (対岸) means <em>"the opposite shore."</em> ' +
+             'Taigan Bridge is the bridge between two shores — a tool for keeping ' +
+             'your life on both sides of the Pacific in order.</p>' +
+             '<p>Built by Benjamin Eichhorn. Free for personal use. ' +
+             'Not financial, tax, or legal advice.</p>' +
+             '<p>Version <span data-version></span> · ' +
+             'Build <span data-build-hash></span> · ' +
+             'Released <span data-build-date></span></p>';
+    }
+
+    function navigate(view) {
+      const host = document.getElementById('tb-view');
+      host.className = '';
+
+      // Highlight the matching nav button if it's a top-level view.
+      document.querySelectorAll('#tb-nav [data-view]').forEach((b) => {
+        b.classList.toggle('is-current', b.dataset.view === view);
+      });
+
+      try { sessionStorage.setItem(VIEW_KEY, view); } catch (e) { /* ignore */ }
+
+      if (view === 'dashboard') { renderDashboard(host); TB.utils.annotateJpTerms(host); return; }
+      if (view === 'about')     { renderAbout(host);     TB.utils.annotateJpTerms(host); return; }
+
+      const mod = TB.modules[view];
+      if (mod) {
+        mod.render(host);
+        TB.i18n.applyDom(host);
+        TB.utils.annotateJpTerms(host);
+        return;
+      }
+      // Unknown view: fall back to dashboard.
+      renderDashboard(host);
+      TB.utils.annotateJpTerms(host);
+    }
+
+    function startOnboarding(opts) {
+      const host = document.getElementById('tb-view');
+      host.className = '';
+      TB.onboarding.start(host, opts || {});
+    }
+
+    function init() {
+      // Wire nav.
+      document.querySelectorAll('#tb-nav [data-view]').forEach((btn) => {
+        btn.addEventListener('click', () => navigate(btn.dataset.view));
+      });
+
+      // Hydrate all <span data-ui-icon="..."> slots in the header with
+      // their SVG icons from TB.icons. Each toggle button below uses
+      // setSlotIcon(slot, iconId) to swap when state changes.
+      function setSlotIcon(slot, iconId, size) {
+        if (!slot || !TB.icons || !TB.icons.get) return;
+        slot.innerHTML = '';
+        const svg = TB.icons.get(iconId, { size: size || 20 });
+        if (svg) {
+          // Slight downshift so the icon sits on the text baseline of
+          // sibling buttons.
+          svg.style.verticalAlign = 'middle';
+          slot.appendChild(svg);
+        }
+        slot.dataset.uiIcon = iconId;
+      }
+      document.querySelectorAll('#tb-nav [data-ui-icon]').forEach((s) => {
+        setSlotIcon(s, s.getAttribute('data-ui-icon'));
+      });
+
+      // Theme toggle. Theme is app-controlled and persists in
+      // localStorage; OS prefers-color-scheme is ignored entirely.
+      // The boot inline script in <head> already applied the stored
+      // theme before first paint — here we just sync the button icon
+      // and wire the click handler.
+      const themeBtn = document.getElementById('tb-theme-toggle');
+      const themeSlot = themeBtn && themeBtn.querySelector('.tb-icon-slot');
+      function syncThemeButton() {
+        const cur = document.documentElement.getAttribute('data-theme') || 'light';
+        // Show the icon for the mode we'd switch TO when clicked.
+        // Dark theme is active → show sun (switch to light); else moon.
+        setSlotIcon(themeSlot, cur === 'dark' ? 'ui-theme-light' : 'ui-theme-dark');
+        const titleKey = cur === 'dark' ? 'theme.toggleToLight' : 'theme.toggleToDark';
+        themeBtn.title = TB.i18n.t(titleKey);
+        themeBtn.setAttribute('aria-label', TB.i18n.t(titleKey));
+      }
+      syncThemeButton();
+      themeBtn.addEventListener('click', () => {
+        const cur = document.documentElement.getAttribute('data-theme') || 'light';
+        const next = cur === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem('tb-theme', next); } catch (e) { /* ignore */ }
+        syncThemeButton();
+      });
+      // Re-sync on language change so the tooltip updates too.
+      document.addEventListener('tb:lang-changed', syncThemeButton);
+
+      // Print button — invokes the browser's print dialog. The print
+      // CSS in base.css strips chrome, normalizes colors to print-
+      // friendly black-on-white, and renders link URLs inline.
+      const printBtn = document.getElementById('tb-print-button');
+      if (printBtn) {
+        function syncPrintTooltip() {
+          printBtn.title = TB.i18n.t('nav.print');
+          printBtn.setAttribute('aria-label', TB.i18n.t('nav.print'));
+        }
+        syncPrintTooltip();
+        document.addEventListener('tb:lang-changed', syncPrintTooltip);
+        printBtn.addEventListener('click', () => { window.print(); });
+      }
+
+      // View-mode toggle — flips between 'user' (primary perspective)
+      // and 'spouse' (spouse-side perspective). Re-renders the current
+      // view so any module that reads view_mode picks up the change.
+      // Only visible if onboarding indicates a spouse in the household
+      // (no point cluttering the header for solo users).
+      const viewModeBtn = document.getElementById('tb-view-mode-toggle');
+      const viewModeSlot = viewModeBtn && viewModeBtn.querySelector('.tb-icon-slot');
+      if (viewModeBtn) {
+        function viewModeApplies() {
+          const fam = TB.state.get('onboarding.answers.family') || [];
+          const arr = Array.isArray(fam) ? fam : [fam];
+          return arr.includes('jp_spouse') || arr.includes('us_spouse') || arr.includes('third_spouse');
+        }
+        function syncViewModeButton() {
+          if (!viewModeApplies()) {
+            viewModeBtn.style.display = 'none';
+            // If state is stuck in 'spouse' but the household no longer
+            // has a spouse, snap back to 'user'.
+            if (TB.state.get('settings.view_mode') === 'spouse') {
+              TB.state.set('settings.view_mode', 'user');
+              document.documentElement.removeAttribute('data-view-mode');
+            }
+            return;
+          }
+          viewModeBtn.style.display = '';
+          const cur = TB.state.get('settings.view_mode') || 'user';
+          // Show the icon for the mode you'd switch TO (couple = will
+          // enter spouse view; single = will return to user view).
+          setSlotIcon(viewModeSlot, cur === 'spouse' ? 'ui-view-user' : 'ui-view-spouse');
+          const titleKey = cur === 'spouse' ? 'viewmode.toggleToUser' : 'viewmode.toggleToSpouse';
+          viewModeBtn.title = TB.i18n.t(titleKey);
+          viewModeBtn.setAttribute('aria-label', TB.i18n.t(titleKey));
+          // Mirror onto <html> so CSS can adjust if it wants to.
+          document.documentElement.setAttribute('data-view-mode', cur);
+        }
+        syncViewModeButton();
+        document.addEventListener('tb:lang-changed', syncViewModeButton);
+        document.addEventListener('tb:onboarding-complete', syncViewModeButton);
+        viewModeBtn.addEventListener('click', () => {
+          const cur = TB.state.get('settings.view_mode') || 'user';
+          const next = cur === 'spouse' ? 'user' : 'spouse';
+          TB.state.set('settings.view_mode', next);
+          syncViewModeButton();
+          // Re-render current view to pick up the polarity change.
+          const current = sessionStorage.getItem(VIEW_KEY) || 'dashboard';
+          navigate(current);
+        });
+      }
+
+      // Search button + ⌘K/Ctrl+K shortcut. Search module exposes
+      // window.TB.search.open() and installShortcut(). We expose
+      // window.tbNavigate so the search palette can route by view id
+      // without poking into the closure-private navigate() above.
+      window.tbNavigate = navigate;
+      const searchBtn = document.getElementById('tb-search-button');
+      const searchKbd = document.getElementById('tb-search-kbd');
+      if (searchBtn && TB.search) {
+        if (searchKbd) searchKbd.textContent = TB.search.shortcutLabel();
+        function syncSearchTooltip() {
+          const label = TB.i18n.t('search.tooltip', { kbd: TB.search.shortcutLabel() });
+          searchBtn.title = label;
+          searchBtn.setAttribute('aria-label', TB.i18n.t('search.ariaLabel'));
+        }
+        syncSearchTooltip();
+        document.addEventListener('tb:lang-changed', syncSearchTooltip);
+        searchBtn.addEventListener('click', () => TB.search.open());
+        TB.search.installShortcut();
+      }
+
+      // Language toggle.
+      const langBtn = document.getElementById('tb-lang-toggle');
+      langBtn.addEventListener('click', () => {
+        const next = TB.i18n.getLang() === 'en' ? 'ja' : 'en';
+        TB.i18n.setLang(next);
+      });
+
+      // Re-render the current view on language change.
+      document.addEventListener('tb:lang-changed', () => {
+        const current = sessionStorage.getItem(VIEW_KEY) || 'dashboard';
+        navigate(current);
+      });
+
+      // Onboarding completion → land on dashboard.
+      document.addEventListener('tb:onboarding-complete', () => navigate('dashboard'));
+
+      // Re-run onboarding from profile / dashboard.
+      document.addEventListener('tb:start-onboarding', () => startOnboarding({ fresh: false }));
+
+      // Generic navigation event for module → app routing
+      // (e.g., FBAR's upload dialog jumping to Settings when the
+      // user has no API key set).
+      document.addEventListener('tb:navigate', (e) => {
+        if (e && e.detail && e.detail.view) navigate(e.detail.view);
+      });
+
+      // Apply translations to the static chrome.
+      TB.i18n.applyDom();
+
+      // Self-heal stale `modules.unlocked` from earlier versions.
+      // The set of always-unlocked modules has grown over releases;
+      // re-run track assignment against the stored answers so
+      // returning users see modules that didn't exist when they
+      // first onboarded (e.g., FBAR added in v0.2).
+      const onboarded = TB.state.get('onboarding.complete');
+      if (onboarded) {
+        const answers = TB.state.get('onboarding.answers') || {};
+        const refreshed = TB.tracks.assign(answers);
+        TB.state.set('tracks', refreshed.tracks);
+        TB.state.set('modules.unlocked', refreshed.modules);
+      }
+
+      // ── JP term tooltip ──────────────────────────────────────────
+      // Must be wired before the initial navigate() so the observer
+      // is already watching when the first module renders.
+      const jpTooltip = document.getElementById('tb-jp-tooltip');
+      document.addEventListener('mouseover', (e) => {
+        const target = e.target.closest('[data-jp-en]');
+        if (!target) return;
+        jpTooltip.textContent = target.getAttribute('data-jp-en');
+        jpTooltip.classList.add('is-visible');
+        jpTooltip.style.left = (e.clientX + 14) + 'px';
+        jpTooltip.style.top  = (e.clientY + 14) + 'px';
+      });
+      document.addEventListener('mousemove', (e) => {
+        if (!jpTooltip.classList.contains('is-visible')) return;
+        const x = Math.min(e.clientX + 14, window.innerWidth  - jpTooltip.offsetWidth  - 6);
+        const y = Math.min(e.clientY + 14, window.innerHeight - jpTooltip.offsetHeight - 6);
+        jpTooltip.style.left = Math.max(0, x) + 'px';
+        jpTooltip.style.top  = Math.max(0, y) + 'px';
+      });
+      document.addEventListener('mouseout', (e) => {
+        const leaving  = e.target.closest('[data-jp-en]');
+        if (!leaving) return;
+        const entering = e.relatedTarget && e.relatedTarget.closest('[data-jp-en]');
+        if (!entering) jpTooltip.classList.remove('is-visible');
+      });
+
+      // ── Auto-annotate JP terms + Glossary acronyms ───────────────
+      // Observer MUST be set up before the first navigate() call so it
+      // catches the initial render. The explicit calls after navigate()
+      // handle the synchronous first-render case where the observer
+      // callback might fire after the rAF in the same frame.
+      const viewHost = document.getElementById('tb-view');
+      let _annotPending = false;
+      new MutationObserver(() => {
+        if (_annotPending) return;
+        _annotPending = true;
+        requestAnimationFrame(() => {
+          TB.utils.annotateJpTerms(viewHost);
+          if (TB.glossary && TB.glossary.annotate) TB.glossary.annotate(viewHost);
+          _annotPending = false;
+        });
+      }).observe(viewHost, { childList: true, subtree: true, characterData: false, attributes: false });
+
+      // Click delegation for glossary terms — anywhere in the page.
+      // Uses event delegation so newly-inserted .tb-glossary-term
+      // buttons also trigger without per-instance wiring.
+      document.addEventListener('click', (e) => {
+        const btn = e.target.closest('button.tb-glossary-term');
+        if (!btn) return;
+        e.preventDefault();
+        const key = btn.dataset.glossary;
+        if (key && TB.glossary && TB.glossary.show) TB.glossary.show(key);
+      });
+
+      // Click delegation for the currency-pair secondary value —
+      // clicking the smaller USD/JPY value toggles which currency is
+      // primary across the whole Projections module. Persisted in
+      // projections.ui_state.primary_currency. The class name changed
+      // from .tb-currency-paren to .tb-currency-secondary when the
+      // layout flipped from inline-parens to stacked; the data-attr
+      // is the stable selector across either variant.
+      document.addEventListener('click', (e) => {
+        const target = e.target.closest('[data-toggle-currency]');
+        if (!target) return;
+        e.preventDefault();
+        if (TB.projections && TB.projections.toggleCurrency) {
+          TB.projections.toggleCurrency();
+        }
+      });
+
+      if (!onboarded) {
+        startOnboarding({ fresh: true });
+      } else {
+        const last = sessionStorage.getItem(VIEW_KEY) || 'dashboard';
+        navigate(last);
+      }
+      // Belt-and-suspenders: annotate immediately after initial render in
+      // case the MutationObserver rAF fires too late on slow machines.
+      TB.utils.annotateJpTerms(viewHost);
+      if (TB.glossary && TB.glossary.annotate) TB.glossary.annotate(viewHost);
+
+      // Stamp build metadata into footer (covers the dev build too).
+      stampMeta(document);
+
+      // Auto-backup: when the user has opted into a backup interval,
+      // and the last backup is older than that interval, prompt for a
+      // one-click download. Browsers can't silently write files to
+      // disk, so this surfaces a confirm() dialog rather than firing a
+      // surprise download. Skipped when no interval is set (default).
+      try {
+        if (onboarded && TB.sharingBackup && typeof TB.sharingBackup.maybeAutoBackup === 'function') {
+          // Defer briefly so the page has settled and the user isn't
+          // immediately interrupted by a modal.
+          setTimeout(() => { try { TB.sharingBackup.maybeAutoBackup(); } catch (_) {} }, 1500);
+        }
+      } catch (_) { /* no-op — autobackup is best-effort */ }
+
+      // Live USD/JPY indicator in the disclaimer banner. Paint
+      // immediately from cache (so it doesn't flicker on every nav)
+      // then trigger a refresh — refreshLiveFx returns the cached
+      // value when the previous fetch is still inside the 1-hour
+      // cache window, so this is cheap on hot reloads.
+      try {
+        renderLiveFxBanner();
+        if (TB.utils && typeof TB.utils.refreshLiveFx === 'function') {
+          TB.utils.refreshLiveFx().then(renderLiveFxBanner).catch(() => { /* silent */ });
+        }
+        document.addEventListener('tb:live-fx-updated', renderLiveFxBanner);
+      } catch (_) { /* live-fx is informational; never block boot */ }
+    }
+
+    // Repaint the live-FX widget in the disclaimer banner from
+    // current state. Hidden when no rate is cached yet so we don't
+    // show a placeholder. Tooltip explains the source + the
+    // distinction from the Treasury rate used for FBAR / Asset math.
+    function renderLiveFxBanner() {
+      const host = document.getElementById('tb-live-fx');
+      if (!host) return;
+      const live = (TB.utils && typeof TB.utils.getLiveJpyRate === 'function')
+        ? TB.utils.getLiveJpyRate() : null;
+      if (!live || !live.rate) {
+        host.hidden = true;
+        return;
+      }
+      const rateEl = host.querySelector('[data-live-fx-rate]');
+      const srcEl  = host.querySelector('[data-live-fx-source]');
+      if (rateEl) rateEl.textContent = '¥' + live.rate.toFixed(2);
+      if (srcEl) {
+        const ageMs = live.fetchedAt ? Date.now() - new Date(live.fetchedAt).getTime() : null;
+        const ageMin = ageMs != null ? Math.floor(ageMs / 60000) : null;
+        const ageStr = ageMin == null ? ''
+          : ageMin < 1 ? 'just now'
+          : ageMin < 60 ? ageMin + 'm ago'
+          : Math.floor(ageMin / 60) + 'h ago';
+        srcEl.textContent = ageStr;
+      }
+      const tip = (TB.i18n && TB.i18n.t)
+        ? TB.i18n.t('banner.liveFx.tooltip', {
+            source: live.source || 'live',
+            asOf: live.asOf || '',
+          })
+        : 'Live mid-market USD/JPY (informational only). FBAR + Asset calculations use the U.S. Treasury quarterly rate.';
+      host.title = tip;
+      host.hidden = false;
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.cursor/
+
+# Build artefacts that aren't the canonical dist file
+*.tmp
+.cache/
+
+# Historical / internal docs — not for public repo
+docs/KICKOFF_PROMPT.md.txt
+# Uncomment if your ROADMAP contains commercial / partnership notes:
+# docs/ROADMAP.md
+

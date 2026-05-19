@@ -1,0 +1,142 @@
+/* Taigan Bridge — design tokens
+ *
+ * Centralized colors, typography, spacing, motion, radius, and shadow
+ * values. Modules and components consume these via var(--token-name);
+ * they should never hardcode hex values or pixel sizes.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+:root {
+  /* --- Brand & semantic palette (light) ------------------------- */
+  --tb-navy:        #0E2A4F;  /* primary — deep navy, "the far shore" */
+  --tb-navy-soft:   #1E3F6E;
+  --tb-slate:       #5A6B7B;  /* warm slate secondary */
+  --tb-slate-soft:  #8597A8;
+  --tb-paper:       #F7F4EC;  /* paper background, slightly washi-ish */
+  --tb-paper-2:     #FFFFFF;
+  --tb-ink:         #1A1F2A;  /* near-black ink */
+  --tb-ink-soft:    #45505F;
+  --tb-line:        #DCD5C4;
+  --tb-accent:      #B7472A;  /* terracotta accent */
+  --tb-success:     #2F6F4E;
+  --tb-warn:        #B97A1A;
+  --tb-error:       #B23A3A;
+
+  /* --- Track accents (badges, headers, dashboard cards) --------- */
+  --tb-track-sofa:        #0E2A4F;  /* SOFA — navy */
+  --tb-track-veteran:     #2C4A36;  /* Veteran — forest green */
+  --tb-track-resident:    #6E6657;  /* Long-Term Resident — warm gray */
+  --tb-track-family:      #6E2A3A;  /* Family — burgundy */
+  --tb-track-property:    #9C5B3A;  /* Property — terracotta */
+  --tb-track-tax:         #4A6B8A;  /* Tax Filing Coordinator — steel blue */
+  --tb-track-estate:      #5A3E5A;  /* Estate / Cross-Border Succession — aubergine */
+  --tb-track-ai:          #2E6B5C;  /* Ask Taigan — deep teal (intelligence/serenity) */
+  --tb-track-history:     #8A7B5E;  /* Net Worth & Reports — warm khaki (time/growth) */
+  --tb-track-health:      #B33A4A;  /* Healthcare — medical red (cross/care) */
+  --tb-track-fx:          #2C7589;  /* FX & Banking — currency teal */
+  --tb-track-retire:      #A07A2E;  /* Retirement Decumulation — gold */
+  --tb-track-share:       #4A5C7A;  /* Sharing & Backup — slate blue */
+  --tb-track-consult:     #6B4F7A;  /* Consultation Tracker — muted plum */
+
+  /* --- Typography ----------------------------------------------- */
+  --tb-font-en: 'Inter', system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --tb-font-jp: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif;
+  --tb-font-sans: var(--tb-font-en), var(--tb-font-jp);
+  --tb-font-mono: 'JetBrains Mono', 'Consolas', 'Menlo', monospace;
+
+  --tb-fs-12: 0.75rem;
+  --tb-fs-14: 0.875rem;
+  --tb-fs-16: 1rem;
+  --tb-fs-18: 1.125rem;
+  --tb-fs-22: 1.375rem;
+  --tb-fs-28: 1.75rem;
+  --tb-fs-40: 2.5rem;
+  --tb-lh-tight: 1.2;
+  --tb-lh-body: 1.5;
+  --tb-lh-loose: 1.7;
+
+  /* --- Spacing scale -------------------------------------------- */
+  --tb-sp-1: 4px;
+  --tb-sp-2: 8px;
+  --tb-sp-3: 12px;
+  --tb-sp-4: 16px;
+  --tb-sp-5: 24px;
+  --tb-sp-6: 32px;
+  --tb-sp-7: 48px;
+  --tb-sp-8: 64px;
+
+  /* --- Radius / shadow / motion --------------------------------- */
+  --tb-radius-1: 4px;
+  --tb-radius-2: 8px;
+  --tb-radius-3: 12px;
+  --tb-radius-pill: 999px;
+
+  --tb-shadow-1: 0 1px 2px rgba(14, 42, 79, 0.06), 0 1px 1px rgba(14, 42, 79, 0.04);
+  --tb-shadow-2: 0 4px 12px rgba(14, 42, 79, 0.08), 0 2px 4px rgba(14, 42, 79, 0.04);
+  --tb-shadow-3: 0 10px 30px rgba(14, 42, 79, 0.14), 0 4px 8px rgba(14, 42, 79, 0.06);
+
+  --tb-motion-fast: 120ms;
+  --tb-motion-base: 220ms;
+  --tb-motion-slow: 380ms;
+  --tb-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* --- Layout --------------------------------------------------- */
+  --tb-max-width: 960px;
+  --tb-header-h: 64px;
+
+  /* --- Surface aliases ------------------------------------------ */
+  --tb-bg: var(--tb-paper);
+  --tb-bg-elev: var(--tb-paper-2);
+  --tb-text: var(--tb-ink);
+  --tb-text-soft: var(--tb-ink-soft);
+  --tb-border: var(--tb-line);
+}
+
+/* Dark theme is APP-CONTROLLED, NOT OS-controlled.
+ *
+ * Previously this lived under @media (prefers-color-scheme: dark),
+ * but that ties the rendered theme to the user's OS preference,
+ * which can interfere when the user wants the app in one mode
+ * regardless of system settings.
+ *
+ * The new contract: the inline <script> in <head> reads
+ * localStorage('tb-theme') and writes <html data-theme="dark|light">
+ * before any CSS paints. The toggle in the header header flips
+ * that value. The OS preference is ignored entirely.
+ */
+:root[data-theme="dark"] {
+  --tb-paper:    #14181F;
+  --tb-paper-2:  #1B212B;
+  --tb-ink:      #E9ECEF;
+  --tb-ink-soft: #A6B0BD;
+  --tb-line:     #2E3744;
+  --tb-navy:     #6FA0D6;
+  --tb-navy-soft:#3D6FA8;
+  --tb-slate:    #93A4B5;
+
+  --tb-track-sofa:     #6FA0D6;
+  --tb-track-veteran:  #6FAE83;
+  --tb-track-resident: #B6AC93;
+  --tb-track-family:   #C77E91;
+  --tb-track-property: #D29669;
+  --tb-track-tax:      #8AA8C8;
+  --tb-track-estate:   #A580A0;
+  --tb-track-ai:       #6FB099;
+  --tb-track-history:  #C4B392;
+  --tb-track-health:   #E08593;
+  --tb-track-fx:       #6FAEBE;
+  --tb-track-retire:   #D6B675;
+  --tb-track-share:    #8FA1BD;
+  --tb-track-consult:  #A98AB7;
+
+  --tb-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --tb-shadow-2: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --tb-shadow-3: 0 10px 30px rgba(0, 0, 0, 0.55);
+
+  --tb-bg: var(--tb-paper);
+  --tb-bg-elev: var(--tb-paper-2);
+  --tb-text: var(--tb-ink);
+  --tb-text-soft: var(--tb-ink-soft);
+  --tb-border: var(--tb-line);
+}

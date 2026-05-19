@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<!--
+  Standalone profile-picture exporter.
+
+  Double-click this file in Explorer / Finder to open in any browser
+  (works from file:// — no server, no install, no Node script). Each
+  variant has buttons for the common upload sizes:
+
+    400 × 400 — Ko-fi minimum recommended
+    800 × 800 — Buy Me a Coffee + general social default
+    1200 × 1200 — high-res / future-proof (Twitter, OG image)
+
+  How it works: the SVG source for each variant is embedded inline
+  below, painted onto an off-screen canvas at the requested size, then
+  exported as a PNG via canvas.toDataURL(). The download triggers via
+  a temporary <a download> click — works in every modern browser.
+
+  If you need a size that isn't on a button, type it in the custom
+  input box; both width and height are taken from a single value
+  (the source is square).
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Taigan Bridge — profile picture exporter</title>
+  <style>
+    :root {
+      --navy: #0E2A4F;
+      --cream: #FAF7EF;
+      --shu: #B7472A;
+      --shu-light: #D86948;
+      --border: #DCD5C4;
+      --text-soft: #5C6470;
+    }
+    body {
+      font-family: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+      max-width: 1100px; margin: 0 auto;
+      padding: 32px 24px; line-height: 1.55;
+      color: #14181F; background: var(--cream);
+    }
+    h1 { color: var(--navy); margin: 0 0 4px; font-size: 1.75rem; }
+    h2 { color: var(--navy); margin: 32px 0 8px; font-size: 1.25rem;
+         border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+    p { margin: 0 0 12px; color: var(--text-soft); }
+    .grid { display: grid; gap: 32px; grid-template-columns: 1fr 1fr; margin-top: 16px; }
+    @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+    .variant {
+      background: #fff; padding: 20px;
+      border: 1px solid var(--border); border-radius: 8px;
+    }
+    .variant h3 { margin: 0 0 12px; color: var(--navy); }
+    .preview {
+      width: 240px; height: 240px; margin: 0 auto 16px;
+      border-radius: 50%; overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    }
+    .preview-square {
+      width: 240px; height: 240px; margin: 0 auto 16px;
+      border: 1px solid var(--border);
+    }
+    .preview svg, .preview-square svg { width: 100%; height: 100%; display: block; }
+    .crop-toggle {
+      display: flex; gap: 8px; justify-content: center;
+      margin-bottom: 12px; font-size: 12px;
+    }
+    .crop-toggle button {
+      background: transparent; border: 1px solid var(--border);
+      border-radius: 999px; padding: 4px 10px; cursor: pointer;
+      color: var(--text-soft);
+    }
+    .crop-toggle button.active {
+      background: var(--navy); color: #fff; border-color: var(--navy);
+    }
+    .btn-row {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      justify-content: center; margin-bottom: 12px;
+    }
+    button.dl {
+      background: var(--navy); color: #fff; border: none;
+      padding: 8px 14px; border-radius: 4px; cursor: pointer;
+      font-size: 0.9rem; font-weight: 600;
+    }
+    button.dl:hover { background: #1A3D6E; }
+    .custom {
+      display: flex; gap: 6px; justify-content: center; align-items: center;
+      font-size: 0.85rem; color: var(--text-soft);
+    }
+    .custom input {
+      width: 80px; padding: 6px 8px;
+      border: 1px solid var(--border); border-radius: 4px;
+      font-family: monospace; text-align: center;
+    }
+    .footer {
+      margin-top: 40px; padding-top: 16px;
+      border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--text-soft);
+    }
+    code { background: rgba(14,42,79,0.06); padding: 1px 5px; border-radius: 3px; font-size: 0.85em; }
+  </style>
+</head>
+<body>
+  <h1>Taigan Bridge — profile picture exporter</h1>
+  <p>Two variants, three preset sizes each. Click a size button to
+     download a PNG ready for Ko-fi, Buy Me a Coffee, GitHub, etc.
+     The circular preview shows how it'll look after a typical
+     profile-pic circular crop.</p>
+
+  <div class="grid">
+    <!-- ─── Variant A: mark only ─────────────────────────────── -->
+    <div class="variant">
+      <h3>Mark only — best for small sizes</h3>
+      <p style="margin-bottom: 16px;">Use this when the platform
+         displays profile pics small (notification chips, comment
+         avatars, mentions). The bridge mark stays legible down to
+         32 px.</p>
+
+      <div class="crop-toggle">
+        <button type="button" data-target="markPreview" data-mode="circle">Circle crop</button>
+        <button type="button" data-target="markPreview" data-mode="square" class="active">Square</button>
+      </div>
+      <div id="markPreview" class="preview-square">
+        <svg id="svg-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
+          <rect width="800" height="800" fill="#0E2A4F"/>
+          <g transform="translate(106, 190) scale(7)">
+            <path d="M 9 38 Q 42 8 75 38" fill="none" stroke="#D86948" stroke-width="3.4" stroke-linecap="round"/>
+            <line x1="14" y1="38" x2="70" y2="38" stroke="#F7F4EC" stroke-width="1.4" stroke-linecap="round"/>
+            <rect x="12.5" y="38" width="3" height="13" fill="#F7F4EC"/>
+            <rect x="68.5" y="38" width="3" height="13" fill="#F7F4EC"/>
+            <path d="M 10.5 51 L 17 51 L 16 53.2 L 11.5 53.2 Z" fill="#F7F4EC"/>
+            <path d="M 67 51 L 73.5 51 L 72.5 53.2 L 68 53.2 Z" fill="#F7F4EC"/>
+            <line x1="3" y1="51" x2="81" y2="51" stroke="#F7F4EC" stroke-width="1.2" stroke-linecap="round" opacity="0.85"/>
+            <path d="M 9 51 Q 42 60 75 51" fill="none" stroke="#D86948" stroke-width="1" stroke-linecap="round" stroke-dasharray="2 2.5" opacity="0.55"/>
+            <line x1="22" y1="56" x2="34" y2="56" stroke="#F7F4EC" stroke-width="0.6" stroke-linecap="round" opacity="0.45"/>
+            <line x1="50" y1="56" x2="62" y2="56" stroke="#F7F4EC" stroke-width="0.6" stroke-linecap="round" opacity="0.45"/>
+            <line x1="36" y1="58.5" x2="48" y2="58.5" stroke="#F7F4EC" stroke-width="0.5" stroke-linecap="round" opacity="0.32"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="btn-row">
+        <button class="dl" data-source="svg-mark" data-size="400">⬇ 400 × 400</button>
+        <button class="dl" data-source="svg-mark" data-size="800">⬇ 800 × 800</button>
+        <button class="dl" data-source="svg-mark" data-size="1200">⬇ 1200 × 1200</button>
+      </div>
+      <div class="custom">
+        Custom: <input type="number" id="markCustom" value="512" min="32" max="4096" step="1"> px
+        <button class="dl" data-source="svg-mark" data-custom="markCustom">⬇</button>
+      </div>
+    </div>
+
+    <!-- ─── Variant B: with 対岸 characters ──────────────────── -->
+    <div class="variant">
+      <h3>With 対岸 — best for full-square display</h3>
+      <p style="margin-bottom: 16px;">Use this when the platform
+         shows the full square (Slack workspace icon, GitHub OG
+         image, larger profile cards). At 64 px+ the characters
+         become the recognition handle.</p>
+
+      <div class="crop-toggle">
+        <button type="button" data-target="jpPreview" data-mode="circle">Circle crop</button>
+        <button type="button" data-target="jpPreview" data-mode="square" class="active">Square</button>
+      </div>
+      <div id="jpPreview" class="preview-square">
+        <svg id="svg-jp" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
+          <rect width="800" height="800" fill="#0E2A4F"/>
+          <g transform="translate(148, 145) scale(6)">
+            <path d="M 9 38 Q 42 8 75 38" fill="none" stroke="#D86948" stroke-width="3.4" stroke-linecap="round"/>
+            <line x1="14" y1="38" x2="70" y2="38" stroke="#F7F4EC" stroke-width="1.4" stroke-linecap="round"/>
+            <rect x="12.5" y="38" width="3" height="13" fill="#F7F4EC"/>
+            <rect x="68.5" y="38" width="3" height="13" fill="#F7F4EC"/>
+            <path d="M 10.5 51 L 17 51 L 16 53.2 L 11.5 53.2 Z" fill="#F7F4EC"/>
+            <path d="M 67 51 L 73.5 51 L 72.5 53.2 L 68 53.2 Z" fill="#F7F4EC"/>
+            <line x1="3" y1="51" x2="81" y2="51" stroke="#F7F4EC" stroke-width="1.2" stroke-linecap="round" opacity="0.85"/>
+            <path d="M 9 51 Q 42 60 75 51" fill="none" stroke="#D86948" stroke-width="1" stroke-linecap="round" stroke-dasharray="2 2.5" opacity="0.55"/>
+            <line x1="22" y1="56" x2="34" y2="56" stroke="#F7F4EC" stroke-width="0.6" stroke-linecap="round" opacity="0.45"/>
+            <line x1="50" y1="56" x2="62" y2="56" stroke="#F7F4EC" stroke-width="0.6" stroke-linecap="round" opacity="0.45"/>
+            <line x1="36" y1="58.5" x2="48" y2="58.5" stroke="#F7F4EC" stroke-width="0.5" stroke-linecap="round" opacity="0.32"/>
+          </g>
+          <text x="400" y="685"
+                text-anchor="middle"
+                font-family="'Hiragino Mincho ProN', 'Hiragino Mincho Pro', 'Yu Mincho', 'YuMincho', 'MS Mincho', serif"
+                font-size="180" font-weight="600" letter-spacing="20"
+                fill="#F7F4EC">対岸</text>
+        </svg>
+      </div>
+
+      <div class="btn-row">
+        <button class="dl" data-source="svg-jp" data-size="400">⬇ 400 × 400</button>
+        <button class="dl" data-source="svg-jp" data-size="800">⬇ 800 × 800</button>
+        <button class="dl" data-source="svg-jp" data-size="1200">⬇ 1200 × 1200</button>
+      </div>
+      <div class="custom">
+        Custom: <input type="number" id="jpCustom" value="512" min="32" max="4096" step="1"> px
+        <button class="dl" data-source="svg-jp" data-custom="jpCustom">⬇</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <h2 style="margin-top: 0; border: none; font-size: 1rem;">Notes</h2>
+    <ul>
+      <li><strong>Ko-fi</strong> accepts PNG / JPG. They auto-crop to a circle on the public page but show a square in the dashboard.
+          Recommended upload: <code>400 × 400</code> or <code>800 × 800</code> PNG of the <em>mark-only</em> variant.</li>
+      <li><strong>Buy Me a Coffee</strong> displays a circle. Same recommendation.</li>
+      <li><strong>GitHub OG image / repo social preview</strong> wants <code>1280 × 640</code> — neither variant fits, but the
+          800 × 800 mark works in either corner of a custom OG image built elsewhere.</li>
+      <li><strong>Slack workspace icon</strong> shows the full square. Use the <em>対岸</em> variant at <code>512 × 512</code>.</li>
+      <li>For platforms that need a <strong>transparent background</strong>, use the SVG sources directly
+          (<code>src/assets/profile-pic.svg</code> / <code>profile-pic-jp.svg</code>) — most platforms accept SVG uploads.</li>
+    </ul>
+  </div>
+
+  <script>
+    // ─── Circle / square preview toggle ──────────────────────────
+    document.querySelectorAll('.crop-toggle button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.dataset.target;
+        const mode = btn.dataset.mode;
+        const target = document.getElementById(targetId);
+        if (!target) return;
+        target.className = mode === 'circle' ? 'preview' : 'preview-square';
+        // Toggle active state on this btn group
+        btn.parentElement.querySelectorAll('button').forEach((b) => {
+          b.classList.toggle('active', b === btn);
+        });
+      });
+    });
+
+    // ─── PNG export ──────────────────────────────────────────────
+    //
+    // Serialize the source SVG, paint to a canvas at the requested
+    // size, then download. Browsers handle the SVG → bitmap step
+    // natively via <img src="data:image/svg+xml;...">. Works on
+    // file:// in every modern browser.
+    function svgToPng(svgEl, size, filename) {
+      const xml = new XMLSerializer().serializeToString(svgEl);
+      const blob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        // White-fill underneath so JPEG-style platforms that flatten
+        // alpha to white don't get black corners. (Our SVG already
+        // has a navy background fill so the white never shows; this
+        // is belt-and-suspenders for edge-case rendering paths.)
+        ctx.fillStyle = '#0E2A4F';
+        ctx.fillRect(0, 0, size, size);
+        ctx.drawImage(img, 0, 0, size, size);
+        canvas.toBlob((png) => {
+          const pngUrl = URL.createObjectURL(png);
+          const a = document.createElement('a');
+          a.href = pngUrl;
+          a.download = filename;
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          URL.revokeObjectURL(pngUrl);
+          URL.revokeObjectURL(url);
+        }, 'image/png');
+      };
+      img.onerror = (err) => {
+        URL.revokeObjectURL(url);
+        alert('Render failed — try a different browser. Error: ' + (err.message || 'unknown'));
+      };
+      img.src = url;
+    }
+
+    document.querySelectorAll('button.dl').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const srcId = btn.dataset.source;
+        const svgEl = document.getElementById(srcId);
+        if (!svgEl) return;
+        let size;
+        if (btn.dataset.size) {
+          size = parseInt(btn.dataset.size, 10);
+        } else if (btn.dataset.custom) {
+          const input = document.getElementById(btn.dataset.custom);
+          size = parseInt(input.value, 10);
+          if (!isFinite(size) || size < 32 || size > 4096) {
+            alert('Pick a size between 32 and 4096.');
+            return;
+          }
+        }
+        const variant = srcId === 'svg-jp' ? 'taigan' : 'taigan-mark';
+        const filename = variant + '-' + size + '.png';
+        svgToPng(svgEl, size, filename);
+      });
+    });
+  </script>
+</body>
+</html>

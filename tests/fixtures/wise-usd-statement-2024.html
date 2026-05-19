@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Synthetic Wise USD Statement — Alex Tanaka — 2024</title>
+<!--
+  TEST FIXTURE — PURELY SYNTHETIC.
+  Not a real account. Not a real person. The brand "Wise" is a real
+  company but this statement is fabricated for testing the Taigan
+  Bridge FBAR upload feature.
+
+  Open in a browser, print to PDF (Ctrl+P → Save as PDF) OR take a
+  screenshot (Win+Shift+S). Upload via FBAR Tracker → Accounts →
+  ⬆ Upload bank document.
+
+  Expected extraction:
+    institution_name:    "Wise"
+    country:             "BE" or "GB" (Wise Europe SA / FCA — model's call)
+    currency:            "USD"
+    account_type:        "bank"
+    account_number:      "8311 2204 6573 9912" (Wise USD account)
+    account_holder:      "Alex Tanaka"
+    year:                2024
+    max_balance:         ~ $14,820.41 (March 2024)
+    threshold cross:     YES (well over $10,000)
+-->
+<style>
+  body {
+    margin: 0; padding: 32px;
+    background: #f4f7f5;
+    font-family: 'Inter', -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+    color: #0e0e0e; line-height: 1.45;
+  }
+  .doc {
+    width: 760px; margin: 0 auto;
+    background: #ffffff;
+    border: 1px solid #e2e8e3;
+    padding: 32px 40px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  }
+  .brand {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 2px solid #163300; padding-bottom: 16px; margin-bottom: 24px;
+  }
+  .brand-mark {
+    font-size: 32px; font-weight: 900;
+    color: #163300; letter-spacing: -0.03em;
+  }
+  .brand-mark .dot { color: #9fe870; }
+  .brand-meta {
+    text-align: right; font-size: 11px; color: #555;
+  }
+  h1 {
+    font-size: 22px; margin: 0 0 4px; color: #163300;
+  }
+  .subtitle { color: #555; font-size: 13px; margin-bottom: 20px; }
+  .info-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px;
+    background: #f4f7f5; padding: 16px 18px; border-radius: 8px;
+    margin-bottom: 24px; font-size: 13px;
+  }
+  .info-grid .label {
+    font-size: 10px; text-transform: uppercase; color: #6b7a6e;
+    letter-spacing: 0.06em; margin-bottom: 2px;
+  }
+  .info-grid .value { font-weight: 500; color: #0e0e0e; }
+  .info-grid .value.mono { font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 12px; }
+  h2 {
+    font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: #163300; border-bottom: 1px solid #d8e1d9; padding-bottom: 6px;
+    margin: 28px 0 12px;
+  }
+  table {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+  }
+  th, td {
+    padding: 8px 10px; border-bottom: 1px solid #e8eee9;
+    vertical-align: top; text-align: left;
+  }
+  th {
+    background: #f4f7f5; font-weight: 600; color: #4a5a4d;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  td.amt, th.amt { text-align: right; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 12px; }
+  td.in  { color: #2f7a3f; }
+  td.out { color: #9a3a2a; }
+  .total-row td {
+    border-top: 2px solid #163300; border-bottom: none;
+    font-weight: 700; padding-top: 10px;
+  }
+  .footer {
+    margin-top: 32px; padding-top: 16px; border-top: 1px solid #e8eee9;
+    font-size: 10px; color: #6b7a6e; line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="doc">
+  <div class="brand">
+    <div class="brand-mark">wise<span class="dot">.</span></div>
+    <div class="brand-meta">
+      Wise Payments Limited<br>
+      56 Shoreditch High Street, London E1 6JJ, UK<br>
+      Authorised by the FCA · Firm reference 900507
+    </div>
+  </div>
+
+  <h1>Account statement — USD balance</h1>
+  <div class="subtitle">For the period 1 January 2024 – 31 December 2024</div>
+
+  <div class="info-grid">
+    <div>
+      <div class="label">Account holder</div>
+      <div class="value">Alex Tanaka</div>
+    </div>
+    <div>
+      <div class="label">Profile reference</div>
+      <div class="value mono">P-31882471</div>
+    </div>
+    <div>
+      <div class="label">Currency</div>
+      <div class="value">USD — US Dollar</div>
+    </div>
+    <div>
+      <div class="label">Account number (ACH)</div>
+      <div class="value mono">8311 2204 6573 9912</div>
+    </div>
+    <div>
+      <div class="label">Routing number</div>
+      <div class="value mono">026073150</div>
+    </div>
+    <div>
+      <div class="label">Statement issued</div>
+      <div class="value">2025-01-08</div>
+    </div>
+  </div>
+
+  <h2>Transactions</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:90px">Date</th>
+        <th>Description</th>
+        <th class="amt" style="width:90px">In</th>
+        <th class="amt" style="width:90px">Out</th>
+        <th class="amt" style="width:110px">Balance</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>2024-01-01</td><td>Opening balance</td><td class="amt"></td><td class="amt"></td><td class="amt">$3,820.15</td></tr>
+      <tr><td>2024-01-12</td><td>Received from MITSUBISHI UFJ — JPY→USD conversion</td><td class="amt in">$2,418.00</td><td class="amt"></td><td class="amt">$6,238.15</td></tr>
+      <tr><td>2024-01-29</td><td>Card payment — Sakura Coffee Tokyo</td><td class="amt"></td><td class="amt out">$8.42</td><td class="amt">$6,229.73</td></tr>
+      <tr><td>2024-02-15</td><td>Received from PAYPAL — invoice #4471</td><td class="amt in">$3,200.00</td><td class="amt"></td><td class="amt">$9,429.73</td></tr>
+      <tr><td>2024-02-28</td><td>Sent to USAA Federal Savings — savings transfer</td><td class="amt"></td><td class="amt out">$1,500.00</td><td class="amt">$7,929.73</td></tr>
+      <tr><td>2024-03-08</td><td>Received from STRIPE — Q1 settlement</td><td class="amt in">$6,890.68</td><td class="amt"></td><td class="amt">$14,820.41</td></tr>
+      <tr><td>2024-03-22</td><td>Sent to NAVY FCU — emergency fund</td><td class="amt"></td><td class="amt out">$3,000.00</td><td class="amt">$11,820.41</td></tr>
+      <tr><td>2024-04-15</td><td>Received from STRIPE — invoice #4828</td><td class="amt in">$1,250.00</td><td class="amt"></td><td class="amt">$13,070.41</td></tr>
+      <tr><td>2024-05-02</td><td>Sent to Tokyo landlord — JPY conversion</td><td class="amt"></td><td class="amt out">$2,180.00</td><td class="amt">$10,890.41</td></tr>
+      <tr><td>2024-06-14</td><td>Received from STRIPE — Q2 settlement</td><td class="amt in">$4,210.00</td><td class="amt"></td><td class="amt">$15,100.41</td></tr>
+      <tr><td>2024-06-28</td><td>Sent to NAVY FCU</td><td class="amt"></td><td class="amt out">$5,000.00</td><td class="amt">$10,100.41</td></tr>
+      <tr><td>2024-07-19</td><td>Card payment — annual conference fee</td><td class="amt"></td><td class="amt out">$1,200.00</td><td class="amt">$8,900.41</td></tr>
+      <tr><td>2024-09-13</td><td>Received from STRIPE — Q3 settlement</td><td class="amt in">$3,890.00</td><td class="amt"></td><td class="amt">$12,790.41</td></tr>
+      <tr><td>2024-10-04</td><td>Sent to Sony Bank — JPY conversion</td><td class="amt"></td><td class="amt out">$2,400.00</td><td class="amt">$10,390.41</td></tr>
+      <tr><td>2024-11-22</td><td>Card payment — annual subscriptions</td><td class="amt"></td><td class="amt out">$840.50</td><td class="amt">$9,549.91</td></tr>
+      <tr><td>2024-12-15</td><td>Received from STRIPE — Q4 settlement</td><td class="amt in">$3,180.00</td><td class="amt"></td><td class="amt">$12,729.91</td></tr>
+      <tr><td>2024-12-31</td><td>Closing balance</td><td class="amt"></td><td class="amt"></td><td class="amt">$12,729.91</td></tr>
+      <tr class="total-row">
+        <td colspan="2">Year totals</td>
+        <td class="amt in">$25,038.68</td>
+        <td class="amt out">$16,128.92</td>
+        <td class="amt"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <strong>Highest balance during the period:</strong> $14,820.41 on 8 March 2024.<br>
+    This is a system-generated statement and does not require a signature. For questions about this statement, sign in to wise.com or contact support.
+    Wise is the trading name of Wise Payments Limited, registered in England and Wales (company no. 07209813), authorised by the Financial Conduct Authority under the Electronic Money Regulations 2011 (firm reference 900507) for the issuing of electronic money.
+  </div>
+</div>
+</body>
+</html>
