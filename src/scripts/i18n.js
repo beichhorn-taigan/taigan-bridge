@@ -36,6 +36,8 @@
       'overlay.tip.title':              'Buy me a coffee',
       'overlay.tip.intro':              'Taigan Bridge is free and ad-free. Tips fund the API costs that keep the AI-assisted features working and pay for the occasional professional review of cross-border tax and medical content.',
       'overlay.tip.where':              'Pick whichever platform you prefer — they all reach the same person:',
+      'overlay.tip.comingSoon.badge':   'Coming soon',
+      'overlay.tip.comingSoon.tooltip': 'Not yet available — pending GitHub Sponsors approval.',
       'overlay.tip.thanks':             'No tip is expected, ever. Thank you for using the tool.',
 
       // ─── Demo / sample-data mode ─────────────────────────────────
@@ -60,6 +62,7 @@
       'footer.license': 'License',
       'footer.changelog': "What's new",
       'footer.feedback': 'Send feedback',
+      'footer.tips': '☕ Tips',
       'footer.copyright': '© 2026 Benjamin Eichhorn. Free for personal use.',
       'lang.toggle': '日本語',
       'theme.toggleToDark': 'Switch to dark mode (independent of OS settings)',
@@ -4326,6 +4329,8 @@
       'overlay.tip.title':              'コーヒーをおごる',
       'overlay.tip.intro':              'Taigan Bridge は無料・広告なしでご利用いただけます。チップは AI 機能の API コストの維持と、国境を越える税務・医療コンテンツの専門家レビュー費用に充てさせていただきます。',
       'overlay.tip.where':              'どのサービスからでも同じ作者に届きます。お好みのものをお選びください:',
+      'overlay.tip.comingSoon.badge':   '準備中',
+      'overlay.tip.comingSoon.tooltip': '現在ご利用いただけません — GitHub Sponsors の承認待ちです。',
       'overlay.tip.thanks':             'チップは決して必須ではありません。本ツールをお使いいただきありがとうございます。',
 
       // ─── Demo / sample-data mode ─────────────────────────────────
@@ -4350,6 +4355,7 @@
       'footer.license': 'ライセンス',
       'footer.changelog': '更新履歴',
       'footer.feedback': 'フィードバック',
+      'footer.tips': '☕ チップ',
       'footer.copyright': '© 2026 Benjamin Eichhorn — 個人利用に限り無償。',
       'lang.toggle': 'English',
       'theme.toggleToDark': 'ダークモードに切り替え(OS 設定に依存しません)',

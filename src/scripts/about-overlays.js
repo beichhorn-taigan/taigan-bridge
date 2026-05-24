@@ -23,21 +23,15 @@
 
   // ─── Tip jar config ────────────────────────────────────────────────
   // Hard-coded here rather than in i18n — these are URLs, not
-  // translatable strings. All three platforms reach the same person;
-  // the user picks whichever flow they prefer. GitHub Sponsors leads
-  // because the project is hosted on GitHub and many visitors will
-  // already be signed in there. The BMaC handle is case-sensitive
-  // in the URL ("TaiganBridge"); Ko-fi's is not.
+  // translatable strings. Ko-fi + BMaC are the active platforms (both
+  // are live and accepting tips). GitHub Sponsors is listed last with
+  // `comingSoon: true` because the application is pending GitHub
+  // approval; when that lands, flip the flag to false (and that's it
+  // — the entry then renders as a normal active link).
+  //
+  // BMaC handle is case-sensitive in the URL ("TaiganBridge"); Ko-fi's
+  // is not. GitHub handle matches the repo owner.
   const TIP_LINKS = [
-    {
-      id: 'github',
-      label_en: 'GitHub Sponsors (monthly or one-time)',
-      label_jp: 'GitHub Sponsors(月額・一回いずれも可)',
-      url: 'https://github.com/sponsors/beichhorn-taigan',
-      icon: '💖',
-      desc_en: 'Best fit if you already have a GitHub account. Supports recurring monthly or one-time. Same person as the repo owner.',
-      desc_jp: 'GitHub アカウントをお持ちの方に最適。月額継続・一回限りどちらも可能。リポジトリ所有者と同一人物に届きます。',
-    },
     {
       id: 'kofi',
       label_en: 'Ko-fi (one-time tip, no signup)',
@@ -55,6 +49,16 @@
       icon: '🥐',
       desc_en: 'Same idea as Ko-fi — pick whichever you prefer.',
       desc_jp: 'Ko-fi と同じ仕組み。お好みでどうぞ。',
+    },
+    {
+      id: 'github',
+      label_en: 'GitHub Sponsors (monthly or one-time)',
+      label_jp: 'GitHub Sponsors(月額・一回いずれも可)',
+      url: 'https://github.com/sponsors/beichhorn-taigan',
+      icon: '💖',
+      desc_en: 'Pending GitHub approval. Will support recurring monthly or one-time, best fit if you already have a GitHub account.',
+      desc_jp: 'GitHub の承認待ちです。承認後は月額継続・一回限りどちらも可能になります(GitHub アカウントをお持ちの方に最適)。',
+      comingSoon: true,
     },
   ];
 
@@ -344,6 +348,39 @@
         TIP_LINKS.forEach((tip) => {
           const label = lang === 'ja' ? tip.label_jp : tip.label_en;
           const desc = lang === 'ja' ? tip.desc_jp : tip.desc_en;
+          // Coming-soon entries (GitHub Sponsors pending approval)
+          // render as a non-clickable card with a "COMING SOON" pill
+          // so the user sees the option is on the way but can't click
+          // through to a non-functional link. When approval lands,
+          // remove `comingSoon: true` from the TIP_LINKS entry — no
+          // other changes needed.
+          if (tip.comingSoon) {
+            list.appendChild(el('div', {
+              style: {
+                display: 'block', padding: 'var(--tb-sp-2) var(--tb-sp-3)',
+                background: 'var(--tb-bg)', borderRadius: 'var(--tb-radius-1)',
+                borderLeft: '3px solid var(--tb-border)',
+                color: 'var(--tb-text-soft)',
+                opacity: '0.65', cursor: 'not-allowed',
+              },
+              title: t('overlay.tip.comingSoon.tooltip'),
+            },
+              el('div', { style: { fontWeight: '600',
+                display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
+                el('span', null, tip.icon + ' ' + label),
+                el('span', {
+                  style: {
+                    fontSize: '10px', fontWeight: '700',
+                    letterSpacing: '0.08em', textTransform: 'uppercase',
+                    padding: '2px 8px', borderRadius: '999px',
+                    background: 'var(--tb-warn, #B97A1A)', color: '#fff',
+                  },
+                }, t('overlay.tip.comingSoon.badge')),
+              ),
+              el('div', { class: 'tb-card-meta', style: { marginTop: '2px' } }, desc),
+            ));
+            return;
+          }
           list.appendChild(el('a', {
             href: tip.url,
             target: '_blank',

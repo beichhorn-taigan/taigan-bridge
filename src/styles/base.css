@@ -334,6 +334,22 @@ code, pre, kbd {
   letter-spacing: 0.04em;
 }
 
+/* Tips link in the footer — slightly emphasized so it reads as a
+   call to action without dominating the row. Uses the same
+   navy-on-cream as primary buttons but at small footer size. */
+.tb-footer a.tb-footer-tip {
+  color: var(--tb-navy, #0E2A4F);
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(14, 42, 79, 0.06);
+  transition: background 0.15s ease;
+}
+.tb-footer a.tb-footer-tip:hover {
+  background: rgba(14, 42, 79, 0.14);
+  text-decoration: none;
+}
+
 /* --- Mobile / responsive ------------------------------------------- */
 
 /* Tablet — most important breakpoint for reduced padding + font scale.
