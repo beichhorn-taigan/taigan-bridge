@@ -31,13 +31,35 @@ stays on your machine.
    Edge / Firefox the URL will look like `file:///C:/…` or
    `file:///Users/…`.
 
-### Try-instantly path — Hosted demo
+### Try-instantly path — Hosted demo (look, don't live in it)
 
 If you'd rather poke around before downloading, the latest build is
 hosted as a static page at
-**[beichhorn-taigan.github.io/taigan-bridge](https://beichhorn-taigan.github.io/taigan-bridge)** (if the
-GitHub Pages site is live for the current release). Your data still
-stays in your browser — the host has no backend.
+**[beichhorn-taigan.github.io/taigan-bridge](https://beichhorn-taigan.github.io/taigan-bridge)**
+(when GitHub Pages is live for the current release).
+
+**The hosted version is a guided tour, not a workspace.** When you
+open it you'll land inside a pre-loaded sample household (the SOFA
+profile) and a red "LIVE DEMO" banner sits across the top of every
+page. The demo exists so you can click through the modules — net
+worth, FBAR, retirement, tax — and decide whether the app is worth
+the two-minute download. It is **not** a place to enter your real
+financial information:
+
+- Any onboarding info you type gets overwritten the next time you
+  refresh, because the page re-seeds the sample profile.
+- You're sharing localStorage with whatever the browser remembers
+  from `github.io` — not a great neighborhood for account numbers,
+  balances, or `マイナンバー`.
+- I (the author) don't run a backend, but I also can't promise the
+  hosted build stays at any particular version, or that I won't
+  redeploy it tomorrow and wipe your draft.
+
+When you're ready to actually use the tool, follow the **Stable
+path** above to download `taigan-bridge.html` and open it from your
+own disk. Same code, but it's yours — the browser treats `file://`
+as a separate origin, your data never sees the hosted version, and
+nothing gets overwritten on you.
 
 ### Developer path — Clone and build
 

@@ -219,6 +219,18 @@
        records. -->
   <script src="scripts/sample-data.js"></script>
 
+  <!-- Hosted-demo detector. No-op when the page is opened via
+       file:// (the intended-for-real-use download mode). When the
+       page is served from a non-file:// origin (e.g., GitHub Pages
+       at beichhorn-taigan.github.io/taigan-bridge), this:
+         1. Pins a red "LIVE DEMO — download for your own data"
+            banner at the very top of every page
+         2. Auto-loads the SOFA sample profile on first visit so
+            users land on a populated state and can't accidentally
+            start entering real info into a copy they don't own
+       Must load AFTER sample-data.js so TB.sampleData is available. -->
+  <script src="scripts/hosted-demo.js"></script>
+
   <!-- App boot. Lives inline because it's the glue between all of
        the above and isn't worth its own file. -->
   <script>
