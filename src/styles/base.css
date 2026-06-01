@@ -250,6 +250,81 @@ code, pre, kbd {
   text-decoration: none;
 }
 
+/* Inserted by update-check.js when a newer release has been
+   detected on github.io. Sits BELOW the disclaimer banner in
+   document order — NOT sticky, so it scrolls away with the page
+   (lower-stakes notice than the disclaimer/tamper/hosted bars).
+   Neutral accent-blue so it reads as informational, not alarming.
+   Dismissable per-version. */
+.tb-update-banner {
+  background: rgba(53, 99, 144, 0.10);
+  border: 1px solid rgba(53, 99, 144, 0.30);
+  border-left: 4px solid var(--tb-accent, #356390);
+  color: var(--tb-text, #1f1f1f);
+  padding: 10px 16px;
+  margin: 10px auto;
+  max-width: var(--tb-max-width, 1100px);
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.tb-update-banner__icon {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--tb-accent, #356390);
+  flex: 0 0 auto;
+}
+.tb-update-banner__body { flex: 1 1 320px; }
+.tb-update-banner__body strong { font-weight: 700; margin-right: 4px; }
+.tb-update-banner__meta {
+  color: var(--tb-text-soft, #6b6b6b);
+  font-size: 12px;
+  margin-left: 4px;
+}
+.tb-update-banner__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+}
+.tb-update-banner__cta {
+  background: var(--tb-accent, #356390);
+  color: #fff !important;
+  padding: 6px 14px;
+  border-radius: 999px;
+  text-decoration: none !important;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+.tb-update-banner__cta:hover {
+  transform: translateY(-1px);
+  background: var(--tb-accent-deep, #2a4f74);
+  text-decoration: none;
+}
+.tb-update-banner__dismiss {
+  background: transparent;
+  border: 1px solid rgba(0,0,0,0.18);
+  color: var(--tb-text-soft, #6b6b6b);
+  padding: 5px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.tb-update-banner__dismiss:hover {
+  background: rgba(0,0,0,0.06);
+  color: var(--tb-text, #1f1f1f);
+}
+
 /* Inserted by sample-data.js whenever the loaded state carries the
    _demo marker. Sticky strip across the top of the page that makes
    it impossible to confuse the fictional household with real data

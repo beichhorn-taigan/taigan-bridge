@@ -27,6 +27,7 @@
     container.appendChild(buildFxRatesCard());
     container.appendChild(buildAccessibilityCard());
     container.appendChild(buildLanguageCard());
+    container.appendChild(buildUpdateCheckCard());
     container.appendChild(buildBackupCard());
     container.appendChild(buildDemoDataCard());
     container.appendChild(buildDangerCard());
@@ -1652,6 +1653,137 @@
         }),
       ),
     );
+  }
+
+  // Update-check preferences. Lets the user opt in/out of the daily
+  // GitHub release check and trigger a one-shot manual check. See
+  // src/scripts/update-check.js for the underlying logic. No-op
+  // visually on the hosted demo (the demo is always the latest by
+  // definition, so the card would just confuse).
+  function buildUpdateCheckCard() {
+    const el = TB.utils.el;
+    const t = TB.i18n.t;
+
+    // Hide entirely on the hosted preview.
+    if (window.TB && TB.hostedDemo && TB.hostedDemo.isHostedDemo && TB.hostedDemo.isHostedDemo()) {
+      return el('div', { style: { display: 'none' } });
+    }
+
+    const uc = window.TB && TB.updateCheck;
+    const state = (uc && uc.getState && uc.getState()) || {};
+    const localVersion = (uc && uc._getLocalVersion && uc._getLocalVersion()) ||
+                          (document.querySelector('meta[name="tb-version"]')?.content || '');
+    const releasesUrl = (uc && uc._RELEASES_URL) ||
+                        'https://github.com/beichhorn-taigan/taigan-bridge/releases/latest';
+    const enabled = !!state.enabled;
+    const hasConsented = state.consented === true || state.consented === false;
+
+    const card = el('div', { class: 'tb-card', 'data-track': 'core' });
+    card.appendChild(el('h2', null, '⬆ ' + t('updateCheck.settings.title')));
+    card.appendChild(el('p', { class: 'tb-card-meta', style: { marginBottom: 'var(--tb-sp-3)' } },
+      t('updateCheck.settings.help')));
+
+    card.appendChild(el('div', { class: 'tb-field-help', style: { marginBottom: 'var(--tb-sp-3)' } },
+      t('updateCheck.settings.currentVersion', { version: localVersion || '?' })));
+
+    // Toggle row — uses the same toggleRow helper as the a11y card.
+    card.appendChild(toggleRow(
+      t('updateCheck.settings.toggle'),
+      t('updateCheck.settings.toggleHelp'),
+      enabled,
+      (next) => {
+        const cur = (TB.state.get('settings.updateCheck')) || {};
+        TB.state.set('settings.updateCheck', Object.assign({}, cur, {
+          enabled: next,
+          // First time the user touches this toggle from Settings,
+          // count it as consent — they've clearly understood there
+          // is a thing to opt into.
+          consented: true,
+        }));
+        rerender();
+      },
+    ));
+
+    // Status row: last-checked + last-error (if any).
+    const lastChecked = state.lastCheckedAt
+      ? new Date(state.lastCheckedAt).toLocaleString()
+      : null;
+    card.appendChild(el('div', {
+      class: 'tb-field-help',
+      style: { marginTop: 'var(--tb-sp-3)' },
+    }, lastChecked
+        ? t('updateCheck.settings.lastChecked', { when: lastChecked })
+        : t('updateCheck.settings.lastCheckedNever')));
+
+    // If a newer version is known, surface it inline too. The banner
+    // up top is the primary surface, but a Settings line is helpful
+    // for users who dismissed it and now want to find the link again.
+    if (uc && uc.isNewer && state.lastSeenVersion &&
+        uc.isNewer(state.lastSeenVersion, localVersion)) {
+      card.appendChild(el('div', {
+        class: 'tb-field-help',
+        style: {
+          marginTop: 'var(--tb-sp-2)',
+          color: 'var(--tb-accent, #356390)',
+          fontWeight: 600,
+        },
+      }, t('updateCheck.settings.newer', { version: state.lastSeenVersion })));
+    } else if (state.lastCheckedAt && localVersion) {
+      // We've checked at least once and we're not behind.
+      card.appendChild(el('div', {
+        class: 'tb-field-help',
+        style: { marginTop: 'var(--tb-sp-2)', color: 'var(--tb-text-soft)' },
+      }, t('updateCheck.settings.upToDate', { version: localVersion })));
+    }
+
+    if (state.lastError) {
+      card.appendChild(el('div', {
+        class: 'tb-field-help',
+        style: {
+          marginTop: 'var(--tb-sp-2)',
+          color: 'var(--tb-warn, #B97A1A)',
+        },
+      }, t('updateCheck.settings.error', { error: state.lastError })));
+    }
+
+    // Buttons: Check now + open releases page in browser.
+    const checkBtn = el('button', {
+      class: 'tb-btn', type: 'button',
+      onclick: () => {
+        if (!uc || !uc.checkNow) return;
+        checkBtn.disabled = true;
+        const originalText = checkBtn.textContent;
+        checkBtn.textContent = t('updateCheck.toast.checking');
+        uc.checkNow().then(() => {
+          rerender();
+        }).catch(() => {
+          rerender();
+        }).then(() => {
+          // rerender replaces the DOM so the disabled state resets
+          // automatically; if rerender didn't fire (unlikely), at
+          // least restore the button text.
+          if (document.body.contains(checkBtn)) {
+            checkBtn.disabled = false;
+            checkBtn.textContent = originalText;
+          }
+        });
+      },
+    }, '🔄 ' + t('updateCheck.settings.checkNow'));
+
+    card.appendChild(el('div', {
+      class: 'tb-btn-row',
+      style: { marginTop: 'var(--tb-sp-3)', gap: '10px', flexWrap: 'wrap' },
+    },
+      checkBtn,
+      el('a', {
+        class: 'tb-btn tb-btn--secondary',
+        href: releasesUrl,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+      }, '↗ ' + t('updateCheck.settings.releasesLink')),
+    ));
+
+    return card;
   }
 
   function buildBackupCard() {

@@ -231,6 +231,18 @@
        Must load AFTER sample-data.js so TB.sampleData is available. -->
   <script src="scripts/hosted-demo.js"></script>
 
+  <!-- New-release detector. On non-hosted installs (file:// or local
+       http://), opt-in (one-time consent prompt), then checks at
+       most once per 24h whether a newer release is published on
+       github.io/taigan-bridge/version.js. Uses cross-origin <script>
+       injection (not fetch) so it works from file:// where Chrome
+       blocks all cross-origin XHR. Shows an inline blue banner under
+       the disclaimer when an update is available, dismissable per-
+       version. Skipped entirely on the hosted preview (which is, by
+       definition, always the latest). Must load AFTER hosted-demo.js
+       so TB.hostedDemo.isHostedDemo() is available for the gate. -->
+  <script src="scripts/update-check.js"></script>
+
   <!-- App boot. Lives inline because it's the glue between all of
        the above and isn't worth its own file. -->
   <script>
