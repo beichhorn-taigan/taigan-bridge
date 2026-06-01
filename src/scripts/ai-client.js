@@ -4,10 +4,11 @@
  * it's stored only in localStorage and used for direct calls from the
  * browser to api.anthropic.com.
  *
- * v0.1: callClaude returns a placeholder response so module UIs that
- * depend on AI features can render without surprises. The real network
- * call is implemented but gated — you must explicitly opt in by passing
- * { live: true } until v0.2 wires it into actual modules.
+ * callClaude is the single entry point. A real network call only happens
+ * when the caller passes { live: true }; without it, callClaude returns a
+ * deterministic stub. This is a deliberate guardrail so a caller that
+ * forgets the flag can never silently spend the user's money — every
+ * module that wants a real answer opts in explicitly.
  */
 
 (function () {
@@ -587,14 +588,16 @@
     setCredits(c);
   }
 
-  // Placeholder — used by v0.1 module shells. Returns deterministic
-  // text so test UIs don't flicker between renders.
+  // Returned when callClaude is invoked without { live: true }. This is
+  // the no-spend guardrail path: deterministic text, zero tokens, no
+  // network call. A caller seeing this in production has forgotten to
+  // pass { live: true }.
   function placeholderResponse(prompt) {
     return {
       role: 'assistant',
       content: [{
         type: 'text',
-        text: '[AI placeholder response — wire callClaude({live: true}) in v0.2.]\n\n' +
+        text: '[No live AI call — callClaude was invoked without { live: true }.]\n\n' +
               'Prompt received: ' + (prompt || '').slice(0, 200) +
               ((prompt || '').length > 200 ? '…' : ''),
       }],
@@ -604,9 +607,8 @@
     };
   }
 
-  // Real Claude API call. Gated behind an explicit { live: true } flag
-  // for v0.1 so we don't accidentally bill the user during scaffold
-  // testing. Modules planning to use this must check hasKey() first
+  // Real Claude API call. Reached only via callClaude({ live: true }) so
+  // we never bill the user by accident. Callers must check hasKey() first
   // and surface a friendly "add your key in Settings" message if not.
   async function callClaudeLive({ system, messages, model, maxTokens, temperature, feature }) {
     if (!hasKey()) {

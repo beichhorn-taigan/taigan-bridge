@@ -3052,8 +3052,6 @@
       'settings.danger.do': 'Delete everything',
       'settings.danger.confirm': 'Are you sure? This cannot be undone.',
       'settings.danger.confirm2': 'Truly sure? Type DELETE to confirm.',
-      'modules.coming-soon': 'Coming soon',
-      'modules.coming-soon.body': 'This module is part of the v1 roadmap. The placeholder is here so the dashboard layout matches the final shape.',
 
       // ----- SOFA Roth Sequencing Planner (v0.3.x) ----------------
       'sofa.title': 'SOFA Roth Sequencing Planner',
@@ -7361,8 +7359,6 @@
       'settings.danger.do': 'すべて削除',
       'settings.danger.confirm': '本当に削除しますか?元に戻せません。',
       'settings.danger.confirm2': '本当によろしいですか?確認のため DELETE と入力してください。',
-      'modules.coming-soon': '準備中',
-      'modules.coming-soon.body': 'このモジュールは v1 のロードマップに含まれます。最終的なレイアウトに合わせて、現在はプレースホルダーを表示しています。',
 
       // ----- SOFA Roth シーケンス・プランナー (v0.3.x) ------------
       'sofa.title': 'SOFA Roth シーケンス・プランナー',

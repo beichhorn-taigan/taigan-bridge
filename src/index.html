@@ -1063,7 +1063,7 @@
       // The set of always-unlocked modules has grown over releases;
       // re-run track assignment against the stored answers so
       // returning users see modules that didn't exist when they
-      // first onboarded (e.g., FBAR added in v0.2).
+      // first onboarded (relevant when future releases add modules).
       const onboarded = TB.state.get('onboarding.complete');
       if (onboarded) {
         const answers = TB.state.get('onboarding.answers') || {};
