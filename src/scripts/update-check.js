@@ -11,11 +11,13 @@
  *                github.io, but silently fails for ~90% of real users.
  *
  *   Workaround:  cross-origin <script src=...> tags ARE allowed even
- *                from file://. We host a tiny version.js next to the
- *                hosted preview (beichhorn-taigan.github.io/taigan-
- *                bridge/version.js) that just assigns a payload object
- *                onto a global. The runtime injects a <script> tag,
- *                waits for onload, and reads the payload back.
+ *                from file://. We publish a tiny version.js (built to
+ *                the repo root, committed + tagged each release) and
+ *                serve it via jsDelivr from the latest tag. It just
+ *                assigns a payload object onto a global. The runtime
+ *                injects a <script> tag, waits for onload, and reads
+ *                the payload back. Bonus: jsDelivr's public hit stats
+ *                give a coarse, anonymous active-install count.
  *
  * Privacy:
  *   - Off by default until the user answers a one-time consent
@@ -57,10 +59,21 @@
   // ─── Constants ─────────────────────────────────────────────────────
   const STATE_NS = 'settings.updateCheck';
   const RELEASES_URL = 'https://github.com/beichhorn-taigan/taigan-bridge/releases/latest';
-  // Where version.js lives. The GitHub Pages workflow publishes the
-  // entire dist/ folder, and build.js writes dist/version.js, so this
-  // URL stays in sync with the hosted preview's version automatically.
-  const VERSION_URL = 'https://beichhorn-taigan.github.io/taigan-bridge/version.js';
+  // Where version.js lives. Served by jsDelivr from the LATEST release
+  // tag (build.js writes version.js at the repo root; it's committed
+  // and tagged with each release). Two reasons for jsDelivr over
+  // GitHub Pages:
+  //   1. jsDelivr publishes public, aggregate hit statistics
+  //      (https://data.jsdelivr.com/v1/stats/packages/gh/<owner>/<repo>),
+  //      giving a coarse, anonymous active-install signal — no PII,
+  //      no backend, no cookies.
+  //   2. @latest resolves to the newest semver tag, which is exactly
+  //      the version we want to advertise (and matches the
+  //      releases/latest download link).
+  // Caveat: jsDelivr caches @latest aliases (revalidated; up to ~7d
+  // worst case), so a brand-new release can take a little while to be
+  // announced to existing installs. Fine for occasional releases.
+  const VERSION_URL = 'https://cdn.jsdelivr.net/gh/beichhorn-taigan/taigan-bridge@latest/version.js';
   // 24h between auto-checks (manual "Check now" bypasses this).
   const AUTO_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
   // Payload schema the runtime understands. Bump if the version.js

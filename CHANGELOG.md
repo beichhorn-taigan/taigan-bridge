@@ -2,7 +2,7 @@
 
 All notable changes to Taigan Bridge will be documented in this file.
 
-## [1.0.0] — 2026-05-16 — Initial release
+## [1.0.0] — 2026-06-01 — Initial release
 
 The first public release of Taigan Bridge — a single-file financial,
 tax, estate, and health planning organizer for U.S. persons living in
@@ -141,13 +141,46 @@ Japan. Everything below ships in this build.
 - **Daily spend cap** (default $5 / day, configurable) prevents
   runaway costs from stuck loops.
 
+### Distribution & updates
+
+- **GitHub Releases as the official channel.** Each release attaches
+  a single `taigan-bridge-vX.Y.Z.html` you download and open from
+  your own disk.
+- **Hosted demo, clearly fenced.** A static preview is published to
+  GitHub Pages for try-before-you-download. When the app detects it's
+  running from a non-`file://` origin it pins a red "LIVE DEMO"
+  banner, auto-loads a fictional sample household, and re-seeds it on
+  refresh — so the shared preview can't be mistaken for your private
+  copy, and nobody accidentally enters real data into it. The demo
+  behavior is a complete no-op when you open your downloaded file.
+- **Opt-in update notifications.** A downloaded copy can check once
+  per day whether a newer release has shipped and surface a
+  dismissable banner with a download link. Off until you say yes via
+  a one-time consent prompt; togglable anytime under Settings →
+  Updates; never auto-updates anything — you always download and
+  replace the file yourself. See the Privacy note for exactly what
+  the check sends.
+- **Support the project (optional).** A footer "Tips" link and an
+  About-page chooser point to Ko-fi and Buy Me a Coffee. No tip is
+  ever expected or required; every feature works the same regardless.
+
 ### Privacy
 
 - No analytics. No telemetry. No tracking pixels. No fonts loaded
-  from a CDN. Zero outbound network requests at boot.
-- Optional outbound calls only on explicit user action: Treasury
-  / live FX rate fetches (no PII), Claude API calls (your key,
-  your prompts).
+  from a CDN. No outbound network requests at boot on a fresh install.
+- Optional outbound calls only on explicit user action or opt-in:
+  Treasury / live FX rate fetches (no PII), Claude API calls (your
+  key, your prompts), and — only if you enable it — the daily update
+  check.
+- **Update-check disclosure.** If you opt into update checks
+  (Settings → Updates, off by default), the app fetches a small static
+  `version.js` via the jsDelivr CDN at most once per day. The request
+  sends nothing about you — no account, no usage data, no identifying
+  query parameters. Because jsDelivr publishes aggregate, anonymous
+  hit counts for public files, the author can see a coarse tally of
+  how many installs check for updates. That is the only usage signal
+  that exists anywhere in the app; it is opt-in and carries no
+  identifying information. Turn the toggle off and even that stops.
 - Forensic build identifiers and canary markers embedded in the
   distribution for the purpose of identifying unauthorized copies.
 

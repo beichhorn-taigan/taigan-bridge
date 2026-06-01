@@ -3,7 +3,7 @@
 **Financial, tax, estate, and health planning for Americans on the
 opposite shore.**
 
-[![Version](https://img.shields.io/badge/version-0.1.0-0E2A4F)](https://github.com/beichhorn-taigan/taigan-bridge/releases)
+[![Version](https://img.shields.io/badge/version-1.0.0-0E2A4F)](https://github.com/beichhorn-taigan/taigan-bridge/releases)
 [![License](https://img.shields.io/badge/license-Personal%20Use-B7472A)](LICENSE.md)
 [![Built for](https://img.shields.io/badge/built%20for-Americans%20in%20Japan-D86948)](#)
 [![Bilingual](https://img.shields.io/badge/bilingual-EN%20%2F%20JP-2F6F4E)](#)
