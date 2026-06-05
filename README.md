@@ -179,8 +179,9 @@ your situation:
   there is nothing to find.
 - **Hosted demo is the one exception.** The public preview at
   `beichhorn-taigan.github.io` loads GoatCounter — a privacy-friendly,
-  cookieless analytics service — to count aggregate page views. It sets
-  no cookies, collects no personal data, and does no cross-site
+  cookieless analytics service — to count aggregate page views and clicks
+  on the download link. It sets no cookies, collects no personal data,
+  and does no cross-site
   tracking; any ad-blocker blocks it entirely. The snippet is injected
   only into the hosted copy at deploy time and is **never** present in
   the file you download.

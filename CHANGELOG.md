@@ -12,8 +12,9 @@ All notable changes to Taigan Bridge will be documented in this file.
   can't paste a real API key or load real data into a copy they don't
   own.
 - **Privacy-friendly demo analytics.** The public demo loads GoatCounter
-  (cookieless, no personal data, aggregate page-view counts only) so the
-  author can gauge interest. The snippet is injected only into the GitHub
+  (cookieless, no personal data; aggregate page views plus a count of
+  download-link clicks) so the author can gauge interest. The snippet is
+  injected only into the GitHub
   Pages copy at deploy time; the downloaded / release build contains no
   analytics code whatsoever, and any ad-blocker blocks it. See Privacy.
 

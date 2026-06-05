@@ -9,9 +9,10 @@
  *
  * Privacy-friendly by design: GoatCounter sets no cookies, collects no
  * personal data, and does no cross-site tracking — it records aggregate
- * pageview counts only. The injected snippet is additionally gated to the
- * official demo hostname, so a mirror of the page can't report to our
- * account.
+ * pageview counts plus a tally of clicks on the "Download for your own
+ * data" link (an anonymous event, no personal data). The injected snippet
+ * is additionally gated to the official demo hostname, so a mirror of the
+ * page can't report to our account.
  *
  * Usage:  node tools/inject-demo-analytics.js <path-to-html>
  *
@@ -31,7 +32,7 @@ const SNIPPET = [
   '<!-- Hosted-demo analytics (GoatCounter) — injected only into the GitHub',
   '     Pages copy by tools/inject-demo-analytics.js; never in the download.',
   '     No cookies, no personal data, no cross-site tracking; aggregate',
-  '     pageview counts only. Gated to the official demo host below. -->',
+  '     pageviews + a count of download-link clicks. Gated to the demo host. -->',
   '<script>',
   '  (function () {',
   "    if (location.hostname !== '" + DEMO_HOST + "') return;",
@@ -40,6 +41,20 @@ const SNIPPET = [
   "    gc.src = '//gc.zgo.at/count.js';",
   "    gc.setAttribute('data-goatcounter', '" + GC_ENDPOINT + "');",
   '    document.body.appendChild(gc);',
+  '    // Count clicks on any "Download for your own data" link (top banner',
+  '    // or the Settings card). Delegated, so it also catches links that',
+  '    // are rendered after this script runs.',
+  "    document.addEventListener('click', function (e) {",
+  '      var a = e.target && e.target.closest && e.target.closest(\'a[href*="/releases"]\');',
+  '      if (!a) return;',
+  "      if (window.goatcounter && typeof window.goatcounter.count === 'function') {",
+  '        window.goatcounter.count({',
+  "          path: 'download-cta',",
+  "          title: 'Download for your own data',",
+  '          event: true,',
+  '        });',
+  '      }',
+  '    });',
   '  })();',
   '</script>',
 ].join('\n');

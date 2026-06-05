@@ -13,7 +13,7 @@
   "schema": 1,
   "stable": "1.0.0",
   "date": "2026-06-05",
-  "buildHash": "9e680a60",
+  "buildHash": "6e42cc4c",
   "url": "https://github.com/beichhorn-taigan/taigan-bridge/releases/latest",
   "notes": null,
   "beta": null
