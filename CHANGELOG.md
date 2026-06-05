@@ -2,6 +2,21 @@
 
 All notable changes to Taigan Bridge will be documented in this file.
 
+## [Unreleased]
+
+### Hosted demo hardening
+
+- **Locked down the live demo.** On the hosted preview only (never on a
+  downloaded copy), the Settings API-key field is disabled, AI calls are
+  blocked at the client, and backup restore is turned off — so a visitor
+  can't paste a real API key or load real data into a copy they don't
+  own.
+- **Privacy-friendly demo analytics.** The public demo loads GoatCounter
+  (cookieless, no personal data, aggregate page-view counts only) so the
+  author can gauge interest. The snippet is injected only into the GitHub
+  Pages copy at deploy time; the downloaded / release build contains no
+  analytics code whatsoever, and any ad-blocker blocks it. See Privacy.
+
 ## [1.0.0] — 2026-06-01 — Initial release
 
 The first public release of Taigan Bridge — a single-file financial,

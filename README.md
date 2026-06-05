@@ -174,8 +174,16 @@ your situation:
 ## Privacy
 
 - **Local-only.** Every record lives in your browser's
-  `localStorage`. The author has no analytics, no telemetry, no
-  tracking pixels, no fonts loaded from a CDN.
+  `localStorage`. The downloaded app has no analytics, no telemetry, no
+  tracking pixels, and no fonts loaded from a CDN — search the file and
+  there is nothing to find.
+- **Hosted demo is the one exception.** The public preview at
+  `beichhorn-taigan.github.io` loads GoatCounter — a privacy-friendly,
+  cookieless analytics service — to count aggregate page views. It sets
+  no cookies, collects no personal data, and does no cross-site
+  tracking; any ad-blocker blocks it entirely. The snippet is injected
+  only into the hosted copy at deploy time and is **never** present in
+  the file you download.
 - **Zero outbound traffic at boot.** No "phone home" on startup.
 - **Optional outbound calls** happen only on explicit user action:
   the live USD/JPY rate fetch (no PII), the Treasury quarterly

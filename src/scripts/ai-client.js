@@ -611,6 +611,13 @@
   // we never bill the user by accident. Callers must check hasKey() first
   // and surface a friendly "add your key in Settings" message if not.
   async function callClaudeLive({ system, messages, model, maxTokens, temperature, feature }) {
+    // Hard stop on the hosted demo: never make a billable call from a
+    // copy of the app the visitor doesn't own. Belt-and-suspenders with
+    // the disabled key field in Settings — covers a key set via devtools.
+    if (window.TB && TB.hostedDemo && TB.hostedDemo.isHostedDemo && TB.hostedDemo.isHostedDemo()) {
+      const tt = (window.TB && TB.i18n && TB.i18n.t) ? TB.i18n.t : (k) => k;
+      throw new Error(tt('hostedDemo.aiDisabled'));
+    }
     if (!hasKey()) {
       throw new Error('No Claude API key set. Add one in Settings to use AI features.');
     }

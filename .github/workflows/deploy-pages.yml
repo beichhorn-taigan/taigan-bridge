@@ -33,8 +33,13 @@ jobs:
       - name: Build
         run: npm run build
 
+      # The Pages copy (index.html) is the public demo, so it gets the
+      # GoatCounter snippet. The downloadable build (taigan-bridge.html)
+      # is left untouched — the file users download has zero analytics.
       - name: Prepare Pages artifact
-        run: cp dist/taigan-bridge.html dist/index.html
+        run: |
+          cp dist/taigan-bridge.html dist/index.html
+          node tools/inject-demo-analytics.js dist/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

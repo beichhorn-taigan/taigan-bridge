@@ -19,6 +19,17 @@
 
   const id = 'settings';
 
+  const RELEASES_URL = 'https://github.com/beichhorn-taigan/taigan-bridge/releases/latest';
+
+  // True when running as the hosted preview (any non-file:// origin).
+  // Used to lock down credential entry and backup restore so demo
+  // visitors can't paste a real API key or load a real backup into a
+  // copy of the app they don't own.
+  function isDemo() {
+    return !!(window.TB && TB.hostedDemo && TB.hostedDemo.isHostedDemo &&
+              TB.hostedDemo.isHostedDemo());
+  }
+
   function render(container) {
     container.innerHTML = '';
     container.appendChild(buildAiAndApiKeyCard());
@@ -954,9 +965,62 @@
 
   // ----- API key block -------------------------------------------
 
+  // Hosted-demo variant of the API-key block: greyed-out and
+  // non-interactive. Visitors shouldn't paste a real Anthropic key into a
+  // copy of the app they don't own, so the field + Save button are
+  // disabled, and AI calls are blocked at the client level too (see
+  // ai-client.js). Download and run locally to use AI features.
+  function buildApiKeyDemoLocked() {
+    const el = TB.utils.el;
+    const t = TB.i18n.t;
+
+    const input = el('input', {
+      type: 'password', class: 'tb-input',
+      placeholder: 'sk-ant-api03-…',
+      disabled: true,
+      style: { flex: '1 1 auto', opacity: '0.5', cursor: 'not-allowed',
+               background: 'var(--tb-bg-muted, #ECE8DF)' },
+    });
+    const saveBtn = el('button', {
+      class: 'tb-btn', disabled: true,
+      style: { opacity: '0.5', cursor: 'not-allowed',
+               background: 'var(--tb-accent)', borderColor: 'var(--tb-accent)' },
+    }, t('settings.api.save'));
+
+    return el('div', null,
+      el('p', { class: 'tb-card-meta', style: { marginBottom: 'var(--tb-sp-3)' } },
+        t('settings.api.intro.before'),
+        t('settings.api.intro.linkLabel'),
+        ' ' + t('settings.api.intro.after')),
+      el('div', {
+        style: { display: 'flex', gap: 'var(--tb-sp-2)',
+                 marginBottom: 'var(--tb-sp-2)', flexWrap: 'wrap' },
+      }, input, saveBtn),
+      el('div', {
+        class: 'tb-card-meta',
+        style: {
+          display: 'flex', flexWrap: 'wrap', alignItems: 'center',
+          gap: 'var(--tb-sp-2)', marginTop: 'var(--tb-sp-2)',
+          padding: 'var(--tb-sp-3)',
+          background: 'rgba(183, 71, 41, 0.08)',
+          border: '1px solid rgba(183, 71, 41, 0.30)',
+          borderRadius: 'var(--tb-radius, 8px)',
+        },
+      },
+        el('span', null, '🔒 ' + t('settings.api.demo.locked')),
+        el('a', {
+          href: RELEASES_URL, target: '_blank', rel: 'noopener noreferrer',
+          class: 'tb-btn tb-btn--secondary',
+          style: { textDecoration: 'none', whiteSpace: 'nowrap' },
+        }, '⬇ ' + t('hostedDemo.banner.cta')),
+      ),
+    );
+  }
+
   function buildApiKeyBlock() {
     const el = TB.utils.el;
     const t = TB.i18n.t;
+    if (isDemo()) return buildApiKeyDemoLocked();
     const current = TB.state.get('settings.apiKey') || '';
     const isSet = TB.ai.hasKey();
     const masked = current ? current.slice(0, 12) + '…' + current.slice(-4) : '';
@@ -1832,21 +1896,27 @@
         }, t('settings.export.do')),
         el('button', {
           class: 'tb-btn tb-btn--secondary',
-          onclick: () => fileInput.click(),
+          disabled: isDemo() ? true : false,
+          title: isDemo() ? t('settings.import.demoDisabled') : null,
+          style: isDemo() ? { opacity: '0.5', cursor: 'not-allowed' } : null,
+          onclick: isDemo() ? null : () => fileInput.click(),
         }, t('settings.import.do')),
         el('span', { style: { fontSize: 'var(--tb-fs-12)', color: 'var(--tb-text-soft)' } },
-          t('settings.import.dropHint')),
+          isDemo() ? '🔒 ' + t('settings.import.demoDisabled') : t('settings.import.dropHint')),
       ),
     );
 
     // Drag-and-drop on the whole backup card so user can just drop
-    // a backup .json anywhere onto it.
-    TB.utils.attachFileDrop(card, {
-      accept: ['application/json', '.json'],
-      text: '⤓ ' + t('settings.import.drop'),
-      onFile: (f) => processBackupFile(f),
-      onError: (msg) => alert(msg),
-    });
+    // a backup .json anywhere onto it. Disabled on the hosted demo so
+    // a visitor can't restore a real backup into a copy they don't own.
+    if (!isDemo()) {
+      TB.utils.attachFileDrop(card, {
+        accept: ['application/json', '.json'],
+        text: '⤓ ' + t('settings.import.drop'),
+        onFile: (f) => processBackupFile(f),
+        onError: (msg) => alert(msg),
+      });
+    }
 
     return card;
   }
