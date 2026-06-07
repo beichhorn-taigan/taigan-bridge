@@ -129,9 +129,9 @@ state.fbar = {
   yearly_balances: [ // one row per (account_id, year)
     { id, account_id, year: "2024",
       max_balance_native: 1500000, max_balance_date: "2024-08-15",
-      fx_rate_used: 151.39, fx_rate_source: "Treasury Year-End 2024 (UNVERIFIED)",
+      fx_rate_used: 156.85, fx_rate_source: "Treasury Year-End 2024 (fetched 2026-06-07)",
       fx_rate_overridden: false,
-      max_balance_usd: 9908.18,       // = native / fx_rate_used
+      max_balance_usd: 9563.28,       // = native / fx_rate_used
       notes: "" }
   ],
   filing_history: [  // confirmation of past filings (free-form)
@@ -178,19 +178,21 @@ Rules:
 
 ## FBAR FX rates
 
-`TB.fbar.TREASURY_FX` is a hardcoded, **UNVERIFIED** placeholder
-table covering 2019-2024 × 14 currencies (JPY, EUR, GBP, CAD, AUD,
-CHF, SGD, HKD, KRW, CNY, NZD, THB, MXN, BRL). The Yearly Balances
-view auto-fills the FX rate from this table when entering a balance,
-labels the source as `"Treasury Year-End YYYY (UNVERIFIED)"`, and
-the user can override per-balance with their own documented rate.
-A persistent yellow banner on the FBAR module surfaces the
-verification requirement.
+When the FBAR module opens, it auto-fetches the official U.S. Treasury
+year-end (Dec 31) Reporting Rates of Exchange from the Fiscal Data API
+and stores them in `state.settings.fx.treasury_rates` (throttled to once
+per app load / 7-day freshness; never at app boot, preserving the
+no-outbound-at-boot guarantee). `fxRateFor()` prefers those live rates,
+labelling the source `"Treasury Year-End YYYY (fetched ...)"`.
 
-`TODO(v0.x)`: replace with a real fetch from
-`https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/rates_of_exchange`,
-gated behind an explicit "Refresh from Treasury" button (offline-by-
-default principle).
+`TB.fbar.TREASURY_FX` is now only the **offline fallback** — sourced from
+`TB.constants.TREASURY_FX_FALLBACK` (constants.js), where JPY is corrected
+to the exact official rate for every year and 2024 EUR/KRW/CAD are fixed
+(see `docs/CLAIM-LEDGER.md`). It is used before the live fetch completes or
+when offline, labelled `"Treasury Year-End YYYY (offline fallback)"`. The
+user can still override per-balance with their own documented rate, force a
+re-fetch with the "Refresh from Treasury" button, and a banner surfaces the
+verification reminder.
 
 ## FBAR ↔ AI integration: hard sanitizer
 

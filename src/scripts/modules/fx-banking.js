@@ -1767,7 +1767,7 @@
         icon: '🚨',
         title: 'FBAR required but not yet filed for ' + agg.year,
         body: 'Your foreign account aggregate ($' + Math.round(agg.usd).toLocaleString() +
-          ') exceeded the $10K FBAR threshold. FinCEN 114 due April 15 (auto-extended to October 15). File via the BSA E-Filing System (separate from your 1040). Penalties for non-filing: $10K per non-willful violation, $129K+ for willful.',
+          ') exceeded the $10K FBAR threshold. FinCEN 114 due April 15 (auto-extended to October 15). File via the BSA E-Filing System (separate from your 1040). Penalties for non-filing: up to $16,536 per report (non-willful), or the greater of $165,353 or 50% of the balance (willful).',
         module: 'fx-banking', snoozable: false,
       });
     }

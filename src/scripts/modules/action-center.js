@@ -84,7 +84,7 @@
       title: 'FBAR for ' + (year - 1) + ' due ' + deadline,
       body: 'You have foreign account balances recorded for ' + (year - 1) +
             ' but no filing logged. FinCEN 114 is due ' + deadline +
-            ' (auto-extended to Oct 15). Penalty for non-willful failure: $10,000+ per violation.',
+            ' (auto-extended to Oct 15). Penalty for non-willful failure: up to $16,536 per report.',
       deadline, module: 'fbar', snoozable: true,
     });
     return out;
@@ -830,7 +830,7 @@
             category: 'Passport',
           });
         });
-        // 国籍選択 for dual citizens — 22nd birthday
+        // 国籍選択 for dual citizens — 20th birthday (acquired before 18)
         if (m.relationship === 'child' && m.birth_date) {
           const cit = m.citizenships || [];
           if (cit.indexOf('US') !== -1 && cit.indexOf('JP') !== -1) {
@@ -840,7 +840,7 @@
             events.push({
               uid: 'tb-natchoice-' + m.id,
               date: dateStr,
-              summary: '国籍選択 deadline: ' + name + ' (age 22)',
+              summary: '国籍選択 deadline: ' + name + ' (by age 20)',
               description: 'Japanese Nationality Act §14 — choose between US and JP citizenship by this date. Visit local 市役所 for the 日本国籍選択届 form.',
               category: 'Family',
             });

@@ -3,7 +3,7 @@
  * Family module — for US persons with Japanese-national spouses,
  * dual-citizen children, or other Japan-resident family members.
  * Covers the demographic-specific complexity that other tools
- * ignore: 国籍選択 (Japanese nationality choice at age 22), US
+ * ignore: 国籍選択 (Japanese nationality choice; by age 20 if dual from before 18), US
  * citizenship transmission rules to next generation, passport
  * renewal cycles across two systems, education savings (529 vs
  * 学資保険 PFIC trap), inheritance pre-positioning via 暦年贈与 /
@@ -52,9 +52,9 @@
       label_jp: '教育資金一括贈与',
       cap_jpy: 15_000_000,
       cap_unit: 'lifetime to grandchildren',
-      sunset: '2026-03-31',
-      notes_en: '¥15M tax-free lump sum to descendants under 30 for school + tuition + lessons. Funds held in earmarked bank account; unspent balance on 30th birthday or donor death = taxed. Sunset Mar 31, 2026 unless extended.',
-      notes_jp: '30 歳未満の直系卑属に対し、教育費目的で一括贈与最大 ¥1,500 万まで非課税。指定銀行口座で管理。30 歳到達時または贈与者死亡時の残額は課税対象。2026/3/31 で適用期限(延長の可能性あり)。',
+      sunset: (window.TB && TB.constants && TB.constants.GIFT_SUNSET.education) || '2026-03-31',
+      notes_en: '¥15M tax-free lump sum to descendants under 30 for school + tuition + lessons. Funds held in earmarked bank account; unspent balance on 30th birthday or donor death = taxed. Closed to NEW contributions after Mar 31, 2026 (the FY2026 reform did not extend it); funds contributed by the deadline remain covered under the existing rules.',
+      notes_jp: '30 歳未満の直系卑属に対し、教育費目的で一括贈与最大 ¥1,500 万まで非課税。指定銀行口座で管理。30 歳到達時または贈与者死亡時の残額は課税対象。2026/3/31 をもって新規の申込み受付は終了(令和8年度改正で延長されず)。期限までに拠出した資金は従来の取扱いが継続。',
     },
     {
       id: '結婚・子育て',
@@ -62,9 +62,9 @@
       label_jp: '結婚・子育て資金一括贈与',
       cap_jpy: 10_000_000,
       cap_unit: 'lifetime, ages 18-50',
-      sunset: '2025-03-31',
-      notes_en: '¥10M lump sum to descendants ages 18-50 for marriage + childcare expenses. Funds in earmarked account. Sunset Mar 31, 2025 (already past — verify if still claimable).',
-      notes_jp: '18~50 歳の直系卑属に対し、結婚・出産・育児費目的で一括贈与最大 ¥1,000 万まで非課税。指定口座管理。2025/3/31 適用期限(既に経過 — 利用可否要確認)。',
+      sunset: (window.TB && TB.constants && TB.constants.GIFT_SUNSET.marriageChildrearing) || '2027-03-31',
+      notes_en: '¥10M lump sum to descendants ages 18-50 for marriage + childcare expenses. Funds in earmarked account. Available through Mar 31, 2027 (extended two years by the FY2025 reform).',
+      notes_jp: '18~50 歳の直系卑属に対し、結婚・出産・育児費目的で一括贈与最大 ¥1,000 万まで非課税。指定口座管理。2027/3/31 まで利用可能(令和7年度改正で 2 年延長)。',
     },
     {
       id: '相続時精算課税',
@@ -311,14 +311,19 @@
     return Math.round((d - t) / 86400000);
   }
 
-  // 国籍選択 deadline = 22nd birthday. Civil Code references 18 as
-  // adulthood since 2022, but Nationality Act Article 14 still uses
-  // age 22 as the filing deadline for those who acquired multiple
-  // citizenships before the age of majority.
+  // 国籍選択 deadline. Nationality Act Article 14, as amended effective
+  // 2022-04-01 (when Japanese adulthood dropped to 18): multiple
+  // nationality acquired BEFORE age 18 → choose by age 20; acquired
+  // AT/AFTER 18 → within 2 years of acquisition. We track birth_date,
+  // which covers the common dual-from-birth case (acquired before 18 →
+  // 20th birthday). The later-acquisition case (deadline = acquisition
+  // date + 2 years) can't be derived from birth_date alone, so the UI
+  // explains that rule in text. (Pre-2022 law used age 22; that was the
+  // source of the bug Ray's 2026-06 audit caught — see CLAIM-LEDGER.)
   function nationalityChoiceDate(birth_date) {
     if (!birth_date) return null;
     const b = new Date(birth_date + 'T00:00:00');
-    b.setFullYear(b.getFullYear() + 22);
+    b.setFullYear(b.getFullYear() + 20);
     return b.toISOString().slice(0, 10);
   }
 
@@ -367,7 +372,7 @@
       label_en: '国籍選択 tracker',
       label_jp: '国籍選択トラッカー',
       description_en: 'Per-dual-citizen-child countdown to age-22 nationality choice deadline.',
-      description_jp: '二重国籍の各お子様について、22 歳の国籍選択期限までのカウントダウン。',
+      description_jp: '二重国籍の各お子様について、20 歳の国籍選択期限までのカウントダウン。',
       auto_show: indicatedDualChildren,
       builder: () => buildNationalityChoiceCard(),
     },
@@ -1478,7 +1483,7 @@
         urgency,
         icon: '⚖',
         title,
-        body: 'Japanese nationality law requires dual-citizens to choose by age 22. Filing for "Choosing Japanese nationality" (日本国籍選択届) does NOT auto-renounce US citizenship — that requires a separate consulate process. Many dual-citizens pragmatically pick neither and quietly retain both; Japan rarely enforces.',
+        body: 'Japanese nationality law requires dual-citizens to choose one nationality. Since the 2022 reform: if the second nationality was acquired before age 18, choose by age 20; if acquired at or after 18, within 2 years of acquiring it. Filing for "Choosing Japanese nationality" (日本国籍選択届) does NOT auto-renounce US citizenship — that requires a separate consulate process. Many dual-citizens pragmatically pick neither and quietly retain both; Japan rarely enforces.',
         deadline: choiceDate,
         module: 'family',
         snoozable: days > 365,
@@ -1521,7 +1526,7 @@
 
   function genEduSunsetWarning() {
     const out = [];
-    const sunset = '2026-03-31';
+    const sunset = (window.TB && TB.constants && TB.constants.GIFT_SUNSET.education) || '2026-03-31';
     const days = daysUntil(sunset);
     if (days == null || days < 0 || days > 540) return out;
     // Only fire if user has dual or JP children (potential grandchildren in scope)

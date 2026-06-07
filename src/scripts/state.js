@@ -140,7 +140,7 @@
         // IRMAA — Medicare Part B+D surcharges starting age 65 based
         // on MAGI two years prior. Per-person; we model the user only.
         irmaa_enabled: true,
-        medicare_part_b_base_monthly: 175,  // 2024 standard premium
+        medicare_part_b_base_monthly: 202.90,  // 2026 standard premium; keep in sync with TB.constants.PART_B_PREMIUM_MONTHLY (CLAIM-LEDGER)
         // Social Security COLA — annual inflation adjustment to SS
         // benefits during distribution years. Separate from general
         // inflation_pct so the user can model "what if SS COLA is
@@ -450,7 +450,7 @@
     //
     //   medicare         : US Medicare A/B/D enrollment + Part B
     //                      in-Japan decision tracking. Part B premium
-    //                      ($185+/mo in 2026) is paid by every B-enrolled
+    //                      ($202.90/mo in 2026) is paid by every B-enrolled
     //                      person regardless of country, but care abroad
     //                      isn\'t covered — many JP-resident retirees
     //                      pay for nothing. Late-enrollment penalty
@@ -841,7 +841,7 @@
     // Family module — roster of spouse / children / parents with
     // citizenships, key dates, and dual-nationality tracking. Drives
     // passport-renewal alerts, 国籍選択 (Japanese nationality choice by
-    // age 22) deadlines, education savings strategy (529 vs 学資保険),
+    // by age 20) deadlines, education savings strategy (529 vs 学資保険),
     // inheritance pre-positioning (暦年贈与 + 教育資金一括贈与 + 結婚・
     // 子育て + 相続時精算課税), and US citizenship renunciation
     // (covered-expatriate + exit-tax) planning.

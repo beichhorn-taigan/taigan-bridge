@@ -42,37 +42,24 @@
   // Treasury Year-End Reporting Rates of Exchange
   // ====================================================================
   //
-  // ⚠ UNVERIFIED PLACEHOLDER VALUES ⚠
+  // FBAR converts each account's maximum value using the U.S. Treasury
+  // year-end (Dec 31) Reporting Rate of Exchange for the filing year.
   //
-  // These approximations are NOT to be used for filing. They are
-  // included so the threshold-determination UI can compute a
-  // best-guess aggregate during data entry. Before filing, every
-  // user must verify against:
+  // Runtime source of truth: the OFFICIAL rates are auto-fetched from the
+  // Treasury Fiscal Data API when this module opens (maybeAutoRefreshTreasury
+  // below) and stored in state.settings.fx.treasury_rates; fxRateFor()
+  // prefers those over the table below.
   //
-  //   https://fiscal.treasury.gov/reports-statements/treasury-reporting-rates-exchange/
-  //
-  // TODO(v0.x): fetch current rates programmatically from
-  //   https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/rates_of_exchange
-  // gated behind an explicit "Refresh from Treasury" button so the
-  // tool stays offline-by-default.
+  // TREASURY_FX is the OFFLINE FALLBACK — used before the live fetch
+  // completes or when offline. It comes from constants.js
+  // (TB.constants.TREASURY_FX_FALLBACK), where the values are corrected
+  // and source-stamped (JPY exact for every year; see docs/CLAIM-LEDGER.md).
   //
   // Convention: foreign currency units per 1 USD (e.g., USD/JPY = 152
   // means 1 USD = 152 JPY; convert JPY → USD by dividing).
-  //
-  // Confidence is "approximate, public knowledge"; even where a value
-  // matches the published rate to within rounding, treat the table as
-  // a starting point that requires verification.
   // ====================================================================
 
-  const TREASURY_FX = {
-    '2019': { JPY: 108.66, EUR: 0.890, GBP: 0.755, CAD: 1.299, AUD: 1.425, CHF: 0.969, SGD: 1.347, HKD: 7.788, KRW: 1156.4, CNY: 6.962, NZD: 1.486, THB: 29.97, MXN: 18.880, BRL: 4.020, NOK: 8.78 },
-    '2020': { JPY: 103.25, EUR: 0.815, GBP: 0.731, CAD: 1.272, AUD: 1.293, CHF: 0.884, SGD: 1.322, HKD: 7.752, KRW: 1086.3, CNY: 6.527, NZD: 1.388, THB: 30.04, MXN: 19.910, BRL: 5.197, NOK: 8.55 },
-    '2021': { JPY: 115.08, EUR: 0.882, GBP: 0.741, CAD: 1.263, AUD: 1.376, CHF: 0.911, SGD: 1.350, HKD: 7.798, KRW: 1188.0, CNY: 6.366, NZD: 1.464, THB: 33.42, MXN: 20.510, BRL: 5.581, NOK: 8.83 },
-    '2022': { JPY: 131.81, EUR: 0.938, GBP: 0.829, CAD: 1.355, AUD: 1.471, CHF: 0.926, SGD: 1.341, HKD: 7.806, KRW: 1267.3, CNY: 6.898, NZD: 1.575, THB: 34.61, MXN: 19.360, BRL: 5.286, NOK: 9.85 },
-    '2023': { JPY: 141.40, EUR: 0.905, GBP: 0.785, CAD: 1.323, AUD: 1.467, CHF: 0.842, SGD: 1.320, HKD: 7.812, KRW: 1289.2, CNY: 7.099, NZD: 1.581, THB: 34.10, MXN: 16.920, BRL: 4.846, NOK: 10.17 },
-    '2024': { JPY: 157.20, EUR: 0.965, GBP: 0.799, CAD: 1.439, AUD: 1.617, CHF: 0.907, SGD: 1.365, HKD: 7.768, KRW: 1472.5, CNY: 7.299, NZD: 1.789, THB: 34.10, MXN: 20.830, BRL: 6.187, NOK: 10.56 },
-    '2025': { JPY: 150.27, EUR: 0.920, GBP: 0.785, CAD: 1.410, AUD: 1.555, CHF: 0.845, SGD: 1.358, HKD: 7.778, KRW: 1450.0, CNY: 7.250, NZD: 1.741, THB: 34.05, MXN: 20.500, BRL: 6.100, NOK: 10.88 },
-  };
+  const TREASURY_FX = (window.TB && TB.constants && TB.constants.TREASURY_FX_FALLBACK) || {};
 
   // ISO 4217 — comprehensive list covering virtually every currency
   // a U.S. expat would plausibly hold. The Treasury Fiscal Data API
@@ -425,12 +412,13 @@
         source: 'Treasury Year-End ' + year + (stamp ? ' (fetched ' + stamp + ')' : ''),
       };
     }
-    // Fall back to the hardcoded UNVERIFIED placeholder table.
+    // Fall back to the offline table (constants.js). JPY is the exact
+    // official rate; refresh from Treasury for official non-JPY rates.
     const table = TREASURY_FX[yr];
     if (!table) return { rate: null, source: '' };
     const r = table[currency];
     if (!r) return { rate: null, source: '' };
-    return { rate: r, source: 'Treasury Year-End ' + year + ' (UNVERIFIED)' };
+    return { rate: r, source: 'Treasury Year-End ' + year + ' (offline fallback)' };
   }
 
   // ====================================================================
@@ -697,6 +685,33 @@
     return { fetched, errors };
   }
 
+  // Auto-fetch official Treasury year-end rates when the FBAR module is
+  // opened, so users get correct rates without clicking Refresh. This runs
+  // on module entry — NOT at app boot — which preserves the "no outbound
+  // requests at boot" guarantee. Throttled to once per app load, and
+  // skipped when rates were fetched within the last 7 days. Silent on
+  // failure: the corrected offline fallback table (constants.js) remains.
+  let autoRefreshAttempted = false;
+  function maybeAutoRefreshTreasury() {
+    try {
+      if (autoRefreshAttempted) return;
+      if (!window.TB || !TB.state) return;
+      // Never auto-fetch on the hosted demo (it re-seeds; stays offline).
+      if (TB.hostedDemo && TB.hostedDemo.isHostedDemo && TB.hostedDemo.isHostedDemo()) return;
+      const fetchedAt = TB.state.get('settings.fx.treasury_fetched_at');
+      const FRESH_MS = 7 * 24 * 60 * 60 * 1000;
+      if (fetchedAt && (Date.now() - new Date(fetchedAt).getTime()) < FRESH_MS) return;
+      autoRefreshAttempted = true;
+      refreshTreasuryRates().then((res) => {
+        if (res && res.fetched && Object.keys(res.fetched).length) {
+          // Refresh the active tab so the FX reference table shows the
+          // newly-fetched official rates (no-ops if FBAR isn't mounted).
+          try { renderActiveTab(); } catch (_) { /* ignore */ }
+        }
+      }).catch(() => { /* silent — offline fallback remains in effect */ });
+    } catch (_) { /* never block render */ }
+  }
+
   function defaultRefreshYears() {
     // Fetch every year between earliest balance year and last
     // completed calendar year (FBAR uses year-end rates; the current
@@ -886,6 +901,10 @@
     }
 
     if (!activeYear) activeYear = defaultYear();
+
+    // Pull official Treasury year-end rates on entering FBAR (throttled,
+    // silent fallback to the corrected offline table). Not at app boot.
+    maybeAutoRefreshTreasury();
 
     container.appendChild(buildShellCard());
     const tabHost = TB.utils.el('div', { id: 'tb-fbar-tab-host' });

@@ -604,7 +604,7 @@
       'fx.fbar.point.all_account_types': 'Includes savings, checking, time deposits (定期預金), brokerage, retirement (most), some life insurance with cash value. Real estate is NOT included; foreign mutual funds (PFIC) usually ARE.',
       'fx.fbar.point.fincen_not_irs':  'FBAR (FinCEN 114) is filed with FinCEN via the BSA E-Filing System — separate from your 1040. Do NOT mail it with your tax return.',
       'fx.fbar.point.deadline':        'Deadline: April 15 (with automatic extension to October 15, no form required for the extension).',
-      'fx.fbar.point.penalty':         'Penalty for non-filing: $10,000 per non-willful violation; up to $129,000 (or 50% of account balance) per willful violation. Statute of limitations: 6 years.',
+      'fx.fbar.point.penalty':         'Penalty for non-filing: up to $16,536 per report (non-willful); the greater of $165,353 or 50% of account balance (willful). Non-willful is per report, not per account (Bittner, 2023); figures inflation-adjusted annually. Statute of limitations: 6 years.',
       'fx.fbar.point.transfer_trigger': 'A single large USD → JPY transfer can trigger your FBAR requirement for the year — even if the funds were promptly spent and the year-end balance returned to zero. Plan timing around this.',
 
       'fx.calculator.intro':           'Enter a USD or JPY amount; see what each platform actually delivers after spread + fees. Sorted best-to-worst.',
@@ -2151,7 +2151,7 @@
 
       // Estate / Cross-Border Succession module
       'estate.title':                  'Estate & Cross-Border Succession',
-      'estate.subtitle':               'Death/incapacity orchestration. Auto-derives statutory heirs from your Family roster (Civil Code §887-§890), computes JP 相続税 exposure using actual brackets and 配偶者控除, surfaces beneficiary gaps from Assets, tracks wills/POAs in your Document Vault, and generates a Letter of Instruction stitching everything together.',
+      'estate.subtitle':               'Death/incapacity orchestration. Auto-derives statutory heirs from your Family roster (Civil Code §887, §889, §890), computes JP 相続税 exposure using actual brackets and 配偶者控除, surfaces beneficiary gaps from Assets, tracks wills/POAs in your Document Vault, and generates a Letter of Instruction stitching everything together.',
       'estate.badge':                  'ESTATE',
       'estate.edit':                   'Edit',
       'estate.save':                   'Save',
@@ -2192,7 +2192,7 @@
       'estate.checklist.beneficiaries': 'All account beneficiaries reviewed',
       'estate.checklist.loi':           'Letter of Instruction generated',
 
-      'estate.heirs.intro':            'Computed from your Family roster per Japanese Civil Code §887-§890. The priority order: (1) descendants — children, then grandchildren via 代襲, (2) ascendants — parents, only if no descendants, (3) siblings — only if no descendants and no ascendants. The spouse always inherits if alive. Shares: spouse + descendants 1/2 each, spouse + ascendants 2/3 + 1/3, spouse + siblings 3/4 + 1/4.',
+      'estate.heirs.intro':            'Computed from your Family roster per Japanese Civil Code §887, §889, §890. The priority order: (1) descendants — children, then grandchildren via 代襲, (2) ascendants — parents, only if no descendants, (3) siblings — only if no descendants and no ascendants. The spouse always inherits if alive. Shares: spouse + descendants 1/2 each, spouse + ascendants 2/3 + 1/3, spouse + siblings 3/4 + 1/4.',
       'estate.heirs.no_heirs_label':   'No statutory heirs identified',
       'estate.heirs.no_heirs_body':    'Without statutory heirs, the estate defaults to JP state (国庫帰属) — unless your will specifies otherwise. Add at least one family member to enable heir math, or rely entirely on your will + named beneficiaries.',
       'estate.heirs.add_family_link':  'Add family members in Family →',
@@ -2332,7 +2332,7 @@
 
       // Family module
       'family.title':                  'Family',
-      'family.subtitle':               'For US persons with Japanese-national spouses, dual-citizen children, or other Japan-resident family members. Tracks 国籍選択 (nationality choice at age 22), passport renewal cycles, education savings strategy (529 vs 学資保険 PFIC trap), inheritance pre-positioning (暦年贈与 + 教育資金一括贈与), and US citizenship renunciation planning.',
+      'family.subtitle':               'For US persons with Japanese-national spouses, dual-citizen children, or other Japan-resident family members. Tracks 国籍選択 (nationality choice — by age 20 if dual since before 18), passport renewal cycles, education savings strategy (529 vs 学資保険 PFIC trap), inheritance pre-positioning (暦年贈与 + 教育資金一括贈与), and US citizenship renunciation planning.',
       'family.badge':                  'FAMILY',
       'family.edit':                   'Edit',
       'family.save':                   'Save',
@@ -2383,7 +2383,7 @@
       'family.field.nationality_choice.us':  'Chose US (filed 国籍喪失届 with JP)',
       'family.field.nationality_choice.jp':  'Chose JP (filed 日本国籍選択届; US still active until consulate renunciation)',
       'family.field.nationality_choice.both': 'Kept both (no filing)',
-      'family.field.nationality_choice.help': 'Japanese law requires choice by age 22. In practice many dual-citizens silently retain both — Japan rarely enforces.',
+      'family.field.nationality_choice.help': 'Since the 2022 reform: choose by age 20 if the second nationality was acquired before 18, or within 2 years if acquired at/after 18. In practice many dual-citizens silently retain both — Japan rarely enforces.',
       'family.field.notes':            'Notes',
 
       'family.hint.label':             'Onboarding indicated:',
@@ -2392,13 +2392,13 @@
       'family.hint.third_spouse':      'Spouse of another nationality — add to track passport renewal & filing status.',
       'family.hint.us_children':       'US-citizen children — add to track passports, SSN, future citizenship transmission rules.',
       'family.hint.jp_children':       'Japanese-citizen children — add to track passport renewal.',
-      'family.hint.dual_children':     'Dual-citizen children — add to surface 国籍選択 deadlines (Japanese nationality choice by age 22).',
+      'family.hint.dual_children':     'Dual-citizen children — add to surface 国籍選択 deadlines (Japanese nationality choice by age 20 if dual since before 18).',
 
       'family.roster.empty':           'No family members added yet. Click "Add member" to start.',
 
-      'family.nationality_choice.intro': 'Japanese Nationality Act Article 14 requires anyone holding multiple citizenships before age 20 to choose ONE by age 22. Choosing JP filed via 日本国籍選択届 at the city office; choosing US requires filing 国籍喪失届 to formally renounce JP. Many dual-citizens pragmatically keep both — Japan rarely enforces non-compliance.',
-      'family.nationality_choice.deadline': '22nd birthday',
-      'family.nationality_choice.action': 'No choice filed yet. Approaching 22nd birthday is the trigger to consider — visit the local city office (市役所/区役所) for the 日本国籍選択届 form.',
+      'family.nationality_choice.intro': 'Japanese Nationality Act Article 14 (amended 2022): if multiple nationalities were acquired before age 18, choose ONE by age 20; if acquired at or after 18, within 2 years of acquiring. Choosing JP is filed via 日本国籍選択届 at the city office; choosing US requires filing 国籍喪失届 to formally renounce JP. Many dual-citizens pragmatically keep both — Japan rarely enforces non-compliance.',
+      'family.nationality_choice.deadline': '20th birthday',
+      'family.nationality_choice.action': 'No choice filed yet. Approaching the 20th birthday is the trigger to consider — visit the local city office (市役所/区役所) for the 日本国籍選択届 form.',
       'family.nationality_choice.made_us':  'Chose US — JP citizenship released',
       'family.nationality_choice.made_jp':  'Chose JP — US still requires separate consulate renunciation',
       'family.nationality_choice.made_both': 'Kept both (no filing)',
@@ -4932,7 +4932,7 @@
       'fx.fbar.point.all_account_types': '普通預金・当座預金・定期預金・証券・退職口座(大半)・キャッシュバリュー型生命保険を含む。不動産は対象外、外国投資信託(PFIC)は通常対象。',
       'fx.fbar.point.fincen_not_irs':  'FBAR(FinCEN 114)は BSA E-Filing System で FinCEN に提出 — 1040 と別。確定申告と一緒に郵送しないこと。',
       'fx.fbar.point.deadline':        '期限:4 月 15 日(自動延長で 10 月 15 日、延長申請書類不要)。',
-      'fx.fbar.point.penalty':         '不申告罰則:非故意違反 1 件あたり $10,000;故意違反は最大 $129,000(または口座残高の 50%)。時効 6 年。',
+      'fx.fbar.point.penalty':         '不申告罰則:非故意は 1 報告あたり最大 $16,536、故意は $165,353 または口座残高の 50% のいずれか高い方。非故意は口座ごとではなく報告ごとに科されます(Bittner 判決、2023 年)。金額は毎年インフレ調整。時効 6 年。',
       'fx.fbar.point.transfer_trigger': '単一の大口 USD → JPY 送金で当年の FBAR 義務が発動 — 資金が即座に消費されて年末残高がゼロに戻っても該当。タイミングを計画。',
 
       'fx.calculator.intro':           'USD または JPY の金額を入力すると、各プラットフォームでスプレッド+手数料控除後に実際に受け取れる金額を表示します。受取額の多い順にソート。',
@@ -6363,7 +6363,7 @@
       'nw.review2.step.fbar_threshold.title': 'FBAR 基準チェック',
       'nw.review2.step.fbar_threshold.body':  '外国口座残高を集計。年間ピーク $10,000 で FBAR(FinCEN 114)が必須 — 送金一回でも超過する可能性、年末後の再確認を推奨。',
       'nw.review2.step.family.title':         '家族 + パスポート更新',
-      'nw.review2.step.family.body':          '今後 12 ヶ月以内に有効期限を迎えるパスポート・年内の贈与記録の抜け・22 歳の国籍選択期限が近い二重国籍の子を表示。',
+      'nw.review2.step.family.body':          '今後 12 ヶ月以内に有効期限を迎えるパスポート・年内の贈与記録の抜け・20 歳の国籍選択期限が近い二重国籍の子を表示。',
       'nw.review2.step.property.title':       '不動産レビュー',
       'nw.review2.step.property.body':        '次年度の固定資産税タイミング・元主たる住居が賃貸化している場合の §121 5 年時計・新規取得税の確認。',
       'nw.review2.step.healthcare.title':     '医療レビュー',
@@ -6464,7 +6464,7 @@
 
       // Estate / Cross-Border Succession module
       'estate.title':                  '相続・国境を越えた承継',
-      'estate.subtitle':               '死亡・無能力の調整。家族構成から法定相続人を自動算出(民法 §887-§890)、現行税率と配偶者控除で 相続税 を試算、Asset から受取人ギャップを抽出、Document Vault の遺言・委任状を追跡、すべてを統合した遺言補足書(Letter of Instruction)を生成。',
+      'estate.subtitle':               '死亡・無能力の調整。家族構成から法定相続人を自動算出(民法 §887・§889・§890)、現行税率と配偶者控除で 相続税 を試算、Asset から受取人ギャップを抽出、Document Vault の遺言・委任状を追跡、すべてを統合した遺言補足書(Letter of Instruction)を生成。',
       'estate.badge':                  '相続',
       'estate.edit':                   '編集',
       'estate.save':                   '保存',
@@ -6505,7 +6505,7 @@
       'estate.checklist.beneficiaries': '全口座の受取人レビュー済み',
       'estate.checklist.loi':           '遺言補足書を生成済み',
 
-      'estate.heirs.intro':            '家族構成から民法 §887〜§890 に基づき自動算出します。優先順位:(1)第 1 順位は子・孫(代襲相続)、(2)第 2 順位は親(子がいない場合)、(3)第 3 順位は兄弟姉妹(子・親がいない場合)。配偶者は常に相続人となります。法定相続分は、配偶者+子は各 1/2、配偶者+親は 2/3 + 1/3、配偶者+兄弟姉妹は 3/4 + 1/4 です。',
+      'estate.heirs.intro':            '家族構成から民法 §887・§889・§890 に基づき自動算出します。優先順位:(1)第 1 順位は子・孫(代襲相続)、(2)第 2 順位は親(子がいない場合)、(3)第 3 順位は兄弟姉妹(子・親がいない場合)。配偶者は常に相続人となります。法定相続分は、配偶者+子は各 1/2、配偶者+親は 2/3 + 1/3、配偶者+兄弟姉妹は 3/4 + 1/4 です。',
       'estate.heirs.no_heirs_label':   '法定相続人未特定',
       'estate.heirs.no_heirs_body':    '法定相続人がいない場合、遺産は国庫帰属となります(遺言での指定がない限り)。家族メンバーを少なくとも一人追加して相続計算を有効化するか、遺言と指定受取人だけで対応してください。',
       'estate.heirs.add_family_link':  '家族モジュールでメンバーを追加 →',
@@ -6645,7 +6645,7 @@
 
       // Family module
       'family.title':                  '家族',
-      'family.subtitle':               '日本人配偶者・二重国籍の子・日本居住の家族向け。国籍選択(22 歳)・パスポート更新・教育費(529 vs 学資保険 PFIC トラップ)・相続前の生前贈与(暦年贈与+教育資金一括贈与)・米国市民権放棄計画を扱います。',
+      'family.subtitle':               '日本人配偶者・二重国籍の子・日本居住の家族向け。国籍選択(18 歳未満で取得なら 20 歳まで)・パスポート更新・教育費(529 vs 学資保険 PFIC トラップ)・相続前の生前贈与(暦年贈与+教育資金一括贈与)・米国市民権放棄計画を扱います。',
       'family.badge':                  '家族',
       'family.edit':                   '編集',
       'family.save':                   '保存',
@@ -6696,7 +6696,7 @@
       'family.field.nationality_choice.us':  '米国を選択(国籍喪失届を日本に提出済み)',
       'family.field.nationality_choice.jp':  '日本を選択(日本国籍選択届提出済み — 米国は領事館での放棄手続き必要)',
       'family.field.nationality_choice.both': '両方保持(未届)',
-      'family.field.nationality_choice.help': '日本国籍法は 22 歳までの選択を求めています。実態としては多くの二重国籍者が両方を黙って保持しており、日本側の取り締まりはほぼ行われていません。',
+      'family.field.nationality_choice.help': '2022 年改正以降、18 歳未満で取得した場合は 20 歳までに、18 歳以降に取得した場合は取得から 2 年以内に選択します。実態としては多くの二重国籍者が両方を黙って保持しており、日本側の取り締まりはほぼ行われていません。',
       'family.field.notes':            'メモ',
 
       'family.hint.label':             'オンボーディングからの情報:',
@@ -6705,13 +6705,13 @@
       'family.hint.third_spouse':      '他国籍の配偶者 — パスポート更新と申告ステータスを追跡。',
       'family.hint.us_children':       '米国籍の子 — パスポート・SSN・将来の市民権継承ルールを追跡。',
       'family.hint.jp_children':       '日本国籍の子 — パスポート更新を追跡。',
-      'family.hint.dual_children':     '二重国籍の子 — 国籍選択(22 歳)期限を表示。',
+      'family.hint.dual_children':     '二重国籍の子 — 国籍選択(18 歳未満で取得なら 20 歳)期限を表示。',
 
       'family.roster.empty':           '家族メンバー未登録。「メンバー追加」から開始してください。',
 
-      'family.nationality_choice.intro': '日本国籍法第 14 条では、20 歳までに複数の国籍を有する者は 22 歳までに一つを選択しなければなりません。日本を選ぶ場合は市役所で日本国籍選択届を提出し、米国を選ぶ場合は国籍喪失届で日本国籍を正式に離脱します。実態としては多くの二重国籍者が両方を保持しており、違反時の取り締まりは事実上行われていません。',
-      'family.nationality_choice.deadline': '22 歳の誕生日',
-      'family.nationality_choice.action': '未届。22 歳が近づいたら検討すべき時期 — 市役所・区役所で日本国籍選択届のフォームを取得。',
+      'family.nationality_choice.intro': '日本国籍法第 14 条(2022 年改正)では、18 歳未満で複数の国籍を取得した場合は 20 歳までに、18 歳以降に取得した場合は取得から 2 年以内に、いずれか一つの国籍を選択しなければなりません。日本を選ぶ場合は市役所で日本国籍選択届を提出し、米国を選ぶ場合は国籍喪失届で日本国籍を正式に離脱します。実態としては多くの二重国籍者が両方を保持しており、違反時の取り締まりは事実上行われていません。',
+      'family.nationality_choice.deadline': '20 歳の誕生日',
+      'family.nationality_choice.action': '未届です。20 歳が近づいたら検討すべき時期です。市役所・区役所で日本国籍選択届のフォームを取得してください。',
       'family.nationality_choice.made_us':  '米国を選択 — 日本国籍離脱',
       'family.nationality_choice.made_jp':  '日本を選択 — 米国は領事館での放棄手続きが別途必要',
       'family.nationality_choice.made_both': '両方保持(未届)',

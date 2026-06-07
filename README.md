@@ -3,7 +3,7 @@
 **Financial, tax, estate, and health planning for Americans on the
 opposite shore.**
 
-[![Version](https://img.shields.io/badge/version-1.0.0-0E2A4F)](https://github.com/beichhorn-taigan/taigan-bridge/releases)
+[![Version](https://img.shields.io/badge/version-1.0.1-0E2A4F)](https://github.com/beichhorn-taigan/taigan-bridge/releases)
 [![License](https://img.shields.io/badge/license-Personal%20Use-B7472A)](LICENSE.md)
 [![Built for](https://img.shields.io/badge/built%20for-Americans%20in%20Japan-D86948)](#)
 [![Bilingual](https://img.shields.io/badge/bilingual-EN%20%2F%20JP-2F6F4E)](#)
@@ -129,7 +129,7 @@ your situation:
   for 年金定期便 + SSA statement.
 - **SOFA Roth Sequencing Planner** — for the high-stakes window
   between SOFA status and 住民票 registration.
-- **Estate** — JP statutory shares (民法 §887–§890) from your
+- **Estate** — JP statutory shares (民法 §887, §889, §890) from your
   family roster, 相続税 estimation with 小規模宅地等の特例,
   will tracker, 戸籍 handling for foreign decedents, Letter of
   Instruction generator, §877A exit-tax / renunciation section.
@@ -186,10 +186,12 @@ your situation:
   only into the hosted copy at deploy time and is **never** present in
   the file you download.
 - **Zero outbound traffic at boot.** No "phone home" on startup.
-- **Optional outbound calls** happen only on explicit user action:
-  the live USD/JPY rate fetch (no PII), the Treasury quarterly
-  rate fetch (no PII), and Claude API calls — using your key,
-  your prompts, going directly from your browser to Anthropic.
+- **Optional outbound calls** happen only on user action — opening a
+  module or clicking a button, never at boot: opening the FBAR module
+  auto-fetches the official Treasury year-end exchange rates (no PII);
+  the live USD/JPY rate fetch and the Treasury quarterly rate fetch
+  (no PII); and Claude API calls — using your key, your prompts, going
+  directly from your browser to Anthropic.
 - **No account.** No login. No email collection. No "sign up to
   continue." Open the file, start using it.
 

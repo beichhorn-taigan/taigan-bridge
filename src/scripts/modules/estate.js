@@ -11,7 +11,7 @@
  * everything by reading other modules:
  *
  *   Family.members            →  法定相続人 (statutory heirs) + shares
- *                                per Civil Code §887-§890
+ *                                per Civil Code §887, §889, §890
  *   Family.gifts_log          →  7-year clawback addition to estate
  *   Family.renunciation       →  §2801 transfer-tax warnings
  *   Assets.accounts           →  situs analysis (JP vs US-taxable scope),
@@ -39,7 +39,7 @@
  *     - 1 if decedent has biological children
  *     - 2 if no biological children
  *
- * Civil Code §887-§890 priority order:
+ * Civil Code §887, §889, §890 priority order:
  *   1. Spouse (配偶者) — always inherits if alive
  *   2. Descendants (第1順位) — children, then grandchildren via 代襲相続
  *   3. Ascendants (第2順位) — parents, then grandparents (only if no descendants)
@@ -169,7 +169,7 @@
   // ====================================================================
 
   // Derives the statutory heirs and per-heir shares per Civil Code
-  // §887-§890. Returns:
+  // §887, §889, §890. Returns:
   //   { spouse: { member, share }, primary: [...], rank: 1|2|3|null,
   //     all_heirs: [{ member, share, role }], heir_count_for_tax }
   //
@@ -520,8 +520,8 @@
       id: 'heirs',
       label_en: '法定相続人 calculator',
       label_jp: '法定相続人計算',
-      description_en: 'Auto-derives statutory heirs from Family roster (Civil Code §887-§890).',
-      description_jp: '家族構成から法定相続人を自動算出(民法 §887-§890)。',
+      description_en: 'Auto-derives statutory heirs from Family roster (Civil Code §887, §889, §890).',
+      description_jp: '家族構成から法定相続人を自動算出(民法 §887, §889, §890)。',
       auto_show: () => true,
       builder: () => buildHeirsCard(),
     },
@@ -1849,7 +1849,7 @@
       urgency: 'high',
       icon: '📜',
       title: 'No will on record',
-      body: 'Without a will, your estate distributes per Japanese intestacy (民法 §887-§890) for JP-situs and per US state intestacy for US-situs — neither may match your intent. For US persons in Japan, you generally want BOTH a US will (covers US-situs) and a JP 公正証書遺言 (notarized JP will, fastest probate path).',
+      body: 'Without a will, your estate distributes per Japanese intestacy (民法 §887, §889, §890) for JP-situs and per US state intestacy for US-situs — neither may match your intent. For US persons in Japan, you generally want BOTH a US will (covers US-situs) and a JP 公正証書遺言 (notarized JP will, fastest probate path).',
       module: 'estate', snoozable: true,
     }];
   }

@@ -2886,8 +2886,9 @@
     }
     // IRMAA Medicare premium — paid monthly when 65+.
     const irmaaMo = (row.irmaa || 0) / 12;
-    // Medicare base premium ($175/mo standard 2024) — only when 65+.
-    const medicareBaseMo = row.age >= 65 ? (inputs.medicare_part_b_base_monthly || 175) : 0;
+    // Medicare base premium ($202.90/mo standard 2026; see constants.js /
+    // CLAIM-LEDGER) — only when 65+.
+    const medicareBaseMo = row.age >= 65 ? (inputs.medicare_part_b_base_monthly || 202.90) : 0;
 
     const fmt = (v) => v ? TB.utils.formatUSD(v, { maximumFractionDigits: 0 }) : '—';
 

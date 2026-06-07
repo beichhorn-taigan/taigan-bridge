@@ -232,7 +232,7 @@
     },
     'Medicare': {
       expansion: 'US Medicare program',
-      short: 'US federal health insurance for age 65+ and certain disabilities. Part A (hospital) typically free; Part B (medical) ~$175+/month; Part D (drugs) varies.',
+      short: 'US federal health insurance for age 65+ and certain disabilities. Part A (hospital) typically free; Part B (medical) $202.90/month (2026, standard); Part D (drugs) varies.',
       long: 'Eligibility at 65 if you have 40+ quarters of Medicare-covered employment. Coordinates with US-Japan Totalization Agreement. Premiums increase via IRMAA for higher-income retirees. Does NOT cover medical care abroad except in specific border situations.',
       category: 'retirement',
       related: ['IRMAA', 'Social Security'],
@@ -254,7 +254,7 @@
     'FBAR': {
       expansion: 'Report of Foreign Bank and Financial Accounts (FinCEN Form 114)',
       short: 'Annual US disclosure of foreign financial accounts when their aggregate maximum value during the year exceeded $10,000.',
-      long: 'Required of US persons (citizens, green-card holders, residents) with signature authority over foreign accounts. Filed electronically with FinCEN by April 15 (auto-extended to October 15). Penalties for non-filing: $10K per non-willful violation, $129K or 50% of account balance per willful violation. The Taigan Bridge FBAR Tracker module helps you stay compliant.',
+      long: 'Required of US persons (citizens, green-card holders, residents) with signature authority over foreign accounts. Filed electronically with FinCEN by April 15 (auto-extended to October 15). Penalties for non-filing: up to $16,536 per report for non-willful, and the greater of $165,353 or 50% of the account balance for willful (figures inflation-adjusted annually; non-willful is per report, not per account, after Bittner 2023). The Taigan Bridge FBAR Tracker module helps you stay compliant.',
       why: 'If you have ANY Japanese bank or brokerage account and you\'re a US person, you almost certainly need to file FBAR every year.',
       category: 'us-tax',
       related: ['Form 8938', 'FATCA', 'FinCEN'],
@@ -321,7 +321,7 @@
     },
     'Form 2555': {
       expansion: 'Foreign Earned Income Exclusion',
-      short: 'IRS form claiming the FEIE. Excludes ~$126,500 (2024) of foreign earned income from US tax.',
+      short: 'IRS form claiming the FEIE. Excludes foreign earned income from US tax — $130,000 (2025); $126,500 (2024). Indexed annually.',
       long: 'Either bona-fide-residence or physical-presence (330d/12mo) test. Election binding for 5 years if revoked. For most JP residents, FTC (Form 1116) is better — it doesn\'t cap, covers all income types, and JP tax rates fully offset US tax.',
       category: 'us-tax',
       related: ['FEIE', 'FTC', 'Form 1116'],

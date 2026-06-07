@@ -156,6 +156,9 @@
 
   <!-- Core scripts. Order matters: state → utils → i18n → tracks
        → ai-client → onboarding → modules → boot. -->
+  <!-- Single source of truth for time-decaying facts (FX, penalties,
+       premiums, sunsets). Loads first so TB.constants is always available. -->
+  <script src="scripts/constants.js"></script>
   <script src="scripts/state.js"></script>
   <script src="scripts/utils.js"></script>
   <script src="scripts/i18n.js"></script>

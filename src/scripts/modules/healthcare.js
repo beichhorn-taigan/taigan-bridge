@@ -14,7 +14,7 @@
  *   Adds:
  *     Medicare Part A/B/D enrollment + the in-Japan decision math
  *       (Part B is paid in full whether you use it or not; care abroad
- *       isn't covered — many JP-resident retirees pay $185+/mo for
+ *       isn't covered — many JP-resident retirees pay $202.90/mo for
  *       nothing. Late-enrollment penalty creates an asymmetric trap.)
  *     介護保険 (long-term care insurance) — universal at 40+
  *     End-of-life preferences (organ donor, DNR, funeral wishes)
@@ -60,8 +60,9 @@
     { id: 'none',             label_en: 'Not enrolled / not eligible' },
   ];
 
-  // 2026 Medicare Part B base premium estimate (subject to annual COLA).
-  const MEDICARE_PART_B_BASE_2026 = 195;
+  // 2026 Medicare Part B standard premium. Single source of truth:
+  // constants.js (CMS; see docs/CLAIM-LEDGER.md). Recheck each November.
+  const MEDICARE_PART_B_BASE_2026 = (window.TB && TB.constants && TB.constants.PART_B_PREMIUM_MONTHLY) || 202.90;
 
   // Private / employer international insurance plans — SOFA-exempt
   // users (DoD contractors, US-company expats) typically use one of
@@ -885,7 +886,7 @@
     grid.appendChild(partTile('Part A', m.enrolled_a, t('health.medicare.part_a_hint')));
     grid.appendChild(partTile('Part B', m.enrolled_b,
       m.part_b_premium_monthly_usd ? '$' + m.part_b_premium_monthly_usd + '/mo'
-        : (m.enrolled_b ? '$' + MEDICARE_PART_B_BASE_2026 + '/mo' : t('health.medicare.part_b_hint'))));
+        : (m.enrolled_b ? '$' + MEDICARE_PART_B_BASE_2026.toFixed(2) + '/mo' : t('health.medicare.part_b_hint'))));
     grid.appendChild(partTile('Part D', m.enrolled_d, t('health.medicare.part_d_hint')));
     card.appendChild(grid);
 
@@ -962,7 +963,7 @@
     modal.appendChild(field(t('health.medicare.part_b_premium'),
       el('input', { type: 'number', class: 'tb-input', step: '1', min: '0',
         value: draft.part_b_premium_monthly_usd != null ? draft.part_b_premium_monthly_usd : '',
-        placeholder: String(MEDICARE_PART_B_BASE_2026),
+        placeholder: MEDICARE_PART_B_BASE_2026.toFixed(2),
         oninput: (e) => {
           const v = parseFloat(e.target.value);
           draft.part_b_premium_monthly_usd = isFinite(v) ? v : null;
@@ -1445,7 +1446,7 @@
       nhi_jpy:        { label: 'NHI', currency: 'jpy', placeholder: '20000' },
       shi_jpy:        { label: 'SHI', currency: 'jpy', placeholder: '0' },
       tricare_usd:    { label: 'TRICARE', currency: 'usd', placeholder: '0' },
-      medicare_b_usd: { label: 'Medicare Part B', currency: 'usd', placeholder: String(MEDICARE_PART_B_BASE_2026) },
+      medicare_b_usd: { label: 'Medicare Part B', currency: 'usd', placeholder: MEDICARE_PART_B_BASE_2026.toFixed(2) },
       medicare_d_usd: { label: 'Medicare Part D', currency: 'usd', placeholder: '40' },
       ltc_jpy:        { label: '介護保険', currency: 'jpy', placeholder: '5000' },
       private_us_usd: { label: t('health.budget.line.private_us'), currency: 'usd', placeholder: '0' },
@@ -1646,7 +1647,7 @@
       urgency: 'high',
       icon: '🇺🇸',
       title: 'Medicare Part B decision window — you\'re ' + age,
-      body: 'Initial Enrollment Period: 7 months around your 65th birthday. Part B in Japan is paid in full ($' + MEDICARE_PART_B_BASE_2026 + '+/mo) but doesn\'t cover care abroad. The late-enrollment penalty (10% of premium per 12mo delayed, FOR LIFE) makes this asymmetric. Document your decision in Healthcare → Medicare.',
+      body: 'Initial Enrollment Period: 7 months around your 65th birthday. Part B in Japan is paid in full ($' + MEDICARE_PART_B_BASE_2026.toFixed(2) + '/mo) but doesn\'t cover care abroad. The late-enrollment penalty (10% of premium per 12mo delayed, FOR LIFE) makes this asymmetric. Document your decision in Healthcare → Medicare.',
       module: 'healthcare', snoozable: true,
     }];
   }

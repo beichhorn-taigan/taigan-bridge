@@ -568,7 +568,7 @@
       if (TB.estate && typeof TB.estate.deriveStatutoryHeirs === 'function') {
         const heirs = TB.estate.deriveStatutoryHeirs();
         if (heirs.all_heirs.length > 0) {
-          html += '<h3>Statutory shares (Civil Code §887-§890)</h3>';
+          html += '<h3>Statutory shares (Civil Code §887, §889, §890)</h3>';
           html += '<table><tr><th>Name</th><th>Role</th><th>Share</th></tr>';
           heirs.all_heirs.forEach((h) => {
             const m = h.member;

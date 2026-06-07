@@ -1433,7 +1433,7 @@
       healthcare: {
         medicare: {
           // Classic JP-resident retiree pattern: A is free + automatic
-          // at 65, B was declined to avoid the $185+/mo premium for
+          // at 65, B was declined to avoid the $202.90/mo premium for
           // care that doesn't cover JP. Late-enrollment penalty
           // accepted as the cost of this strategy.
           enrolled_a: true, enrolled_b: false, enrolled_d: false,
@@ -2084,7 +2084,7 @@
         project_to_age: 95, roth_conversions: [],
         filing_status: filingStatus, state_tax_pct: 0,
         niit_enabled: true, irmaa_enabled: true,
-        medicare_part_b_base_monthly: 185,
+        medicare_part_b_base_monthly: 202.90,
         ss_cola_pct: 2.5,
         bonus_month: 3, bonus_pct_of_salary: 8,
         rsu_vest_months: [],

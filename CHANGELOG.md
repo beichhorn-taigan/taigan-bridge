@@ -2,7 +2,43 @@
 
 All notable changes to Taigan Bridge will be documented in this file.
 
-## [Unreleased]
+## [1.0.1] — 2026-06-08 — Fact-check corrections + demo hardening
+
+### Accuracy (independent fact-check)
+
+An independent source-verification audit (issuing-authority sources only,
+plus an adversarial second pass) confirmed the underlying legal/tax
+reasoning is sound — 20 of 22 external claims verified exactly. The fixes
+below are time-decaying values that had drifted, plus one stale statute.
+
+- **国籍選択 (nationality choice) deadline — corrected to current law.**
+  Japan's Nationality Act Article 14, amended 2022-04-01: dual nationality
+  acquired before age 18 must be chosen by age **20** (not 22); acquired at
+  or after 18, within 2 years. Updated the deadline math, the onboarding
+  age bands, the glossary, and every EN/JP string. (Deadline tracking is
+  the Family module's core purpose, so this was the top-priority fix.)
+- **FBAR penalties — current figures, per *Bittner*.** Non-willful up to
+  **$16,536 per report** (per report, not per account, after *Bittner*
+  2023); willful the greater of **$165,353** or 50% of the balance.
+- **Treasury year-end FX rates — corrected and now auto-fetched.** Fixed
+  2025 JPY (150.27 → **156.61**) and set every year's JPY to the exact
+  official rate. The FBAR module now auto-fetches official rates from the
+  Treasury Fiscal Data API when opened (not at app boot); the corrected
+  hardcoded table is the offline fallback.
+- **Medicare Part B premium — $202.90 (2026)** (was an inconsistent
+  $175 / $185 across strings).
+- **結婚・子育て資金一括贈与** flipped back on — extended to 2027-03-31 by
+  the FY2025 reform (had been marked expired).
+- **教育資金一括贈与** rendered as closed to new contributions after
+  2026-03-31 (the FY2026 reform did not extend it; funds contributed by the
+  deadline remain covered).
+- **FEIE** now shows $130,000 (2025) alongside $126,500 (2024).
+- **民法 statutory-heir citation** corrected to §887, §889, §890 (§888 was
+  deleted in 1962).
+- **Single source of truth.** The time-decaying values now live in
+  `src/scripts/constants.js`, each stamped with its issuing-authority
+  source and verified date, and tracked in `docs/CLAIM-LEDGER.md`. Annual
+  recheck batch: mid-January.
 
 ### Hosted demo hardening
 
@@ -75,7 +111,7 @@ Japan. Everything below ships in this build.
   Profile, Accounts, Sequence, Risks) for the high-stakes window
   between SOFA status and 住民票 registration. Cost-of-mistake
   warnings before each critical action.
-- **Estate** — JP statutory shares (民法 §887–§890) auto-derived
+- **Estate** — JP statutory shares (民法 §887, §889, §890) auto-derived
   from family composition, inheritance tax estimation with
   小規模宅地等の特例, will tracker cross-referenced with Document
   Vault, 戸籍 handling for foreign decedents, Letter of Instruction
