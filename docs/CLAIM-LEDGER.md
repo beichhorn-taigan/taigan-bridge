@@ -81,7 +81,7 @@ corrected **offline fallback** in `TB.constants.TREASURY_FX_FALLBACK`.
 
 | # | Claim | Value to use | Tier | Source URL | Verified | Recheck by | Stability | Notes |
 |---|---|---|---|---|---|---|---|---|
-| 27 | 国籍選択 deadline | Acquired **before age 18 → choose by age 20**; acquired at/after 18 → within 2 years (Nationality Act Art. 14, since 2022-04-01) | T1 | https://www.moj.go.jp/MINJI/minji06.html | 2026-06-07 | stable | Stable | v1.0.0 shipped pre-2022 "by 22" rule (see Rejected R1), fixed v1.0.1 in code + all strings |
+| 27 | 国籍選択 deadline + enforcement | Acquired **before age 18 → choose by age 20**; at/after 18 → within 2 years (Nationality Act **Art. 14**, since 2022-04-01). Art. 14 is a non-penalized **duty of effort (努力義務)**: missing the date = no fine, no automatic loss; loss occurs only after an unanswered Ministry **催告** written demand (one-month window), which has **never been issued to anyone**. Distinct from **Art. 11** (automatic loss on *voluntarily acquiring* a foreign nationality — does NOT apply to dual-from-birth). Filing 国籍選択届 ≠ US renunciation (Art. 16 = "endeavor"). Confirm status via 戸籍謄本. | T1 | https://www.moj.go.jp/MINJI/minji06.html ; https://www.moj.go.jp/MINJI/minji05.html | 2026-06-08 | stable | Stable | v1.0.0 "by 22" → fixed v1.0.1; calm framing + Art.11/14 split + .ics calendar +22→+20 bug → fixed v1.0.2 |
 | 28 | Pension vesting | 老齢年金 requires 10 years (120 months) of qualifying periods | T1 | https://www.nenkin.go.jp/service/jukyu/seido/roureinenkin/jukyu-yoken/20150401-02.html | 2026-06-07 | stable | Stable | — |
 | 29 | カラ期間 | 合算対象期間 counts toward the 10-year vesting but not the benefit amount; includes overseas-residence periods of Japanese nationals | T1 | https://www.nenkin.go.jp/service/jukyu/seido/roureinenkin/jukyu-yoken/20140421-05.html | 2026-06-07 | stable | Stable | — |
 | 30 | 追納 | Back-payment of exempted/deferred contributions allowed within 10 years | T1 | https://www.nenkin.go.jp/service/kokunen/menjo/20150331.html | 2026-06-07 | stable | Stable | — |
@@ -125,11 +125,20 @@ context-free verifier (22 external claims: 20 confirmed, 1 wrong, 1 tier-flagged
 R1–R8. Unresolved: demo-profile data, JP register, undocumented module logic
 (declared out of scope).
 
-### 2026-06-08 — corrections applied (v1.0.1, this build)
+### 2026-06-08 — corrections applied (v1.0.1)
 All Rejected rows R1–R8 corrected in source. Time-decaying values centralized in
 `src/scripts/constants.js`. FBAR now auto-fetches official Treasury year-end
 rates on module open (offline fallback = corrected constants table). Nationality
 deadline math changed from +22y to +20y; every "by 22" string updated EN+JP.
+
+### 2026-06-08 — 国籍選択 enforcement framing (v1.0.2)
+Follow-up research on Article 14 enforcement (row 27). Reframed the past-deadline
+state from a high-urgency "OVERDUE" alarm to a calm, dismissible informational
+note: the obligation is a non-penalized 努力義務, the 催告 demand has never been
+issued, and there is no automatic loss. Added the Art. 11 vs Art. 14 distinction
+and the "filing ≠ renunciation" clarification (EN+JP). Fixed a residual bug: the
+exported .ics calendar event still computed the date at birth +22y (corrected to
++20y, matching the in-app deadline).
 
 ## Source notes
 

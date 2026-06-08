@@ -371,7 +371,7 @@
       id: 'nationality_choice',
       label_en: '国籍選択 tracker',
       label_jp: '国籍選択トラッカー',
-      description_en: 'Per-dual-citizen-child countdown to age-22 nationality choice deadline.',
+      description_en: 'Per-dual-citizen-child countdown to the age-20 nationality choice date (non-penalized duty of effort).',
       description_jp: '二重国籍の各お子様について、20 歳の国籍選択期限までのカウントダウン。',
       auto_show: indicatedDualChildren,
       builder: () => buildNationalityChoiceCard(),
@@ -778,9 +778,11 @@
       } else if (made === 'kept_both') {
         color = 'var(--tb-warn)';
         badge = '⚠ ' + t('family.nationality_choice.made_both');
-      } else if (age != null && age >= 22) {
-        color = 'var(--tb-warn)';
-        badge = '⚠ ' + t('family.nationality_choice.overdue');
+      } else if (days != null && days < 0) {
+        // Past the formal date — calm/neutral, not a warning. Art. 14 is a
+        // non-penalized duty of effort; no automatic loss (see intro).
+        color = 'var(--tb-text-soft)';
+        badge = t('family.nationality_choice.overdue');
       } else if (days != null && days <= 365 * 2) {
         color = 'var(--tb-warn)';
         badge = days + 'd';
@@ -1473,20 +1475,32 @@
       if (days == null) return;
       if (days > 365 * 3) return; // start showing 3y out
       const name = m.name_en || m.name_jp || 'child';
-      const urgency = days < 0 ? 'high' : days <= 365 ? 'high' : days <= 365 * 2 ? 'medium' : 'low';
-      const title = days < 0
-        ? '国籍選択 OVERDUE — ' + name
+      const past = days < 0;
+      // Article 14 is a non-penalized "duty of effort" (努力義務): missing the
+      // date triggers NO automatic loss. Japanese nationality is lost only if
+      // the Minister of Justice issues a written demand (催告) and it goes
+      // unanswered for a month — and that demand has never been issued to
+      // anyone. So a past deadline is LOW urgency + dismissible, not a red
+      // "OVERDUE" alarm. (Article 11 — automatic loss on VOLUNTARILY acquiring
+      // a foreign nationality — is the provision with teeth, and it does not
+      // apply to a child who was dual from birth.)
+      const urgency = past ? 'low' : (days <= 365 ? 'medium' : 'low');
+      const title = past
+        ? '国籍選択 — past the formal date (no action forced) — ' + name
         : '国籍選択 in ' + Math.floor(days / 365) + 'y — ' + name;
+      const body = past
+        ? 'Being past the 国籍選択 (nationality-choice) date carries no automatic consequence. The obligation is a non-penalized "duty of effort" (努力義務): Japanese nationality is lost only if the Minister of Justice issues a written demand (催告) and it then goes unanswered for one month — and that demand has never been issued to anyone in Japan\'s history. Hundreds of thousands of dual nationals remain in exactly this position. This is Article 14 (the choice rule), which is separate from Article 11, under which a Japanese citizen who VOLUNTARILY acquires a foreign nationality loses Japanese nationality automatically — Article 11 does not apply to someone who was dual from birth. To confirm the formal record, obtain a 戸籍謄本 (a filed 国籍選択届 would appear there); a 行政書士 or the 法務局 can verify. Note: filing 国籍選択届 selecting Japanese does NOT renounce US citizenship — that is a separate consular process.'
+        : 'Japanese law asks dual nationals to choose one nationality: acquired before age 18 → by age 20; at/after 18 → within 2 years. This is a non-penalized "duty of effort" (Article 14) — no fine and no automatic loss for missing it, and the formal demand process has never been used. Filing 国籍選択届 selecting Japanese does NOT renounce US citizenship (separate consular act; only an "endeavor" under Article 16). Many dual nationals keep both. Separate risk worth knowing: Article 11 — voluntarily ACQUIRING a foreign nationality later — causes automatic loss of Japanese nationality, but it does not apply to a child dual from birth.';
       out.push({
         id: 'family_natchoice_' + m.id,
         group: 'family',
         urgency,
         icon: '⚖',
         title,
-        body: 'Japanese nationality law requires dual-citizens to choose one nationality. Since the 2022 reform: if the second nationality was acquired before age 18, choose by age 20; if acquired at or after 18, within 2 years of acquiring it. Filing for "Choosing Japanese nationality" (日本国籍選択届) does NOT auto-renounce US citizenship — that requires a separate consulate process. Many dual-citizens pragmatically pick neither and quietly retain both; Japan rarely enforces.',
+        body: body,
         deadline: choiceDate,
         module: 'family',
-        snoozable: days > 365,
+        snoozable: true,
       });
     });
     return out;

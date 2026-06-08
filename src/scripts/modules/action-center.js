@@ -835,13 +835,15 @@
           const cit = m.citizenships || [];
           if (cit.indexOf('US') !== -1 && cit.indexOf('JP') !== -1) {
             const b = new Date(m.birth_date + 'T00:00:00');
-            b.setFullYear(b.getFullYear() + 22);
+            // Dual-from-birth (acquired before 18) → choose by age 20 under
+            // the post-2022 Nationality Act Art. 14. (Was +22 pre-2022.)
+            b.setFullYear(b.getFullYear() + 20);
             const dateStr = b.toISOString().slice(0, 10);
             events.push({
               uid: 'tb-natchoice-' + m.id,
               date: dateStr,
-              summary: '国籍選択 deadline: ' + name + ' (by age 20)',
-              description: 'Japanese Nationality Act §14 — choose between US and JP citizenship by this date. Visit local 市役所 for the 日本国籍選択届 form.',
+              summary: '国籍選択 by age 20: ' + name,
+              description: 'Japanese Nationality Act Art. 14 — date by which a dual-from-birth national is asked to choose a nationality. This is a non-penalized "duty of effort": missing it carries no automatic loss, and the Ministry\'s formal demand (催告) has never been issued to anyone. Filing 国籍選択届 selecting Japanese does not renounce US citizenship. Confirm the formal record via 戸籍謄本 (法務局 / 行政書士 can verify).',
               category: 'Family',
             });
           }

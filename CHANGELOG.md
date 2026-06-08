@@ -2,6 +2,29 @@
 
 All notable changes to Taigan Bridge will be documented in this file.
 
+## [1.0.2] — 2026-06-08 — Nationality-choice framing + calendar fix
+
+### Accuracy
+
+- **国籍選択 (nationality choice) reframed to match the law's real teeth.**
+  Article 14 is a non-penalized "duty of effort" (努力義務): missing the
+  date carries no fine and no automatic loss of Japanese nationality —
+  that can happen only after a Ministry of Justice written demand (催告)
+  goes unanswered for a month, and that demand has never been issued to
+  anyone. The Action Center no longer shows a red "OVERDUE" alarm once the
+  date passes; it shows a calm, dismissible informational note (no action
+  forced) that explains this and how to confirm status via the 戸籍.
+- **Added the Article 11 vs Article 14 distinction.** Article 11 (automatic
+  loss of Japanese nationality on VOLUNTARILY acquiring a foreign one) is
+  the provision with teeth — and it does NOT apply to someone who was dual
+  from birth. Now stated explicitly so the two aren't conflated.
+- **Clarified that filing 国籍選択届 selecting Japanese does not renounce
+  US citizenship** (separate consular act; Article 16 only asks you to
+  "endeavor"). EN + JP.
+- **Bug fix:** the exported calendar (.ics) event for the choice date was
+  still computed at birth + 22 years even after the v1.0.1 deadline fix —
+  corrected to age 20 (dual-from-birth), matching the in-app deadline.
+
 ## [1.0.1] — 2026-06-08 — Fact-check corrections + demo hardening
 
 ### Accuracy (independent fact-check)

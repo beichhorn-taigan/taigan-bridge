@@ -2050,7 +2050,7 @@
       'nw.review2.step.fbar_threshold.title': 'FBAR threshold check',
       'nw.review2.step.fbar_threshold.body':  'Aggregates your foreign-account balances. $10,000 peak at any point in the year requires an FBAR (FinCEN 114) — a single transfer can trigger it, so always re-check after year-end.',
       'nw.review2.step.family.title':         'Family + passport refresh',
-      'nw.review2.step.family.body':          'Surfaces passports expiring in the next 12 months, gift-log gaps for the year, and dual-citizen kids approaching the age-22 国籍選択 deadline.',
+      'nw.review2.step.family.body':          'Surfaces passports expiring in the next 12 months, gift-log gaps for the year, and dual-citizen kids approaching the age-20 国籍選択 deadline.',
       'nw.review2.step.property.title':       'Property review',
       'nw.review2.step.property.body':        'JP固定資産税 timing for the upcoming year, US §121 5-year clock if you have a former-primary rental, and any new acquisition tax obligations.',
       'nw.review2.step.healthcare.title':     'Healthcare review',
@@ -2396,16 +2396,16 @@
 
       'family.roster.empty':           'No family members added yet. Click "Add member" to start.',
 
-      'family.nationality_choice.intro': 'Japanese Nationality Act Article 14 (amended 2022): if multiple nationalities were acquired before age 18, choose ONE by age 20; if acquired at or after 18, within 2 years of acquiring. Choosing JP is filed via 日本国籍選択届 at the city office; choosing US requires filing 国籍喪失届 to formally renounce JP. Many dual-citizens pragmatically keep both — Japan rarely enforces non-compliance.',
+      'family.nationality_choice.intro': 'Japanese Nationality Act Article 14 (amended 2022): a person who acquired multiple nationalities before age 18 chooses ONE by age 20; acquired at/after 18, within 2 years. In practice this is a non-penalized "duty of effort" — no fine and no automatic loss for missing the date. Japanese nationality is lost only if the Minister of Justice issues a written demand (催告) that then goes unanswered for one month, and that demand has never been issued to anyone; most of Japan\'s dual nationals simply remain dual. Filing 日本国籍選択届 to select Japanese does NOT renounce US citizenship — that is a separate consular act, and Article 16 only asks you to "endeavor" to give up the other nationality. Keep this separate from Article 11, under which a Japanese citizen who VOLUNTARILY acquires a foreign nationality loses Japanese nationality automatically — Article 11 does not apply to someone dual from birth. To confirm where someone formally stands, check the 戸籍謄本 (a filed selection is recorded there); a 行政書士 or the 法務局 can verify.',
       'family.nationality_choice.deadline': '20th birthday',
-      'family.nationality_choice.action': 'No choice filed yet. Approaching the 20th birthday is the trigger to consider — visit the local city office (市役所/区役所) for the 日本国籍選択届 form.',
+      'family.nationality_choice.action': 'No selection on record. There is no hard deadline pressure here: the choice is a non-penalized "duty of effort" and missing the date carries no automatic loss. If/when you do choose Japanese, file the 日本国籍選択届 at the local 市役所/区役所. To confirm the formal record, check the 戸籍謄本.',
       'family.nationality_choice.made_us':  'Chose US — JP citizenship released',
       'family.nationality_choice.made_jp':  'Chose JP — US still requires separate consulate renunciation',
       'family.nationality_choice.made_both': 'Kept both (no filing)',
       'family.nationality_choice.note_us':  'Filing complete. JP nationality renounced via 国籍喪失届. Returning to live in Japan would now require a visa.',
       'family.nationality_choice.note_jp':  'JP nationality preserved. ⚠ The US is NOT automatically notified — child still owes US tax filings (1040, FBAR, etc.) until separately renounced at a US consulate. Many people in this state forget the US obligations.',
       'family.nationality_choice.note_both': 'No filing made. Technically a violation of Article 14, but enforcement is virtually nonexistent. Watch for Japanese passport renewal questionnaires that ask about other citizenships — answering "no" while holding US citizenship can create issues.',
-      'family.nationality_choice.overdue': 'OVERDUE',
+      'family.nationality_choice.overdue': 'past · no penalty',
 
       'family.transmission.intro':     'If your US-citizen child eventually has children of their own while living abroad with a non-US-citizen partner, US citizenship transmission to the grandchild is NOT automatic.',
       'family.transmission.rule_label': 'Physical-presence requirement (INA §301(g))',
@@ -6709,16 +6709,16 @@
 
       'family.roster.empty':           '家族メンバー未登録。「メンバー追加」から開始してください。',
 
-      'family.nationality_choice.intro': '日本国籍法第 14 条(2022 年改正)では、18 歳未満で複数の国籍を取得した場合は 20 歳までに、18 歳以降に取得した場合は取得から 2 年以内に、いずれか一つの国籍を選択しなければなりません。日本を選ぶ場合は市役所で日本国籍選択届を提出し、米国を選ぶ場合は国籍喪失届で日本国籍を正式に離脱します。実態としては多くの二重国籍者が両方を保持しており、違反時の取り締まりは事実上行われていません。',
+      'family.nationality_choice.intro': '日本国籍法第 14 条(2022 年改正):18 歳未満で複数の国籍を取得した場合は 20 歳までに、18 歳以降に取得した場合は取得から 2 年以内に、いずれか一つを選択します。ただしこれは罰則のない努力義務であり、期限を過ぎても罰金や国籍の自動喪失はありません。日本国籍を失うのは、法務大臣による書面の催告に 1 か月以内に応じなかった場合のみで、この催告はこれまで一度も発出されていません。多くの二重国籍者はそのまま両方を保持しています。日本国籍選択届の提出は米国籍の放棄を意味しません(米国側での別の手続きが必要で、第 16 条は他国籍の離脱に「努める」ことを求めるにとどまります)。なお、出生による二重国籍には適用されませんが、日本国民が自らの意思で外国籍を取得した場合は第 11 条により日本国籍を自動的に失う点は区別してください。正式な状況は戸籍謄本で確認でき(選択届が提出されていれば記載されます)、行政書士や法務局でも確認できます。',
       'family.nationality_choice.deadline': '20 歳の誕生日',
-      'family.nationality_choice.action': '未届です。20 歳が近づいたら検討すべき時期です。市役所・区役所で日本国籍選択届のフォームを取得してください。',
+      'family.nationality_choice.action': '選択届は記録にありません。これは罰則のない努力義務で、期限を過ぎても自動的に国籍を失うことはありません。日本国籍を選ぶ場合は、市役所・区役所で日本国籍選択届を提出します。正式な記録は戸籍謄本で確認できます。',
       'family.nationality_choice.made_us':  '米国を選択 — 日本国籍離脱',
       'family.nationality_choice.made_jp':  '日本を選択 — 米国は領事館での放棄手続きが別途必要',
       'family.nationality_choice.made_both': '両方保持(未届)',
       'family.nationality_choice.note_us':  '届出完了。国籍喪失届により日本国籍離脱。今後の日本居住にはビザが必要。',
       'family.nationality_choice.note_jp':  '日本国籍維持。⚠ 米国は自動通知されないため、子は米国市民として 1040・FBAR 等の申告義務が継続。米領事館での正式放棄まで義務継続 — この状態の人は米国側義務を忘れがち。',
       'family.nationality_choice.note_both': '未届。第 14 条違反だが取締りはほぼなし。日本パスポート更新時の他国籍質問に「なし」と答えると問題になり得る。',
-      'family.nationality_choice.overdue': '期限超過',
+      'family.nationality_choice.overdue': '期限経過(罰則なし)',
 
       'family.transmission.intro':     '将来あなたの米国籍の子が米国外で非米国籍の配偶者と子(あなたの孫)を持つ場合、孫への米国市民権継承は自動ではありません。',
       'family.transmission.rule_label': '物理的存在要件(INA §301(g))',
