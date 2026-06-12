@@ -97,6 +97,10 @@
   function paintHostedBanner() {
     if (document.querySelector('.tb-hosted-banner')) return;
     const t = (TB.i18n && TB.i18n.t) ? TB.i18n.t : ((k) => k);
+    // Primary CTA: one-click direct download from taiganjp.com (no GitHub
+    // account or Releases-page navigation needed). Secondary link: GitHub
+    // Releases for users who want version history or checksums.
+    const DIRECT_DOWNLOAD_URL = 'https://taiganjp.com/downloads/taigan-bridge';
     const RELEASES_URL = 'https://github.com/beichhorn-taigan/taigan-bridge/releases/latest';
     const banner = document.createElement('div');
     banner.className = 'tb-hosted-banner';
@@ -104,9 +108,11 @@
     banner.innerHTML =
       '<strong>🌐 ' + t('hostedDemo.banner.label') + '</strong>' +
       '<span class="tb-hosted-banner__body">' + t('hostedDemo.banner.body') + '</span>' +
-      '<a class="tb-hosted-banner__cta" href="' + RELEASES_URL +
+      '<a class="tb-hosted-banner__cta" href="' + DIRECT_DOWNLOAD_URL + '">' +
+        '⬇ ' + t('hostedDemo.banner.cta') + '</a>' +
+      '<a class="tb-hosted-banner__alt" href="' + RELEASES_URL +
         '" target="_blank" rel="noopener noreferrer">' +
-        '⬇ ' + t('hostedDemo.banner.cta') + '</a>';
+        t('hostedDemo.banner.github') + '</a>';
     if (document.body.firstChild) {
       document.body.insertBefore(banner, document.body.firstChild);
     } else {

@@ -48,6 +48,7 @@
       'hostedDemo.banner.label':        'Live demo',
       'hostedDemo.banner.body':         'This is the hosted preview of Taigan Bridge. Don\'t enter your own financial data here — your changes won\'t follow you to other devices, and the app isn\'t designed to be used on a copy you don\'t own.',
       'hostedDemo.banner.cta':          'Download for your own data',
+      'hostedDemo.banner.github':       'All versions on GitHub',
       'hostedDemo.aiDisabled':          'AI features are turned off in the live demo. Download Taigan Bridge and run it from your own device to use them with your own Anthropic key.',
 
       // ─── Update check (new release available) ───────────────────
@@ -4373,6 +4374,7 @@
       'hostedDemo.banner.label':        'ライブデモ',
       'hostedDemo.banner.body':         '現在、Taigan Bridge のホスト型プレビューをご覧になっています。実際の財務情報は入力しないでください。変更内容は他の端末には引き継がれず、ご自身でダウンロードしていないコピーで使用する想定でも設計されていません。',
       'hostedDemo.banner.cta':          'ダウンロードしてご自身用に',
+      'hostedDemo.banner.github':       'その他のバージョン（GitHub）',
       'hostedDemo.aiDisabled':          'AI 機能はライブデモでは無効です。ご利用になるには、Taigan Bridge をダウンロードし、お手元の端末でご自身の Anthropic キーを設定してください。',
 
       // ─── アップデート確認(新しいリリースの通知)──────────────

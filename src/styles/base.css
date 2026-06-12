@@ -249,6 +249,26 @@ code, pre, kbd {
   transform: translateY(-1px);
   text-decoration: none;
 }
+/* Secondary banner link (GitHub releases) — outlined pill, subordinate
+   to the solid-white direct-download CTA. */
+.tb-hosted-banner__alt {
+  background: transparent;
+  color: #fff !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.75);
+  padding: 5px 14px;
+  border-radius: 999px;
+  text-decoration: none !important;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+}
+.tb-hosted-banner__alt:hover {
+  transform: translateY(-1px);
+  border-color: #fff;
+  text-decoration: none;
+}
 
 /* Inserted by update-check.js when a newer release has been
    detected via the version.js check. Sits BELOW the disclaimer banner in
