@@ -1,8 +1,17 @@
-﻿name: Deploy to GitHub Pages
+name: Deploy to GitHub Pages
+
+# The hosted demo moved to https://taiganjp.com/tools/taigan-bridge/
+# (served from the taiganjp site repo). This workflow now publishes only
+# a redirect stub so old links and bookmarks land at the new home.
+# The pre-redirect workflow (full build + GoatCounter injection) lives in
+# git history if it's ever needed again.
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'pages-redirect/**'
+      - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
 permissions:
@@ -15,47 +24,23 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      # The Pages copy (index.html) is the public demo, so it gets the
-      # GoatCounter snippet. The downloadable build (taigan-bridge.html)
-      # is left untouched — the file users download has zero analytics.
-      - name: Prepare Pages artifact
-        run: |
-          cp dist/taigan-bridge.html dist/index.html
-          node tools/inject-demo-analytics.js dist/index.html
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
   deploy:
-    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload redirect stub
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages-redirect
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
