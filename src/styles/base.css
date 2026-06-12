@@ -204,7 +204,7 @@ code, pre, kbd {
 }
 
 /* Inserted by hosted-demo.js when the app is served from a non-
-   file:// origin (i.e., the hosted preview at github.io). Sits at
+   file:// origin (i.e., the hosted preview at taiganjp.com). Sits at
    the very top of every page above ALL other banners so users
    never miss that they're on the demo preview, not their own
    downloaded copy. Distinctive red-orange so it visually
@@ -251,7 +251,7 @@ code, pre, kbd {
 }
 
 /* Inserted by update-check.js when a newer release has been
-   detected on github.io. Sits BELOW the disclaimer banner in
+   detected via the version.js check. Sits BELOW the disclaimer banner in
    document order — NOT sticky, so it scrolls away with the page
    (lower-stakes notice than the disclaimer/tamper/hosted bars).
    Neutral accent-blue so it reads as informational, not alarming.

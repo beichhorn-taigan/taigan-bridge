@@ -7,8 +7,8 @@
  *   Constraint:  most users open this app as a file:// download, where
  *                Chrome/Edge block all cross-origin fetch/XHR. We can
  *                therefore NOT call api.github.com directly from the
- *                runtime — it works on the dev server and from
- *                github.io, but silently fails for ~90% of real users.
+ *                runtime — it works on the dev server and from the
+ *                hosted demo, but silently fails for ~90% of real users.
  *
  *   Workaround:  cross-origin <script src=...> tags ARE allowed even
  *                from file://. We publish a tiny version.js (built to
@@ -44,7 +44,7 @@
  *   - Dismissable per-version: dismissing 0.2.0 doesn't dismiss 0.3.0.
  *
  * Hosted-demo skip:
- *   - The hosted preview at github.io is, by definition, always the
+ *   - The hosted preview at taiganjp.com is, by definition, always the
  *     latest. Showing an "update available" banner there would be
  *     nonsensical, so we no-op entirely when isHostedDemo() is true.
  *

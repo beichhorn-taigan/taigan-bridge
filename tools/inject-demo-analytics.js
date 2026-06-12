@@ -2,8 +2,8 @@
 /* inject-demo-analytics.js
  *
  * Inserts the hosted-demo GoatCounter snippet immediately before </body>
- * in the target HTML file. The GitHub Pages deploy workflow runs this on
- * the Pages copy (dist/index.html) ONLY — the downloadable / release build
+ * in the target HTML file. This runs on the hosted copy served at
+ * taiganjp.com/tools/taigan-bridge/ ONLY — the downloadable / release build
  * (dist/taigan-bridge.html) never contains any analytics code. A user who
  * downloads the file and greps it finds nothing.
  *
@@ -24,13 +24,13 @@
 
 const fs = require('fs');
 
-const DEMO_HOST = 'beichhorn-taigan.github.io';
+const DEMO_HOST = 'taiganjp.com';
 const GC_ENDPOINT = 'https://taiganbridge.goatcounter.com/count';
 const MARKER = 'data-goatcounter'; // presence => already injected
 
 const SNIPPET = [
-  '<!-- Hosted-demo analytics (GoatCounter) — injected only into the GitHub',
-  '     Pages copy by tools/inject-demo-analytics.js; never in the download.',
+  '<!-- Hosted-demo analytics (GoatCounter) — injected only into the hosted',
+  '     copy by tools/inject-demo-analytics.js; never in the download.',
   '     No cookies, no personal data, no cross-site tracking; aggregate',
   '     pageviews + a count of download-link clicks. Gated to the demo host. -->',
   '<script>',

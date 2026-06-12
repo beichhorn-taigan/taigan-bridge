@@ -1,7 +1,7 @@
 /* Taigan Bridge — hosted-demo.js
  *
  * Adapts the app's behavior when it's running as a hosted preview
- * (e.g., on beichhorn-taigan.github.io/taigan-bridge) rather than as
+ * (e.g., on taiganjp.com/tools/taigan-bridge) rather than as
  * a downloaded local file. The hosted version is for evaluation
  * only — users shouldn't enter real financial data into a copy of
  * the app they don't own.

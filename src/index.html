@@ -224,8 +224,8 @@
 
   <!-- Hosted-demo detector. No-op when the page is opened via
        file:// (the intended-for-real-use download mode). When the
-       page is served from a non-file:// origin (e.g., GitHub Pages
-       at beichhorn-taigan.github.io/taigan-bridge), this:
+       page is served from a non-file:// origin (e.g., the hosted
+       demo at taiganjp.com/tools/taigan-bridge), this:
          1. Pins a red "LIVE DEMO — download for your own data"
             banner at the very top of every page
          2. Auto-loads the SOFA sample profile on first visit so
@@ -236,8 +236,8 @@
 
   <!-- New-release detector. On non-hosted installs (file:// or local
        http://), opt-in (one-time consent prompt), then checks at
-       most once per 24h whether a newer release is published on
-       github.io/taigan-bridge/version.js. Uses cross-origin <script>
+       most once per 24h whether a newer release is published
+       (version.js served via jsDelivr). Uses cross-origin <script>
        injection (not fetch) so it works from file:// where Chrome
        blocks all cross-origin XHR. Shows an inline blue banner under
        the disclaimer when an update is available, dismissable per-

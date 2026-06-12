@@ -35,8 +35,7 @@ stays on your machine.
 
 If you'd rather poke around before downloading, the latest build is
 hosted as a static page at
-**[beichhorn-taigan.github.io/taigan-bridge](https://beichhorn-taigan.github.io/taigan-bridge)**
-(when GitHub Pages is live for the current release).
+**[taiganjp.com/tools/taigan-bridge](https://taiganjp.com/tools/taigan-bridge/)**.
 
 **The hosted version is a guided tour, not a workspace.** When you
 open it you'll land inside a pre-loaded sample household (the SOFA
@@ -49,7 +48,7 @@ financial information:
 - Any onboarding info you type gets overwritten the next time you
   refresh, because the page re-seeds the sample profile.
 - You're sharing localStorage with whatever the browser remembers
-  from `github.io` — not a great neighborhood for account numbers,
+  from `taiganjp.com` — not a great neighborhood for account numbers,
   balances, or `マイナンバー`.
 - I (the author) don't run a backend, but I also can't promise the
   hosted build stays at any particular version, or that I won't
@@ -178,7 +177,7 @@ your situation:
   tracking pixels, and no fonts loaded from a CDN — search the file and
   there is nothing to find.
 - **Hosted demo is the one exception.** The public preview at
-  `beichhorn-taigan.github.io` loads GoatCounter — a privacy-friendly,
+  `taiganjp.com/tools/taigan-bridge/` loads GoatCounter — a privacy-friendly,
   cookieless analytics service — to count aggregate page views and clicks
   on the download link. It sets no cookies, collects no personal data,
   and does no cross-site
