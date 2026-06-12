@@ -1,23 +1,34 @@
 #!/usr/bin/env node
 /* inject-demo-analytics.js
  *
- * Inserts the hosted-demo GoatCounter snippet immediately before </body>
- * in the target HTML file. This runs on the hosted copy served at
- * taiganjp.com/tools/taigan-bridge/ ONLY — the downloadable / release build
- * (dist/taigan-bridge.html) never contains any analytics code. A user who
- * downloads the file and greps it finds nothing.
+ * THE canonical step when re-publishing the hosted demo. The demo lives at
+ * taiganjp.com/tools/taigan-bridge/ (served from the taiganjp site repo);
+ * shipping a new Bridge version there is:
+ *
+ *   1. npm run build                              (in this repo)
+ *   2. cp dist/taigan-bridge.html  ../taiganjp/public/tools/taigan-bridge/index.html
+ *   3. node tools/inject-demo-analytics.js ../taiganjp/public/tools/taigan-bridge/index.html
+ *   (the taiganjp README documents the same procedure from its side)
+ *
+ * Inserts the hosted-demo GoatCounter snippet immediately before the final
+ * </body> in the target HTML file. The hosted copy ONLY — the downloadable
+ * / release build (dist/taigan-bridge.html) never contains any analytics
+ * code. A user who downloads the file and greps it finds nothing.
  *
  * Privacy-friendly by design: GoatCounter sets no cookies, collects no
  * personal data, and does no cross-site tracking — it records aggregate
  * pageview counts plus a tally of clicks on the "Download for your own
- * data" link (an anonymous event, no personal data). The injected snippet
+ * data" links (an anonymous event, no personal data). The injected snippet
  * is additionally gated to the official demo hostname, so a mirror of the
  * page can't report to our account.
+ *
+ * Reports to the taiganjp GoatCounter property (the site's own), so demo
+ * pageviews, download clicks, and site traffic live in one dashboard.
  *
  * Usage:  node tools/inject-demo-analytics.js <path-to-html>
  *
  * Idempotent: a second run on an already-injected file is a no-op. Exits
- * non-zero on any failure so a broken deploy fails loudly rather than
+ * non-zero on any failure so a broken publish fails loudly rather than
  * silently shipping an un-instrumented (or malformed) page.
  */
 'use strict';
@@ -25,14 +36,15 @@
 const fs = require('fs');
 
 const DEMO_HOST = 'taiganjp.com';
-const GC_ENDPOINT = 'https://taiganbridge.goatcounter.com/count';
+const GC_ENDPOINT = 'https://taiganjp.goatcounter.com/count';
 const MARKER = 'data-goatcounter'; // presence => already injected
 
 const SNIPPET = [
   '<!-- Hosted-demo analytics (GoatCounter) — injected only into the hosted',
-  '     copy by tools/inject-demo-analytics.js; never in the download.',
-  '     No cookies, no personal data, no cross-site tracking; aggregate',
-  '     pageviews + a count of download-link clicks. Gated to the demo host. -->',
+  '     copy by TaiganBridge tools/inject-demo-analytics.js; never in the',
+  '     download. No cookies, no personal data, no cross-site tracking;',
+  '     aggregate pageviews + a count of download-link clicks. Gated to the',
+  '     demo host. -->',
   '<script>',
   '  (function () {',
   "    if (location.hostname !== '" + DEMO_HOST + "') return;",
@@ -41,16 +53,18 @@ const SNIPPET = [
   "    gc.src = '//gc.zgo.at/count.js';",
   "    gc.setAttribute('data-goatcounter', '" + GC_ENDPOINT + "');",
   '    document.body.appendChild(gc);',
-  '    // Count clicks on any "Download for your own data" link (top banner',
-  '    // or the Settings card). Delegated, so it also catches links that',
-  '    // are rendered after this script runs.',
+  '    // Count clicks on any "Download for your own data" link — the top',
+  '    // banner CTA, the Settings card (GitHub releases), or a direct',
+  '    // /downloads/ link. Delegated, so it also catches links rendered',
+  '    // after this script runs.',
   "    document.addEventListener('click', function (e) {",
-  '      var a = e.target && e.target.closest && e.target.closest(\'a[href*="/releases"]\');',
+  '      var a = e.target && e.target.closest &&',
+  '        e.target.closest(\'a[href*="/releases"], a[href*="/downloads/taigan-bridge"]\');',
   '      if (!a) return;',
   "      if (window.goatcounter && typeof window.goatcounter.count === 'function') {",
   '        window.goatcounter.count({',
-  "          path: 'download-cta',",
-  "          title: 'Download for your own data',",
+  "          path: 'download-taigan-bridge-demo',",
+  "          title: 'Taigan Bridge download (from demo)',",
   '          event: true,',
   '        });',
   '      }',
