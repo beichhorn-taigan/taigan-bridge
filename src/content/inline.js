@@ -441,7 +441,7 @@
     },
     {
       // Dual-citizen children + 国籍選択 (Article 14 of Nationality
-      // Law). The 22nd-birthday deadline is the lever — we group
+      // Law). The age-20 choice date is the lever — we group
       // by age band so the Family module can prioritize the imminent
       // ones without asking for each child's birth year here.
       id: 'dual_children_age_band',

@@ -88,10 +88,12 @@
 
   // US estate tax (informational — most US persons abroad never reach it).
   //   - 2025 unified credit equivalent: $13.99M
-  //   - 2026 sunset to ~$7M (TCJA expiration) UNLESS extended
+  //   - 2026: $15.0M — OBBBA made the higher exemption PERMANENT (then
+  //     inflation-indexed); the old TCJA "sunset to ~$7M" did NOT happen.
   //   - US-Japan estate tax treaty allows pro-rata deduction; less
   //     useful than treaty's gift-tax provisions.
   const US_ESTATE_EXEMPTION_2025 = 13_990_000;
+  const US_ESTATE_EXEMPTION_2026 = 15_000_000;
 
   // ====================================================================
   // State accessors

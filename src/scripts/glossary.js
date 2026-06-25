@@ -737,7 +737,7 @@
     'FICA': {
       expansion: 'Federal Insurance Contributions Act',
       short: 'US payroll tax: 6.2% Social Security + 1.45% Medicare. Employer matches.',
-      long: 'Social Security portion capped at $168,600 (2024) wage base. Medicare uncapped + additional 0.9% for high earners ($200K+ single, $250K+ MFJ).',
+      long: 'Social Security portion capped at $184,500 (2026) wage base. Medicare uncapped + additional 0.9% for high earners ($200K+ single, $250K+ MFJ).',
       category: 'us-tax',
       related: ['Social Security', 'Medicare'],
     },

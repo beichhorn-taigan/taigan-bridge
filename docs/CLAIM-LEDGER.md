@@ -63,7 +63,7 @@ corrected **offline fallback** in `TB.constants.TREASURY_FX_FALLBACK`.
 
 | # | Claim | Value to use | Tier | Source URL | Verified | Recheck by | Stability | Notes |
 |---|---|---|---|---|---|---|---|---|
-| 19 | FEIE amount | $130,000 (2025, Rev. Proc. 2024-40); $126,500 (2024) — update annually | T1 | https://www.irs.gov/individuals/international-taxpayers/foreign-earned-income-exclusion | 2026-06-07 | 2026-11-30 | Variable | `TB.constants.FEIE`. 2026 figure TBD |
+| 19 | FEIE amount | $132,900 (2026, IRS inflation adj.); $130,000 (2025, Rev. Proc. 2024-40); $126,500 (2024) — update annually | T1 | https://www.irs.gov/individuals/international-taxpayers/foreign-earned-income-exclusion | 2026-06-08 | 2026-11-30 | Variable | `TB.constants.FEIE`. 2026 = $132,900 confirmed; matches TaiganJP guides |
 | 20 | Form 8938 thresholds (abroad) | Unmarried: >$200,000 year-end or >$300,000 anytime; MFJ: double both | T1 | https://www.irs.gov/instructions/i8938 | 2026-06-07 | 2027-01-15 | Semi-stable | Unchanged for years but statutory-regulatory |
 | 21 | RMD start age | 73 (SECURE 2.0, since 2023); rises to 75 for those turning 73 after 2032; first RMD deferrable to Apr 1 following year | T1 | https://www.irs.gov/retirement-plans/retirement-plan-and-ira-required-minimum-distributions-faqs | 2026-06-07 | 2033-01-01 | Semi-stable | — |
 | 22 | WEP/GPO | Repealed — Social Security Fairness Act, signed 2025-01-05, applies to benefits payable Jan 2024+ | T1 | https://www.ssa.gov/benefits/retirement/social-security-fairness-act.html | 2026-06-07 | stable | Stable | App handles correctly |
@@ -139,6 +139,25 @@ issued, and there is no automatic loss. Added the Art. 11 vs Art. 14 distinction
 and the "filing ≠ renunciation" clarification (EN+JP). Fixed a residual bug: the
 exported .ics calendar event still computed the date at birth +22y (corrected to
 +20y, matching the in-app deadline).
+
+### 2026-06-08 — drift audit vs the TaiganJP guide site (v1.0.3)
+Cross-checked the tool against the TaiganJP guides + their `watched-facts.yaml`.
+~95% already consistent. Tool-side corrections applied:
+- **veteran.js** treaty articles fixed — government/military pensions are **Art. 18**
+  (not 17; Art. 17 = private pensions + SS); VA disability JP treatment reframed
+  from a false "exempt under Article 19" to the correct **unsettled** stance,
+  matching the site's flagship `va-disability-japan-tax` guide.
+- **US estate exemption** — added 2026 = **$15.0M** (OBBBA permanent) and removed
+  the stale "~$7M TCJA sunset" comment (`estate.js`).
+- **Part B premium** — six prose/help strings hardcoded **$195** → **$202.90**
+  (now consistent with `TB.constants.PART_B_PREMIUM_MONTHLY`).
+- **FEIE 2026 = $132,900** added (row 19); **SS wage base** glossary $168,600(2024)
+  → **$184,500 (2026)**; **高額療養費** gained the "under-revision-2026-27" hedge the
+  site carries; WEP/GPO label corrected to "signed Jan 2025."
+- **国籍留保** (3-month overseas-birth nationality reservation) coverage ADDED to the
+  Family module + glossary — closing the one consequential gap vs the site.
+- Note (nenkin): tool's FY2026 国民年金 ¥17,920 confirmed correct; the SITE registry
+  (¥17,510/FY2025) was the stale side and was updated there.
 
 ## Source notes
 

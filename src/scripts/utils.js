@@ -741,6 +741,8 @@
     { kanji: '第1期',     furigana: 'だいいっき', en: '1st installment / period' },
     { kanji: '第2期',     furigana: 'だいにき', en: '2nd installment / period' },
     { kanji: '国籍選択', furigana: 'こくせきせんたく', en: 'nationality choice (since 2022: by age 20 if dual before 18; otherwise within 2 years of acquiring)' },
+    { kanji: '国籍留保', furigana: 'こくせきりゅうほ', en: 'reservation of Japanese nationality — a child born abroad must file within 3 months of birth or lose JP nationality retroactively' },
+    { kanji: '国籍再取得', furigana: 'こくせきさいしゅとく', en: 'reacquisition of Japanese nationality (before age 18, by a child who lost it via a missed 国籍留保 and later lives in Japan)' },
     { kanji: '兄弟姉妹', furigana: 'きょうだいしまい', en: 'siblings' },
     { kanji: '都道府県', furigana: 'とどうふけん', en: 'prefectures (47 administrative divisions of Japan)' },
     { kanji: '持ち戻し', furigana: 'もちもどし', en: 'clawback (gifts pulled back into estate; 7y rule)' },

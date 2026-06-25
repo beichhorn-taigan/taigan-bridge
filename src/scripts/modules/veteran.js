@@ -137,7 +137,7 @@
       groups: [
         { label_en: 'Income', label_jp: '収入', items: [
           { title: 'Military retirement pay', body: '50%+ of your "high-3" base pay (or 40%+ under BRS). COLA-adjusted annually each December. Direct deposit to a US bank or — yes — a JP bank.',
-            jp_en: 'Article 17 of the US-Japan Tax Treaty technically says government pensions are residence-state-only taxable, BUT military retirement is generally treated as taxable in BOTH countries (US under saving clause; JP as residence). FTC offsets.' },
+            jp_en: 'Under the 2003 US-Japan Tax Treaty, government-service pensions (incl. military retirement) fall under Article 18: taxable in the paying state (US) — unless you are BOTH a resident AND a national of Japan, in which case Japan taxes it. (Article 17 covers private pensions + Social Security.) In practice the US saving clause keeps it US-taxable and a JP-resident retiree credits it via the FTC; coordinate with a cross-border preparer.' },
           { title: 'High-3 vs Final Pay vs REDUX vs BRS', body: 'Your specific calculation depends on entry date. High-3 (entered 1980-2017 most common). REDUX optional with $30K bonus. BRS (post-2018 entrants OR opted-in) = 40% pension + 5% TSP match.',
             ref: { label: 'DFAS retirement calculator', url: 'https://www.dfas.mil/RetiredMilitary/plan/Estimate-Your-Pay/' } },
         ]},
@@ -168,7 +168,7 @@
       groups: [
         { label_en: 'Compensation', label_jp: '補償', items: [
           { title: 'VA disability compensation', body: 'Tax-free monthly. Rate increases with rating + dependents (child, spouse, parents). 2024 rates: 10%=~$171/mo, 50%=~$1,075/mo, 100%=~$3,737/mo (single).',
-            jp_en: 'Direct deposit to JP bank works (provide IBAN/SWIFT to VA Manila). Counts as US-source income for FTC purposes but is exempt from Japan tax under Article 19 of the treaty.' },
+            jp_en: 'Direct deposit to a JP bank works (provide IBAN/SWIFT to VA Manila). US side: tax-free regardless of where you live (38 USC; IRS Pub 525). Japan side: genuinely UNSETTLED — there is no NTA ruling, tribunal 裁決, or court case on VA disability specifically. Clearly exempt while you hold SOFA status; for a permanent JP tax resident there are two solid not-taxable arguments (injury-compensation exemption + treaty government-service logic) plus an Article 21 "other income" fallback that could tax it. Not automatically exempt — see the "VA Disability in Japan" guide and confirm with a cross-border 税理士.' },
           { title: 'Annual COLA increase', body: 'Compensation rate adjusted each December for the Dec following.' },
         ]},
         { label_en: 'Healthcare', label_jp: '医療', items: [

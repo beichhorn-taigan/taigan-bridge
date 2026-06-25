@@ -1,6 +1,6 @@
 {
   "name": "taigan-bridge",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "description": "Financial planning organizer for Americans living in Japan. Single-file HTML, no backend, BYO Claude API key.",
   "author": "Benjamin Eichhorn",

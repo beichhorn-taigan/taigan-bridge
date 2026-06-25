@@ -2,6 +2,30 @@
 
 All notable changes to Taigan Bridge will be documented in this file.
 
+## [1.0.3] — 2026-06-08 — Site-consistency pass (drift audit vs TaiganJP)
+
+### Accuracy
+
+Audited the tool against the TaiganJP guide site to eliminate factual drift.
+The two were already ~95% consistent; the corrections below close the gaps —
+most in modules the earlier fact-check passes hadn't touched.
+
+- **Treaty articles (Veteran module) corrected.** Government / military
+  pensions fall under **Article 18** of the 2003 US-Japan treaty, not Article
+  17 (which covers private pensions + Social Security). And VA disability's
+  Japan tax treatment is reframed from a false "exempt under Article 19" to
+  the correct **unsettled** position — matching the site's VA-disability guide.
+- **US estate-tax exemption — 2026 = $15M.** OBBBA made the higher exemption
+  permanent; removed the stale "~$7M 2026 sunset" note.
+- **Medicare Part B — $202.90 everywhere.** Six prose/help strings still read
+  "$195+/mo"; now consistent with the rest of the app (EN + JP).
+- **FEIE 2026 = $132,900** added; **Social Security wage base** updated to
+  **$184,500 (2026)**; **高額療養費** now notes its caps are under active
+  revision for 2026-27; the WEP/GPO label corrected to "signed Jan 2025."
+- **国籍留保 added.** New coverage of the 3-month overseas-birth nationality-
+  reservation deadline — which, unlike the age-20 choice, is actually enforced
+  — closing a gap the site covered and the tool didn't. EN + JP + glossary.
+
 ## [1.0.2] — 2026-06-08 — Nationality-choice framing + calendar fix
 
 ### Accuracy

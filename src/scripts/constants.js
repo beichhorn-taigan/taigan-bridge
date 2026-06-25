@@ -35,7 +35,7 @@
   const FBAR_WILLFUL_MIN    = 165353; // willful = greater of this OR 50% of the balance
 
   // ── Foreign Earned Income Exclusion — IRS announces each fall ───────
-  const FEIE = { '2024': 126500, '2025': 130000 }; // 2026 figure TBD (recheck Nov 2026)
+  const FEIE = { '2024': 126500, '2025': 130000, '2026': 132900 }; // IRS inflation adj.; recheck Nov 2026 for the 2027 figure
 
   // ── Japan gift-tax lump-sum vehicle sunset dates ───────────────────
   const GIFT_SUNSET = {

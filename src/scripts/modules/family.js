@@ -822,6 +822,21 @@
       card.appendChild(wrap);
     });
 
+    // 国籍留保 — the separate, harder-edged rule for children BORN ABROAD.
+    // Unlike the (toothless) Art. 14 choice, missing this 3-month reservation
+    // DOES destroy Japanese nationality, so it gets a standing warning callout.
+    const ryuhoCallout = el('div', {
+      style: {
+        padding: 'var(--tb-sp-2) var(--tb-sp-3)', borderLeft: '3px solid var(--tb-warn)',
+        background: 'rgba(185, 122, 26, 0.06)', borderRadius: 'var(--tb-radius-1)',
+        marginTop: 'var(--tb-sp-3)', fontSize: 'var(--tb-fs-14)',
+      },
+    });
+    ryuhoCallout.appendChild(el('div', { style: { fontWeight: '600', marginBottom: '4px' } },
+      '⚠ ' + t('family.nationality_choice.ryuho_title')));
+    ryuhoCallout.appendChild(el('p', { style: { margin: 0 } }, t('family.nationality_choice.ryuho_body')));
+    card.appendChild(ryuhoCallout);
+
     return card;
   }
 
