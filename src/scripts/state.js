@@ -12,7 +12,20 @@
   'use strict';
 
   const STORAGE_KEY = 'taigan-bridge-state';
+  const PREV_KEY = 'taigan-bridge-state-prev';
+  const CORRUPT_KEY = 'taigan-bridge-state-corrupt';
   const CURRENT_VERSION = 4;
+
+  // Known top-level container keys. Used by importJson() to sanity-check
+  // that an imported object is plausibly a Taigan Bridge state blob and
+  // not, e.g., some unrelated JSON file the user picked by mistake.
+  const KNOWN_TOP_KEYS = [
+    'onboarding', 'tracks', 'modules', 'profile', 'fbar', 'assets',
+    'projections', 'sofa', 'action_center', 'resident', 'veteran',
+    'sharing', 'consultations', 'property', 'fx_banking', 'decumulation',
+    'healthcare', 'health_tracker', 'net_worth', 'ai_assistant', 'estate',
+    'tax_coordinator', 'family', 'settings', 'fx',
+  ];
 
   const DEFAULT_STATE = Object.freeze({
     version: CURRENT_VERSION,
@@ -998,9 +1011,15 @@
   }
 
   function deepMerge(base, patch) {
+    // A null/undefined patch must never clobber a structured default:
+    // keep `base` so defaults survive (e.g. imported `"tax_coordinator":
+    // null` heals back to the default object rather than nulling it).
+    if (patch === null || patch === undefined) return base;
+    // Arrays are user lists — replace wholesale (intended). This is only
+    // reached when patch is non-null, so a null can't wipe a list either.
     if (Array.isArray(base) || Array.isArray(patch)) return patch;
     if (typeof base !== 'object' || base === null) return patch;
-    if (typeof patch !== 'object' || patch === null) return patch;
+    if (typeof patch !== 'object') return patch;
     const out = Object.assign({}, base);
     for (const key of Object.keys(patch)) {
       out[key] = key in base ? deepMerge(base[key], patch[key]) : patch[key];
@@ -1009,7 +1028,11 @@
   }
 
   function migrate(stored) {
-    if (!stored || typeof stored !== 'object') return deepClone(DEFAULT_STATE);
+    // A top-level array or primitive can never become the state root —
+    // fall back to a clean default rather than letting it corrupt state.
+    if (!stored || typeof stored !== 'object' || Array.isArray(stored)) {
+      return deepClone(DEFAULT_STATE);
+    }
     if (typeof stored.version !== 'number') stored.version = 0;
 
     // v1 → v2: FBAR shape changed from year-keyed nested
@@ -1124,14 +1147,73 @@
     return deepMerge(deepClone(DEFAULT_STATE), stored);
   }
 
+  // Surface a problem to the user without depending on any other file:
+  // set a flag on TB.state, dispatch a document CustomEvent, and (as a
+  // last-resort guarantee of visibility) inject a single fixed-position
+  // banner. All DOM work is wrapped so it no-ops in non-browser contexts.
+  function surfaceNotice(kind, message, detail) {
+    try {
+      window.TB = window.TB || {};
+      window.TB.state = window.TB.state || {};
+      if (kind === 'persist-failed') window.TB.state.lastPersistError = detail || message;
+      if (kind === 'corrupt') window.TB.state.lastCorruptNotice = detail || message;
+    } catch (e) { /* ignore */ }
+    try {
+      if (typeof document !== 'undefined' && document.dispatchEvent) {
+        document.dispatchEvent(new CustomEvent('tb:' + kind, {
+          detail: { message: message, error: detail || null },
+        }));
+      }
+    } catch (e) { /* ignore */ }
+    try {
+      if (typeof document !== 'undefined' && document.body) {
+        const bannerId = 'tb-state-notice-' + kind;
+        if (!document.getElementById(bannerId)) {
+          const el = document.createElement('div');
+          el.id = bannerId;
+          el.setAttribute('role', 'alert');
+          el.style.cssText = [
+            'position:fixed', 'left:0', 'right:0', 'bottom:0', 'z-index:2147483647',
+            'background:#7f1d1d', 'color:#fff', 'padding:10px 16px',
+            'font:14px/1.4 system-ui,sans-serif', 'text-align:center',
+            'box-shadow:0 -2px 8px rgba(0,0,0,.3)',
+          ].join(';');
+          el.textContent = message;
+          document.body.appendChild(el);
+        }
+      }
+    } catch (e) { /* ignore */ }
+  }
+
   function load() {
     if (cache) return cache;
     let stored = null;
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) stored = JSON.parse(raw);
+      if (raw) {
+        try {
+          stored = JSON.parse(raw);
+        } catch (parseErr) {
+          // Preserve the corrupt raw string BEFORE it gets destroyed by
+          // the next set()/persist(), so it's recoverable. Never clobber
+          // an already-saved corrupt copy.
+          console.warn('[tb.state] failed to parse stored state, resetting:', parseErr);
+          try {
+            if (!localStorage.getItem(CORRUPT_KEY)) {
+              localStorage.setItem(CORRUPT_KEY, raw);
+            }
+          } catch (backupErr) {
+            console.error('[tb.state] failed to back up corrupt state:', backupErr);
+          }
+          surfaceNotice(
+            'corrupt',
+            'Taigan Bridge could not read your saved data (it was corrupted). A copy was preserved and the app reset to defaults.',
+            parseErr
+          );
+        }
+      }
     } catch (err) {
-      console.warn('[tb.state] failed to parse stored state, resetting:', err);
+      console.warn('[tb.state] failed to read stored state, resetting:', err);
     }
     cache = migrate(stored);
     return cache;
@@ -1141,7 +1223,14 @@
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
     } catch (err) {
+      // Quota exceeded / Safari private mode: the write silently vanishes.
+      // Make it VISIBLE — a silently-dropped edit is worse than an error.
       console.error('[tb.state] failed to persist state:', err);
+      surfaceNotice(
+        'persist-failed',
+        'Taigan Bridge could not save your changes (storage may be full or blocked). Recent edits may be lost when you reload.',
+        err
+      );
     }
   }
 
@@ -1190,16 +1279,96 @@
   }
 
   function exportJson() {
-    return JSON.stringify(load(), null, 2);
+    // Deep-clone and STRIP the live API credential — full backups get
+    // written to plaintext files users store off-device, so the
+    // sk-ant-… key must never leave in an export.
+    const snapshot = deepClone(load());
+    if (snapshot && snapshot.settings && typeof snapshot.settings === 'object') {
+      snapshot.settings.apiKey = '';
+    }
+    return JSON.stringify(snapshot, null, 2);
   }
 
   function importJson(text) {
     let parsed;
     try { parsed = JSON.parse(text); }
     catch (err) { throw new Error('Invalid JSON: ' + err.message); }
+
+    // Validate BEFORE migrating/overwriting. Reject arrays, primitives,
+    // and null outright — importing the wrong file must not silently
+    // wipe all state.
+    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new Error('This file is not a valid Taigan Bridge backup (expected a data object).');
+    }
+    // Require a plausible shape: a numeric version OR at least one known
+    // top-level container key. Guards against unrelated JSON objects.
+    const hasVersion = typeof parsed.version === 'number';
+    const hasKnownKey = KNOWN_TOP_KEYS.some((k) => k in parsed);
+    if (!hasVersion && !hasKnownKey) {
+      throw new Error('This file does not look like a Taigan Bridge backup (no recognizable data).');
+    }
+
+    // Preserve the user's current API key when the incoming backup has an
+    // empty/missing one (exports are key-stripped) — restoring on the
+    // same device must not wipe a working credential.
+    try {
+      const currentKey = (load().settings && load().settings.apiKey) || '';
+      const incomingKey = (parsed.settings && parsed.settings.apiKey) || '';
+      if (currentKey && !incomingKey) {
+        if (!parsed.settings || typeof parsed.settings !== 'object') parsed.settings = {};
+        parsed.settings.apiKey = currentKey;
+      }
+    } catch (e) { /* if current state is unreadable, just proceed */ }
+
+    // Save a pre-import backup of the CURRENT persisted state so the
+    // import can be undone via restorePrevious().
+    try {
+      const currentRaw = localStorage.getItem(STORAGE_KEY);
+      localStorage.setItem(PREV_KEY, currentRaw != null ? currentRaw : JSON.stringify(load()));
+    } catch (e) {
+      console.error('[tb.state] failed to save pre-import backup:', e);
+    }
+
     cache = migrate(parsed);
     persist();
     notify('', cache);
+  }
+
+  function hasPreviousBackup() {
+    try { return localStorage.getItem(PREV_KEY) != null; }
+    catch (e) { return false; }
+  }
+
+  // Undo the last import: swap the current state back to the pre-import
+  // backup. The current (post-import) state is written into the backup
+  // slot so the operation is reversible (redo). Returns false if there's
+  // no backup to restore.
+  function restorePrevious() {
+    let prevRaw;
+    try { prevRaw = localStorage.getItem(PREV_KEY); }
+    catch (e) { return false; }
+    if (prevRaw == null) return false;
+    let prevParsed;
+    try { prevParsed = JSON.parse(prevRaw); }
+    catch (e) {
+      console.error('[tb.state] pre-import backup is corrupt:', e);
+      return false;
+    }
+    let currentRaw;
+    try { currentRaw = localStorage.getItem(STORAGE_KEY); }
+    catch (e) { currentRaw = null; }
+    cache = migrate(prevParsed);
+    persist();
+    try {
+      // Move the (now-previous) post-import state into the backup slot so
+      // restorePrevious() can be applied again to redo.
+      if (currentRaw != null) localStorage.setItem(PREV_KEY, currentRaw);
+      else localStorage.removeItem(PREV_KEY);
+    } catch (e) {
+      console.error('[tb.state] failed to update backup slot after restore:', e);
+    }
+    notify('', cache);
+    return true;
   }
 
   function reset() {
@@ -1216,15 +1385,22 @@
   }
 
   window.TB = window.TB || {};
-  window.TB.state = {
+  // surfaceNotice() may have already created a TB.state stub to hang the
+  // lastPersistError / lastCorruptNotice flags on; merge onto it rather
+  // than replacing so those flags survive.
+  window.TB.state = Object.assign(window.TB.state || {}, {
     STORAGE_KEY,
+    PREV_KEY,
+    CORRUPT_KEY,
     CURRENT_VERSION,
     get,
     set,
     subscribe,
     export: exportJson,
     import: importJson,
+    restorePrevious,
+    hasPreviousBackup,
     reset,
     clearAll,
-  };
+  });
 })();

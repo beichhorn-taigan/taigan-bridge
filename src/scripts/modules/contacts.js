@@ -26,6 +26,32 @@
   const id = 'contacts';
 
   // ====================================================================
+  // i18n — small literals not covered by the shared dictionary
+  // (auto-derived insurance-contact labels + source-pill / AI-enhance
+  // strings). Registered here via TB.i18n.extend() so this module can
+  // self-contain its own translation table instead of touching the
+  // shared i18n.js dictionary.
+  // ====================================================================
+
+  TB.i18n.extend('en', {
+    'contacts.insurance.dental':      'Dental insurance',
+    'contacts.insurance.vision':      'Vision insurance',
+    'contacts.insurance.coverage':    'Coverage: {{value}}',
+    'contacts.insurance.network':     'Network: {{value}}',
+    'contacts.enhanced_by_ai':        'Enhanced by AI: {{notes}}',
+    'contacts.visits_count':          '{{count}} visits',
+  });
+
+  TB.i18n.extend('ja', {
+    'contacts.insurance.dental':      '歯科保険',
+    'contacts.insurance.vision':      '視力保険',
+    'contacts.insurance.coverage':    '適用範囲: {{value}}',
+    'contacts.insurance.network':     'ネットワーク: {{value}}',
+    'contacts.enhanced_by_ai':        'AI による補完: {{notes}}',
+    'contacts.visits_count':          '{{count}} 回受診',
+  });
+
+  // ====================================================================
   // Categories
   // ====================================================================
   // Order = display order on the page. Each category has an icon +
@@ -68,6 +94,21 @@
     TB.state.set('contacts.dismissed', m);
   }
 
+  // Deterministic sync string hash (djb2 variant) — used to build stable
+  // auto-contact ids from arbitrary keys. Unlike slugifying (which strips
+  // all non-ASCII chars via /[^a-z0-9]+/), this hashes the raw Unicode
+  // string, so distinct Japanese-only names (e.g. 楽天銀行 vs ソニー銀行)
+  // never collide just because they have no ASCII characters to keep.
+  // TB.utils.sha256 (if present) is async-only, so we don't use it here.
+  function hashKey(s) {
+    const str = String(s || '');
+    let h = 5381;
+    for (let i = 0; i < str.length; i++) {
+      h = ((h * 33) ^ str.charCodeAt(i)) >>> 0;
+    }
+    return h.toString(36);
+  }
+
   // ====================================================================
   // Auto-derivation from every other module's state
   // ====================================================================
@@ -89,7 +130,7 @@
       if (seenInstitutions.has(key)) continue;
       seenInstitutions.add(key);
       out.push({
-        id: 'auto-assets-' + key.replace(/[^a-z0-9]+/g, '-'),
+        id: 'auto-assets-' + hashKey(key),
         category: 'financial',
         name: inst,
         organization: inst,
@@ -111,7 +152,7 @@
     for (const a of accts) {
       const inst = (a.institution || '').trim();
       if (!inst) continue;
-      const id = 'auto-assets-' + (inst + '|' + (a.country || '')).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const id = 'auto-assets-' + hashKey((inst + '|' + (a.country || '')).toLowerCase());
       const c = out.find((x) => x.id === id);
       if (c) c.source_count = (c.source_count || 1);
     }
@@ -160,8 +201,8 @@
         category: 'insurance',
         name: c.insurer || c.plan_name,
         organization: [c.insurer, c.plan_name].filter(Boolean).join(' — '),
-        type: c.card_type === 'dental' ? 'Dental insurance'
-            : c.card_type === 'vision' ? 'Vision insurance'
+        type: c.card_type === 'dental' ? TB.i18n.t('contacts.insurance.dental')
+            : c.card_type === 'vision' ? TB.i18n.t('contacts.insurance.vision')
             : c.card_type === 'prescription' ? 'Prescription'
             : c.network_type || 'Health insurance',
         phone: c.customer_service_phone || c.member_services_phone || c.claims_phone || '',
@@ -171,8 +212,8 @@
         secondary_website: c.member_portal && c.claims_website && c.member_portal !== c.claims_website ? c.claims_website : '',
         address: c.claims_address || '',
         mobile_app: c.mobile_app || '',
-        notes: [c.coverage_areas ? 'Coverage: ' + c.coverage_areas : '',
-                c.network_type ? 'Network: ' + c.network_type : ''].filter(Boolean).join('\n'),
+        notes: [c.coverage_areas ? TB.i18n.t('contacts.insurance.coverage', { value: c.coverage_areas }) : '',
+                c.network_type ? TB.i18n.t('contacts.insurance.network', { value: c.network_type }) : ''].filter(Boolean).join('\n'),
         source: 'insurance',
         source_label_en: 'Insurance cards',
         source_label_jp: '保険証',
@@ -249,7 +290,7 @@
       const doctors = Array.from(rec.practitioners);
       const lang = TB.i18n.getLang();
       out.push({
-        id: 'auto-exam-' + key.replace(/[^a-z0-9]+/g, '-'),
+        id: 'auto-exam-' + hashKey(key),
         category: 'medical',
         name: rec.name,
         organization: rec.facility || rec.name,
@@ -267,21 +308,28 @@
     });
 
     // ─── Family members → family contacts
-    const familyMembers = TB.state.get('family.members') || [];
+    //
+    // family.js stores members with name_en/name_jp (see FIELDS.familyMember)
+    // — there is no name/display_name/phone/email/address/birth_year/
+    // is_emergency_contact on the real record. Prefer name_en with a
+    // name_jp fallback (mirrors the display convention used throughout
+    // family.js, e.g. its member list / gift-recipient rendering: JP name
+    // shown only when UI lang is 'ja' AND a JP name exists, else EN name).
+    const familyMembers = TB.state.get(TB.schema.PATHS.familyMembers) || [];
+    const famF = TB.schema.FIELDS.familyMember;
     for (const m of familyMembers) {
-      const name = m.name || m.display_name || '';
+      const lang = TB.i18n.getLang();
+      const nameEn = m[famF.nameEn] || '';
+      const nameJp = m[famF.nameJp] || '';
+      const name = (lang === 'ja' && nameJp) ? nameJp : (nameEn || nameJp);
       if (!name) continue;
       out.push({
         id: 'auto-family-' + (m.id || name).replace(/[^a-z0-9]+/gi, '-'),
         category: 'family',
         name,
-        type: m.relationship || (TB.i18n.getLang() === 'ja' ? '家族' : 'Family'),
-        phone: m.phone || '',
-        email: m.email || '',
-        address: m.address || '',
-        birth_year: m.birth_year || null,
+        name_jp: nameJp && nameJp !== name ? nameJp : '',
+        type: m.relationship || (lang === 'ja' ? '家族' : 'Family'),
         notes: m.notes || '',
-        is_emergency: !!m.is_emergency_contact,
         source: 'family',
         source_label_en: 'Family members',
         source_label_jp: '家族メンバー',
@@ -290,11 +338,20 @@
       });
     }
 
-    // ─── Consultations (CPA, lawyers, tax advisors) → professional contacts
-    const consults = TB.state.get('consultations.entries') || [];
+    // ─── Consultations professionals roster (CPA, lawyers, tax advisors)
+    // → professional contacts
+    //
+    // consultations.js keeps a roster at consultations.professionals with
+    // fields: id, name, type, firm, contact, city, jurisdiction, specialty,
+    // retainer_status, notes — NOT consultant_name/contact_name/role/
+    // consultant_type, and NOT separate phone/email (just a free-text
+    // "contact" field, e.g. "Email / phone / LINE"). The consultation LOG
+    // entries (consultations.consultations) are visit history, not a
+    // contacts roster, so they're intentionally not read here.
+    const professionals = TB.state.get(TB.schema.PATHS.consultationsProfessionals) || [];
     const seenConsultants = new Set();
-    for (const c of consults) {
-      const name = c.consultant_name || c.name || c.contact_name || '';
+    for (const p of professionals) {
+      const name = p.name || '';
       if (!name) continue;
       const key = name.toLowerCase();
       if (seenConsultants.has(key)) continue;
@@ -303,17 +360,15 @@
         id: 'auto-consult-' + key.replace(/[^a-z0-9]+/g, '-'),
         category: 'professional',
         name,
-        organization: c.firm || c.organization || '',
-        type: c.role || c.consultant_type || (TB.i18n.getLang() === 'ja' ? '顧問' : 'Advisor'),
-        phone: c.phone || c.contact_phone || '',
-        email: c.email || c.contact_email || '',
-        website: c.website || '',
-        address: c.address || '',
-        notes: c.notes || '',
+        organization: p.firm || '',
+        type: p.specialty || p.type || (TB.i18n.getLang() === 'ja' ? '顧問' : 'Advisor'),
+        notes: [p.contact ? 'Contact: ' + p.contact : '',
+                p.city || p.jurisdiction ? [p.city, p.jurisdiction].filter(Boolean).join(', ') : '',
+                p.notes || ''].filter(Boolean).join('\n'),
         source: 'consultations',
         source_label_en: 'Consultations',
         source_label_jp: '相談履歴',
-        source_ref: c.id,
+        source_ref: p.id,
         auto: true,
       });
     }
@@ -622,12 +677,27 @@
   // ====================================================================
   // Render
   // ====================================================================
+  //
+  // The results list (category panels) lives in its own container,
+  // `resultsHost`, separate from the header/search card. `rerender()`
+  // only rebuilds `resultsHost` — the search <input> itself is never
+  // re-created, so it keeps focus + cursor position across the debounced
+  // re-renders triggered by typing. A full `render()` (used on initial
+  // mount / route entry) rebuilds everything including the search card.
   let host = null;
+  let resultsHost = null;
   function render(container) {
     host = container;
     container.innerHTML = '';
     container.appendChild(buildHeaderCard());
     container.appendChild(buildSearchCard());
+    resultsHost = TB.utils.el('div');
+    container.appendChild(resultsHost);
+    renderResults();
+  }
+  function renderResults() {
+    if (!resultsHost) return;
+    resultsHost.innerHTML = '';
     const all = getAllContacts();
     const term = ((TB.state.get('contacts.search') || '') + '').toLowerCase().trim();
     const filtered = term ? all.filter((c) => matchesSearch(c, term)) : all;
@@ -642,23 +712,28 @@
     for (const cat of CATEGORIES) {
       const items = byCat[cat.id];
       if (!items || items.length === 0) continue;
-      container.appendChild(buildCategoryPanel(cat, items));
+      resultsHost.appendChild(buildCategoryPanel(cat, items));
     }
     // Catch-all for any contact with an unknown/missing category
     const catSet = new Set(CATEGORIES.map((c) => c.id));
     const extras = Object.keys(byCat).filter((k) => !catSet.has(k));
     if (extras.length > 0) {
       for (const k of extras) {
-        container.appendChild(buildCategoryPanel({ id: k, icon: '📞', accent: 'var(--tb-text-soft)' }, byCat[k]));
+        resultsHost.appendChild(buildCategoryPanel({ id: k, icon: '📞', accent: 'var(--tb-text-soft)' }, byCat[k]));
       }
     }
     if (filtered.length === 0) {
-      container.appendChild(TB.utils.el('div', { class: 'tb-card' },
+      resultsHost.appendChild(TB.utils.el('div', { class: 'tb-card' },
         TB.utils.el('p', { class: 'tb-field-help', style: { textAlign: 'center' } },
           term ? TB.i18n.t('contacts.search.none') : TB.i18n.t('contacts.empty.body')),
       ));
     }
   }
+  // Full rerender — rebuilds header stats + search card + results. Used
+  // after actions that can change header counts (add/delete/enhance/
+  // dismiss) so the stats stay accurate. Search-input typing uses
+  // renderResults() directly instead (see buildSearchCard) to preserve
+  // input focus.
   function rerender() { if (host) render(host); }
 
   function matchesSearch(c, term) {
@@ -728,9 +803,12 @@
       value: cur,
       oninput: (e) => {
         TB.state.set('contacts.search', e.target.value);
-        // Defer rerender slightly to avoid laggy keystrokes
+        // Defer slightly to avoid laggy keystrokes. Rebuild only the
+        // results list (renderResults), not the whole view — a full
+        // rerender() would re-create this <input>, dropping focus and
+        // cursor position on every debounce tick while the user types.
         clearTimeout(buildSearchCard._t);
-        buildSearchCard._t = setTimeout(rerender, 150);
+        buildSearchCard._t = setTimeout(renderResults, 150);
       },
     });
     wrap.appendChild(input);
@@ -837,7 +915,7 @@
           fontWeight: '600', letterSpacing: '0.04em', textTransform: 'uppercase',
           alignSelf: 'flex-start' },
       }, (c.builtin ? '🔒 ' : '↩ ') + srcLabel +
-         (c.source_count && c.source_count > 1 ? ' · ' + c.source_count + ' visits' : '')));
+         (c.source_count && c.source_count > 1 ? ' · ' + t('contacts.visits_count', { count: c.source_count }) : '')));
     }
 
     // Practitioners list — for medical clinics with multiple doctors
@@ -935,6 +1013,13 @@
   // ====================================================================
   async function enhanceContact(c, btn) {
     if (!TB.ai || typeof TB.ai.callClaudeForProviderEnrichment !== 'function') return;
+    // Built-ins can't be enhanced/saved anywhere — check this BEFORE
+    // calling the paid API so we never spend a network call on a result
+    // we're going to discard.
+    if (c.builtin) {
+      alert(TB.i18n.t('contacts.enhance.builtinNote'));
+      return;
+    }
     if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
     try {
       const result = await TB.ai.callClaudeForProviderEnrichment({
@@ -945,7 +1030,7 @@
       // For manual contacts, write back into the stored entry. For
       // auto contacts, we don't have a stored slot — so promote
       // the contact into a manual entry that supersedes the auto one.
-      if (c.auto && !c.builtin) {
+      if (c.auto) {
         const promoted = Object.assign({}, c, {
           id: 'cust-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6),
           auto: false,
@@ -960,12 +1045,10 @@
         if (!promoted.name_jp && en.name_jp) promoted.name_jp = en.name_jp;
         if (en.notes) {
           const cur = (promoted.notes || '').trim();
-          const extra = 'Enhanced by AI: ' + en.notes;
+          const extra = TB.i18n.t('contacts.enhanced_by_ai', { notes: en.notes });
           promoted.notes = cur ? cur + '\n\n' + extra : extra;
         }
         upsertManualContact(promoted);
-      } else if (c.builtin) {
-        alert(TB.i18n.t('contacts.enhance.builtinNote'));
       } else {
         const updated = Object.assign({}, c);
         if (!updated.address && en.address) updated.address = en.address;
@@ -975,7 +1058,7 @@
         if (!updated.name_jp && en.name_jp) updated.name_jp = en.name_jp;
         if (en.notes) {
           const cur = (updated.notes || '').trim();
-          const extra = 'Enhanced by AI: ' + en.notes;
+          const extra = TB.i18n.t('contacts.enhanced_by_ai', { notes: en.notes });
           updated.notes = cur ? cur + '\n\n' + extra : extra;
         }
         updated.ai_enriched_at = new Date().toISOString();
@@ -1084,6 +1167,16 @@
           alert(t('contacts.field.name.required'));
           return;
         }
+        // When editing an auto-derived (non-builtin) contact, promote it
+        // into a real manual entry — mirror enhanceContact's promotion
+        // logic (~line 979) so the saved contact's linked_source keys
+        // match the dedup check in getAllContacts() (~line 613). Without
+        // this, the original auto contact keeps re-deriving every render
+        // and the edit becomes a permanent duplicate instead of an update.
+        if (draft.auto && !draft.builtin) {
+          draft.linked_source = draft.source + ':' + (draft.source_ref || draft.id);
+          draft.auto = false;
+        }
         upsertManualContact(draft);
         close();
         rerender();
@@ -1116,10 +1209,14 @@
   }
   function textareaInput(value, onchange) {
     const el = TB.utils.el;
+    // NOTE: el() routes unknown attrs through setAttribute, which is a
+    // no-op for a <textarea>'s value — it must be set as a child text
+    // node instead (matches consultations.js's openProfessionalModal
+    // notes textarea, which passes draft.notes as a child, not an attr).
     return el('textarea', {
-      class: 'tb-textarea', rows: 3, value: value || '',
+      class: 'tb-textarea', rows: 3,
       oninput: (e) => onchange(e.target.value),
-    });
+    }, value || '');
   }
 
   // ====================================================================

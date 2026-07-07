@@ -27,6 +27,34 @@
   const id = 'assets';
 
   // ====================================================================
+  // i18n — small literals not covered by the shared dictionary
+  // (Survivor Binder pop-up-blocked alert + Action Center generator
+  // strings). Registered here via TB.i18n.extend() so this module can
+  // self-contain its own translation table instead of touching the
+  // shared i18n.js dictionary.
+  // ====================================================================
+
+  TB.i18n.extend('en', {
+    'assets.survivorBinder.popupBlocked':      'Pop-up blocked — allow pop-ups for this site to open the Survivor Binder.',
+
+    'assets.action.beneficiaryMissing.title':  '{{count}} account(s) have no beneficiary',
+    'assets.action.beneficiaryMissing.body':   'POD/TOD beneficiaries bypass probate AND surface in your survivor binder. Quick fix — open Assets and click "+ Add" on each row in the Beneficiary Review card.',
+
+    'assets.action.tlhOpportunity.title':      'Tax-loss harvesting: {{amount}} in unrealized losses',
+    'assets.action.tlhOpportunity.body':       '{{count}} US position(s) sit below cost basis. Selling before Dec 31 realizes the loss; offsets up to $3,000/yr of ordinary income or unlimited capital gains. Mind the 30-day wash-sale rule.',
+  });
+
+  TB.i18n.extend('ja', {
+    'assets.survivorBinder.popupBlocked':      'ポップアップがブロックされました — Survivor Binder を開くには、このサイトのポップアップを許可してください。',
+
+    'assets.action.beneficiaryMissing.title':  '受取人未設定の口座が {{count}} 件あります',
+    'assets.action.beneficiaryMissing.body':   'POD/TOD 受取人を指定すると検認(プロベート)を回避でき、survivor binder にも反映されます。手早い対応:Assets を開き、Beneficiary Review カードの各行で「+ 追加」をクリック。',
+
+    'assets.action.tlhOpportunity.title':      '損出し(タックスロスハーベスティング):含み損 {{amount}}',
+    'assets.action.tlhOpportunity.body':       '取得原価を下回る米国ポジションが {{count}} 件あります。12 月 31 日までに売却すると損失が確定し、最大 $3,000/年の通常所得または無制限のキャピタルゲインと相殺できます。30 日ウォッシュセールルールに注意。',
+  });
+
+  // ====================================================================
   // Taxonomies
   // ====================================================================
 
@@ -391,7 +419,7 @@
         ? latestBalance.max_balance_native : null,
       updated_at: latestBalance && latestBalance.max_balance_date
         ? latestBalance.max_balance_date
-        : new Date().toISOString().slice(0, 10),
+        : TB.utils.todayIso(),
     };
   }
 
@@ -448,7 +476,7 @@
         tax_wrapper: wrapper,
         basis_native: null,
         beneficiary: null,
-        notes: 'Imported from FBAR ' + new Date().toISOString().slice(0, 10) + '. ' + (fa.notes || ''),
+        notes: 'Imported from FBAR ' + TB.utils.todayIso() + '. ' + (fa.notes || ''),
         active: true,
         include_in_sofa: true,
         close_date: null,
@@ -523,8 +551,8 @@
 
   function staleness(updatedIso) {
     if (!updatedIso) return { state: 'never', label_key: 'assets.stale.never', vars: null };
-    const updated = new Date(updatedIso);
-    if (isNaN(updated.getTime())) return { state: 'never', label_key: 'assets.stale.never', vars: null };
+    const updated = TB.utils.parseLocalDate(updatedIso);
+    if (!updated || isNaN(updated.getTime())) return { state: 'never', label_key: 'assets.stale.never', vars: null };
     const now = new Date();
     const days = Math.floor((now - updated) / (1000 * 60 * 60 * 24));
     if (days <= 0) return { state: 'fresh', label_key: 'assets.stale.fresh', vars: null };
@@ -976,6 +1004,10 @@
 
   function takeSnapshot(label) {
     const accounts = getActiveAccounts();
+    // Nothing to snapshot — bail out rather than storing a permanent
+    // total_usd: 0 point that would drag net-worth charts to zero.
+    // Callers (e.g. net-worth.js) expect a falsy return here.
+    if (accounts.length === 0) return null;
     const today = new Date().toISOString();
     const total_usd = totalUsd();
     // FX rate at snapshot time, captured so historical JPY chart uses
@@ -1187,10 +1219,12 @@
   // Skips JP-savings / JP-checking / cash wrappers since those pass via
   // 法定相続人 to the spouse/kids by default — POD/TOD doesn't apply.
   function accountsMissingBeneficiary() {
-    const skipWrappers = new Set(['jp_savings', 'jp_checking', 'jp_fixed_deposit', 'cash', 'crypto']);
+    // "cash"/"crypto" were never real wrapper ids — what this skip-list
+    // actually means is "JP banking-style wrappers" (banking_jp cat).
     return getActiveAccounts().filter((a) => {
       if (a.beneficiary && String(a.beneficiary).trim().length > 0) return false;
-      if (skipWrappers.has(a.tax_wrapper)) return false;
+      const w = WRAPPER_BY_ID[a.tax_wrapper];
+      if (w && w.cat === 'banking_jp') return false;
       return true;
     });
   }
@@ -1209,9 +1243,11 @@
       if (gain == null || gain >= 0) continue;
       if (a.country !== 'US') continue;
       // Tax-deferred wrappers don't realize gains until withdrawal —
-      // harvesting inside them is meaningless.
-      const SHELTERED = new Set(['ira_traditional', 'ira_roth', 'k401_traditional', 'k401_roth', 'hsa', 'fsa', '529', 'sep_ira', 'simple_ira']);
-      if (SHELTERED.has(a.tax_wrapper)) continue;
+      // harvesting inside them is meaningless. Derive from WRAPPERS'
+      // `cat` field (rather than a hand-typed id list) so this can't
+      // drift out of sync with the real taxonomy again.
+      const w = WRAPPER_BY_ID[a.tax_wrapper];
+      if (w && (w.cat === 'retirement_pretax' || w.cat === 'retirement_roth' || w.cat === 'special' || w.cat === 'savings')) continue;
       const lossUsd = Math.abs(toUsd(gain, a.currency) || 0);
       if (lossUsd < minLossUsd) continue;
       out.push({
@@ -1469,7 +1505,7 @@
         class: 'tb-btn',
         type: 'button',
         style: { fontSize: 'var(--tb-fs-12)', padding: '4px 10px' },
-        onclick: () => openEditModal(a),
+        onclick: () => openEditModal(a.id),
       }, '+ ' + t('assets.review.beneficiary.add')));
       list.appendChild(row);
     }
@@ -1960,7 +1996,7 @@
       account_number_last4: null,
       beneficiary: null,
       notes: '',
-      updated_at: new Date().toISOString().slice(0, 10),
+      updated_at: TB.utils.todayIso(),
       active: true,
       include_in_sofa: true,
       close_date: null,
@@ -2147,7 +2183,14 @@
       setIfEmpty('institution',          extracted.institution,           'institution');
       setIfEmpty('name',                 extracted.account_name,          'name');
       // country / currency / tax_wrapper need a select-resync pattern.
-      if (extracted.country && !draft.country) {
+      // A NEW draft always defaults country to 'US' (see initial draft
+      // shape above), so `!draft.country` is never true and extracted
+      // country was silently dropped. Mirror buildRecordFromExtraction
+      // (the bulk-import path): for a brand-new account the default is
+      // untouched by the user, so trust the extracted value whenever it
+      // differs from that default. For an edit, keep the safer
+      // fill-if-empty behavior so we never clobber a real stored value.
+      if (extracted.country && (!isEdit ? extracted.country !== draft.country : !draft.country)) {
         draft.country = extracted.country;
         if (refs.country) refs.country.value = extracted.country;
         filled.push('country');
@@ -2212,7 +2255,7 @@
       const wrapperMeta = WRAPPER_BY_ID[wrapperId];
       const country = entry.country || (wrapperMeta && wrapperMeta.country) || 'US';
       const currency = entry.currency || (country === 'JP' ? 'JPY' : 'USD');
-      const today = new Date().toISOString().slice(0, 10);
+      const today = TB.utils.todayIso();
       const noteParts = [];
       if (entry.notes_suggestion) noteParts.push(entry.notes_suggestion);
       noteParts.push('Extracted from ' + fileName + ' on ' + today + '.');
@@ -2622,10 +2665,19 @@
           style: { padding: '2px 10px', fontSize: 'var(--tb-fs-12)', color: 'var(--tb-error)' },
           onclick: () => {
             if (!confirm(t('assets.fbar.detach.confirm'))) return;
+            // Only clear the FBAR link — persist against a fresh clone
+            // of the STORED record (not the in-progress `draft`), so we
+            // never commit unsaved/un-normalized edits (e.g. a typo'd
+            // balance or an allocation that hasn't gone through the
+            // Save handler's normalizeAllocation pass) that happen to
+            // be sitting in the form when the user clicks Detach.
+            const stored = findById(draft.id);
+            if (stored) {
+              const clean = Object.assign({}, stored, { fbar_account_id: null });
+              upsertAccount(clean);
+            }
             draft.fbar_account_id = null;
-            // Re-render to remove this card from the modal
             close();
-            upsertAccount(draft);
             rerender();
           },
         }, t('assets.fbar.detach.button')),
@@ -2644,7 +2696,7 @@
     // Updated date
     refs.updated_at = el('input', {
       type: 'date', class: 'tb-input',
-      value: draft.updated_at || new Date().toISOString().slice(0, 10),
+      value: draft.updated_at || TB.utils.todayIso(),
       onchange: (e) => { draft.updated_at = e.target.value || null; },
     });
     modal.appendChild(field('assets.field.updated_at', refs.updated_at));
@@ -2753,7 +2805,7 @@
     const profile = TB.state.get('profile') || {};
     const lang = TB.i18n.getLang();
     const t = TB.i18n.t;
-    const todayIso = new Date().toISOString().slice(0, 10);
+    const todayIso = TB.utils.todayIso();
     const accounts = getActiveAccounts();
 
     // Sort: country (US, JP, OTHER), then institution alpha, then name.
@@ -2959,7 +3011,7 @@
     const html = buildSurvivorBinderHtml();
     const w = window.open('', '_blank');
     if (!w) {
-      alert('Pop-up blocked — allow pop-ups for this site to open the Survivor Binder.');
+      alert(TB.i18n.t('assets.survivorBinder.popupBlocked'));
       return;
     }
     w.document.open();
@@ -2989,8 +3041,8 @@
     out.push({
       id: 'assets_beneficiary_missing',
       group: 'assets', urgency: 'medium', icon: '👥',
-      title: missing.length + (missing.length === 1 ? ' account has' : ' accounts have') + ' no beneficiary',
-      body: 'POD/TOD beneficiaries bypass probate AND surface in your survivor binder. Quick fix — open Assets and click "+ Add" on each row in the Beneficiary Review card.',
+      title: TB.i18n.t('assets.action.beneficiaryMissing.title', { count: missing.length }),
+      body: TB.i18n.t('assets.action.beneficiaryMissing.body'),
       module: 'assets', snoozable: true,
     });
     return out;
@@ -3006,8 +3058,8 @@
     out.push({
       id: 'assets_tlh_opportunity_' + new Date().getFullYear(),
       group: 'assets', urgency: 'low', icon: '🍂',
-      title: 'Tax-loss harvesting: ' + Math.round(totalLoss).toLocaleString() + ' in unrealized losses',
-      body: opps.length + ' US position(s) sit below cost basis. Selling before Dec 31 realizes the loss; offsets up to $3,000/yr of ordinary income or unlimited capital gains. Mind the 30-day wash-sale rule.',
+      title: TB.i18n.t('assets.action.tlhOpportunity.title', { amount: '$' + Math.round(totalLoss).toLocaleString() }),
+      body: TB.i18n.t('assets.action.tlhOpportunity.body', { count: opps.length }),
       module: 'assets', snoozable: true,
     });
     return out;

@@ -21,6 +21,54 @@
   const id = 'family';
 
   // ====================================================================
+  // Action Center i18n — self-registered strings for genPassportExpiring,
+  // genNationalityChoiceApproaching, genYearEndGiftOpportunity,
+  // genEduSunsetWarning, genRenunciationConsultation. Keys follow
+  // fam.<generatorName>.<field> (title/body only; other fields on the
+  // pushed items aren't user-facing strings).
+  // ====================================================================
+
+  TB.i18n.extend('en', {
+    'fam.genPassportExpiring.title': '{{country}} passport expiring — {{name}} ({{days}}d)',
+    'fam.genPassportExpiring.body.us': 'Passport expires {{expires}}. US passport renewal abroad: file Form DS-82 at the embassy/consulate. Allow 6-8 weeks. Many countries require 6mo validity for entry.',
+    'fam.genPassportExpiring.body.jp': '日本パスポートは住民登録地の都道府県旅券課で更新。残存有効期間を確認。(Passport expires {{expires}}.)',
+
+    'fam.genNationalityChoiceApproaching.title.past': '国籍選択 — past the formal date (no action forced) — {{name}}',
+    'fam.genNationalityChoiceApproaching.title.future': '国籍選択 in {{years}}y — {{name}}',
+    'fam.genNationalityChoiceApproaching.body.past': 'Being past the 国籍選択 (nationality-choice) date carries no automatic consequence. The obligation is a non-penalized "duty of effort" (努力義務): Japanese nationality is lost only if the Minister of Justice issues a written demand (催告) and it then goes unanswered for one month — and that demand has never been issued to anyone in Japan\'s history. Hundreds of thousands of dual nationals remain in exactly this position. This is Article 14 (the choice rule), which is separate from Article 11, under which a Japanese citizen who VOLUNTARILY acquires a foreign nationality loses Japanese nationality automatically — Article 11 does not apply to someone who was dual from birth. To confirm the formal record, obtain a 戸籍謄本 (a filed 国籍選択届 would appear there); a 行政書士 or the 法務局 can verify. Note: filing 国籍選択届 selecting Japanese does NOT renounce US citizenship — that is a separate consular process.',
+    'fam.genNationalityChoiceApproaching.body.future': 'Japanese law asks dual nationals to choose one nationality: acquired before age 18 → by age 20; at/after 18 → within 2 years. This is a non-penalized "duty of effort" (Article 14) — no fine and no automatic loss for missing it, and the formal demand process has never been used. Filing 国籍選択届 selecting Japanese does NOT renounce US citizenship (separate consular act; only an "endeavor" under Article 16). Many dual nationals keep both. Separate risk worth knowing: Article 11 — voluntarily ACQUIRING a foreign nationality later — causes automatic loss of Japanese nationality, but it does not apply to a child dual from birth.',
+
+    'fam.genYearEndGiftOpportunity.title': '暦年贈与 year-end opportunity — {{count}} recipients unused',
+    'fam.genYearEndGiftOpportunity.body': 'You have {{count}} family member(s) eligible for a ¥1.1M tax-free gift this year. Bank transfer must SETTLE by Dec 31 to count. This use-it-or-lose-it cap doesn\'t carry over.',
+
+    'fam.genEduSunsetWarning.title': '教育資金一括贈与 sunset {{sunset}} ({{days}}d) — extension uncertain',
+    'fam.genEduSunsetWarning.body': '¥15M tax-free education lump sum (grandparent → grandchild) currently sunsets Mar 31, 2026. Past extensions have been granted but never guaranteed. If grandparents are considering this, review now.',
+
+    'fam.genRenunciationConsultation.title': 'US renunciation — schedule specialist consultation',
+    'fam.genRenunciationConsultation.body': 'You\'ve marked renunciation as under consideration but haven\'t flagged a consultation as complete. Renunciation is irrevocable; the covered-expatriate exit-tax math + post-renunciation US tax rules (transfer tax on gifts to US persons, Form 8854 dual-status year) deserve a specialist before filing the DS-4079.',
+  });
+
+  TB.i18n.extend('ja', {
+    'fam.genPassportExpiring.title': '{{country}}パスポートが期限切れ間近 — {{name}}(残り{{days}}日)',
+    'fam.genPassportExpiring.body.us': 'パスポートの有効期限は {{expires}}。海外での米国パスポート更新は大使館・領事館で DS-82 フォームを提出。6~8週間かかります。多くの国は入国に残存有効期間6ヶ月を要求します。',
+    'fam.genPassportExpiring.body.jp': '日本パスポートは住民登録地の都道府県旅券課で更新。残存有効期間を確認。(有効期限:{{expires}})',
+
+    'fam.genNationalityChoiceApproaching.title.past': '国籍選択 — 形式上の期限は経過(強制措置なし) — {{name}}',
+    'fam.genNationalityChoiceApproaching.title.future': '国籍選択まで{{years}}年 — {{name}}',
+    'fam.genNationalityChoiceApproaching.body.past': '国籍選択の期限を過ぎても自動的な不利益はありません。これは非罰則の「努力義務」(第14条)であり、日本国籍を失うのは法務大臣が書面で催告を行い、それに1ヶ月間応答しなかった場合のみです — この催告は日本の歴史上、誰に対しても発せられたことがありません。数十万人の重国籍者がまさにこの状態にあります。これは選択に関する第14条であり、第11条(日本国民が自らの意思で外国籍を取得した場合に日本国籍を自動的に喪失する規定)とは別です — 出生時から重国籍だった人には第11条は適用されません。正式な記録を確認するには戸籍謄本を取得してください(国籍選択届が提出されていればそこに記載されます)。行政書士または法務局で確認可能です。注:日本国籍を選択する国籍選択届の提出は米国市民権の放棄には当たりません — それは別途、領事手続きが必要です。',
+    'fam.genNationalityChoiceApproaching.body.future': '日本法は重国籍者に一つの国籍の選択を求めています:18歳未満で重国籍取得→20歳までに、18歳以降に取得→2年以内に。これは非罰則の「努力義務」(第14条)であり、期限を過ぎても罰金や自動喪失はなく、正式な催告手続きが使われたことはありません。日本国籍を選択する国籍選択届の提出は米国市民権を放棄するものではありません(別途の領事手続きであり、第16条の下では「努める」義務に留まります)。多くの重国籍者は両方を保持しています。知っておくべき別のリスク:第11条 — 後に自らの意思で外国籍を取得すると日本国籍を自動的に喪失しますが、出生時から重国籍だった子には適用されません。',
+
+    'fam.genYearEndGiftOpportunity.title': '暦年贈与 年末の贈与機会 — 未利用の受取人{{count}}名',
+    'fam.genYearEndGiftOpportunity.body': '今年、¥110万の非課税贈与の対象となる家族が{{count}}名います。銀行振込は12月31日までに着金(決済完了)している必要があります。この非課税枠は使わなければ繰り越せません。',
+
+    'fam.genEduSunsetWarning.title': '教育資金一括贈与 の期限 {{sunset}}(残り{{days}}日)— 延長は未定',
+    'fam.genEduSunsetWarning.body': '¥1,500万の教育資金一括贈与(祖父母→孫)非課税枠は現在2026年3月31日で終了予定です。過去にも延長された実績はありますが、保証はありません。祖父母がこの制度の利用を検討している場合は、今すぐ確認してください。',
+
+    'fam.genRenunciationConsultation.title': '米国市民権放棄 — 専門家との相談を予約してください',
+    'fam.genRenunciationConsultation.body': '放棄を検討中とマークされていますが、相談完了のフラグが立てられていません。放棄は取り消せません。covered expatriate の出国税計算と放棄後の米国税ルール(米国人への贈与に対する移転税、Form 8854 の二重身分年度)は、DS-4079 提出前に専門家に相談する価値があります。',
+  });
+
+  // ====================================================================
   // Reference data
   // ====================================================================
 
@@ -41,7 +89,8 @@
       label_en: 'Annual exclusion (暦年贈与)',
       label_jp: '暦年贈与',
       cap_jpy: 1_100_000,
-      cap_unit: 'per recipient per year',
+      cap_unit_en: 'per recipient per year',
+      cap_unit_jp: '受取人一人あたり年間',
       sunset: null,
       notes_en: '¥1.1M tax-free gift per recipient per year. Multiple recipients (kids + grandkids + spouse) compound. ⚠ 7-year clawback (expanded from 3y in 2024): gifts within 7y of death pulled back into estate.',
       notes_jp: '受取人一人あたり年間 ¥110 万まで贈与税非課税。複数の受取人(子・孫・配偶者)に対して並列適用可能。⚠ 2024 年改正で持ち戻し期間が 3 年→7 年に延長:死亡前 7 年以内の贈与は相続財産に加算。',
@@ -51,7 +100,8 @@
       label_en: 'Education lump-sum (教育資金一括贈与)',
       label_jp: '教育資金一括贈与',
       cap_jpy: 15_000_000,
-      cap_unit: 'lifetime to grandchildren',
+      cap_unit_en: 'lifetime to grandchildren',
+      cap_unit_jp: '生涯・孫まで',
       sunset: (window.TB && TB.constants && TB.constants.GIFT_SUNSET.education) || '2026-03-31',
       notes_en: '¥15M tax-free lump sum to descendants under 30 for school + tuition + lessons. Funds held in earmarked bank account; unspent balance on 30th birthday or donor death = taxed. Closed to NEW contributions after Mar 31, 2026 (the FY2026 reform did not extend it); funds contributed by the deadline remain covered under the existing rules.',
       notes_jp: '30 歳未満の直系卑属に対し、教育費目的で一括贈与最大 ¥1,500 万まで非課税。指定銀行口座で管理。30 歳到達時または贈与者死亡時の残額は課税対象。2026/3/31 をもって新規の申込み受付は終了(令和8年度改正で延長されず)。期限までに拠出した資金は従来の取扱いが継続。',
@@ -61,7 +111,8 @@
       label_en: 'Marriage / childbearing (結婚・子育て資金一括贈与)',
       label_jp: '結婚・子育て資金一括贈与',
       cap_jpy: 10_000_000,
-      cap_unit: 'lifetime, ages 18-50',
+      cap_unit_en: 'lifetime, ages 18-50',
+      cap_unit_jp: '生涯・18~50歳',
       sunset: (window.TB && TB.constants && TB.constants.GIFT_SUNSET.marriageChildrearing) || '2027-03-31',
       notes_en: '¥10M lump sum to descendants ages 18-50 for marriage + childcare expenses. Funds in earmarked account. Available through Mar 31, 2027 (extended two years by the FY2025 reform).',
       notes_jp: '18~50 歳の直系卑属に対し、結婚・出産・育児費目的で一括贈与最大 ¥1,000 万まで非課税。指定口座管理。2027/3/31 まで利用可能(令和7年度改正で 2 年延長)。',
@@ -71,7 +122,8 @@
       label_en: 'Settlement-at-inheritance (相続時精算課税)',
       label_jp: '相続時精算課税',
       cap_jpy: 25_000_000,
-      cap_unit: 'lifetime, then 20% on excess',
+      cap_unit_en: 'lifetime, then 20% on excess',
+      cap_unit_jp: '生涯・超過分は20%課税',
       sunset: null,
       notes_en: 'Lifetime ¥25M tax-free gifting election; gifts above cap taxed at 20% (refundable against future inheritance). 2024 reform added a ¥1.1M annual exclusion ON TOP of the lifetime cap. ⚠ Once elected, you can never go back to 暦年贈与 with that donor.',
       notes_jp: '生涯 ¥2,500 万までの贈与税非課税選択制度。超過分は 20% 課税(相続時に精算)。2024 年改正で年間 ¥110 万の基礎控除が上乗せ追加。⚠ 一度選択すると同一贈与者からの 暦年贈与 に戻せない。',
@@ -81,7 +133,8 @@
       label_en: 'Spouse deduction (配偶者控除 / おしどり贈与)',
       label_jp: '配偶者控除(おしどり贈与)',
       cap_jpy: 20_000_000,
-      cap_unit: 'lifetime, marriage 20y+',
+      cap_unit_en: 'lifetime, marriage 20y+',
+      cap_unit_jp: '生涯一度・婚姻20年以上',
       sunset: null,
       notes_en: '¥20M lifetime tax-free gift for primary residence (or cash to buy one) to a spouse married 20+ years. Separate from inheritance ¥160M spouse deduction. Used once.',
       notes_jp: '婚姻期間 20 年以上の配偶者に対し、居住用不動産または購入資金を生涯一度 ¥2,000 万まで非課税。相続時の配偶者控除(¥1.6 億)とは別枠。',
@@ -110,12 +163,26 @@
         'Unused funds can roll to a Roth IRA for the beneficiary (up to $35K lifetime, beneficiary 15y rule)',
         'K-12 $10K/yr usable but only at US K-12 schools',
       ],
+      pros_jp: [
+        'PFIC の問題なし(米国籍ファンド)',
+        'FSA 適格校での適格支出であれば、運用益・引き出しとも非課税',
+        '拠出限度額が高い(贈与者一人あたり、連邦贈与税非課税枠5年分を前倒しで最大 $95K まで拠出可能)',
+        '使い残した資金は受益者の Roth IRA へロールオーバー可能(生涯 $35K まで、受益者15年ルール)',
+        'K-12(小中高)は年 $10K まで使用可能だが、米国内の K-12 校限定',
+      ],
       cons_en: [
         '🚨 Most Japanese universities are NOT FSA-eligible — using 529 funds there = non-qualified withdrawal. Penalty applies to the EARNINGS portion only: 10% federal penalty + ordinary income tax on earnings. Principal contributions come back tax/penalty-free (you contributed after-tax dollars). The hit scales with how long the account grew.',
         'FSA-eligible JP schools are short list (verify at studentaid.gov): Temple Japan, Lakeland Japan, a handful of others',
         'JP doesn\'t recognize the 529 wrapper — internal growth may be JP-taxable to a JP-resident parent annually',
         'State tax credit only if you\'re a domiciliary of the offering state — non-qualified withdrawal can also trigger state-level recapture of prior credits',
         'Workarounds (avoid the earnings penalty): change beneficiary to a US-resident relative, save for room/board at an FSA-eligible school the kid visits in the US, use for an FSA-eligible JP institution, or roll up to $35K to the beneficiary\'s Roth IRA (SECURE 2.0)',
+      ],
+      cons_jp: [
+        '🚨 ほとんどの日本の大学は FSA 適格校ではありません — そこで 529 資金を使うと非適格引き出しになります。ペナルティは運用益部分にのみ課され、連邦10%ペナルティ+運用益への通常所得税がかかります。元本拠出分は課税・ペナルティなしで戻ります(税引き後のお金を拠出しているため)。運用期間が長いほど負担は大きくなります。',
+        'FSA 適格な日本の学校はごく少数(studentaid.gov で要確認):テンプル大学ジャパンキャンパス、レイクランド大学ジャパンキャンパスなど数校',
+        '日本は 529 の器を認識しないため、日本居住の親には運用益に毎年日本の課税が生じる可能性があります',
+        '州の税額控除は、その州の居住者である場合のみ適用され、非適格引き出しは過去の控除の州レベルでの取り戻し(recapture)を招くこともあります',
+        '対策(運用益ペナルティを回避):受益者を米国居住の親族に変更する、米国内の FSA 適格校を訪れる子の寮費・食費に充てる、FSA 適格な日本の学校に使う、または受益者の Roth IRA へ最大 $35K をロールオーバーする(SECURE 2.0)',
       ],
     },
     {
@@ -129,11 +196,22 @@
         'Death benefit if parent dies before child reaches college age',
         'Modest insurance + savings hybrid',
       ],
+      pros_jp: [
+        '保険料が自動引き落としのため、強制的な貯蓄になる',
+        '子が大学進学年齢に達する前に親が死亡した場合の死亡保険金',
+        '保険と貯蓄を組み合わせた手堅い商品性',
+      ],
       cons_en: [
         '🚨 PFIC TRAP for US-person parent — punitive default tax on growth',
         'Generally weak returns (~0-1% over policy life)',
         'Inflexible — early surrender = principal loss',
         'Form 8621 every year for the US-person owner',
+      ],
+      cons_jp: [
+        '🚨 米国人の親にとっては PFIC の罠 — 運用益に懲罰的な課税がデフォルトで適用される',
+        '一般的にリターンが弱い(契約期間全体で約0~1%)',
+        '柔軟性に欠ける — 早期解約すると元本割れ',
+        '米国人の契約者は毎年 Form 8621 の提出が必要',
       ],
     },
     {
@@ -148,11 +226,23 @@
         'No PFIC issue (it\'s a gift in an earmarked bank account, not an investment)',
         'Funds CAN be used for any school — Japanese, international, or foreign — without the 529 FSA-eligibility limitation',
       ],
+      pros_jp: [
+        '祖父母一人につき ¥1,500 万まで非課税(祖父母4人からなら最大 ¥6,000 万)',
+        '学校・学費・習い事に限定使用(広く定義されており、授業料・入学金・教科書代・習い事は上限内 ¥500 万まで対象)',
+        'PFIC の問題なし(投資商品ではなく、指定口座での贈与のため)',
+        '529 の FSA 適格性の制限を受けず、日本の学校・インターナショナルスクール・海外の学校いずれにも使用可能',
+      ],
       cons_en: [
         'Locked to education spending — non-education use = gift tax retroactively',
         'Sunset Mar 31, 2026 (last extension was 2023 reform; further extension uncertain — verify current status with NTA)',
         'Unused balance on the beneficiary\'s 30th birthday or donor\'s death is taxed',
         'Indirect: a US-person grandchild beneficiary should not personally control the account — foreign-account reporting exposure (FBAR / 8938)',
+      ],
+      cons_jp: [
+        '教育費使用に限定 — 教育目的以外に使うと遡って贈与税が課税される',
+        '2026年3月31日で終了予定(前回の延長は2023年度改正。さらなる延長は未定 — 国税庁で最新状況を要確認)',
+        '受益者の30歳到達時または贈与者死亡時の残額は課税対象',
+        '間接的な論点:米国人である孫の受益者が口座を自ら管理すべきではない — 外国口座報告義務(FBAR/8938)の対象になり得る',
       ],
     },
     {
@@ -168,9 +258,20 @@
         'JP FTC offsets US capital-gains tax to the extent JP taxes the same gains',
         'Best fit if school will be in Japan and FSA-ineligible (most likely case)',
       ],
+      pros_jp: [
+        '最大限の柔軟性 — 教育費使用の制限も学校適格性リストもなし',
+        '米国籍ファンド(VTI、VOO 等)を保有していれば PFIC の問題なし',
+        '運用益に長期キャピタルゲイン税率が適用(0%/15%/20%)',
+        '日本が同じ譲渡益に課税する範囲で、外国税額控除(FTC)により米国キャピタルゲイン税を相殺できる',
+        '学校が日本にあり FSA 非適格の場合(最も可能性が高いケース)に最適',
+      ],
       cons_en: [
         'No tax-deferred growth (vs 529 / Roth)',
         'Counts as parental asset on FAFSA — modest financial-aid impact (≤5.6% of asset value)',
+      ],
+      cons_jp: [
+        '課税繰延の運用益なし(529 / Roth と比較して)',
+        'FAFSA(米国の学生支援申請)では親の資産として算入される — 資産評価額の5.6%以下と、財政支援への影響は小さい',
       ],
     },
   ];
@@ -324,7 +425,7 @@
     if (!birth_date) return null;
     const b = new Date(birth_date + 'T00:00:00');
     b.setFullYear(b.getFullYear() + 20);
-    return b.toISOString().slice(0, 10);
+    return TB.utils.localIsoDate(b);
   }
 
   function isDualCitizen(member) {
@@ -999,8 +1100,10 @@
         v.pfic ? el('span', { style: { marginLeft: '6px', color: 'var(--tb-error)', fontSize: 'var(--tb-fs-12)' } }, '⚠ PFIC') : null,
       ));
       const ulPros = el('ul', { style: { paddingLeft: '20px', margin: 0 } });
-      v.pros_en.forEach((p) => ulPros.appendChild(el('li', { style: { fontSize: 'var(--tb-fs-12)', marginBottom: '4px', color: 'var(--tb-success)' } }, '✓ ' + p)));
-      v.cons_en.forEach((c) => ulPros.appendChild(el('li', { style: { fontSize: 'var(--tb-fs-12)', marginBottom: '4px', color: 'var(--tb-text-soft)' } }, '✗ ' + c)));
+      const pros = (lang === 'ja' && v.pros_jp) ? v.pros_jp : v.pros_en;
+      const cons = (lang === 'ja' && v.cons_jp) ? v.cons_jp : v.cons_en;
+      pros.forEach((p) => ulPros.appendChild(el('li', { style: { fontSize: 'var(--tb-fs-12)', marginBottom: '4px', color: 'var(--tb-success)' } }, '✓ ' + p)));
+      cons.forEach((c) => ulPros.appendChild(el('li', { style: { fontSize: 'var(--tb-fs-12)', marginBottom: '4px', color: 'var(--tb-text-soft)' } }, '✗ ' + c)));
       tile.appendChild(ulPros);
       grid.appendChild(tile);
     });
@@ -1022,7 +1125,7 @@
 
     // Vehicle comparison
     GIFT_VEHICLES.forEach((v) => {
-      const sunsetWarn = v.sunset && v.sunset < new Date().toISOString().slice(0, 10);
+      const sunsetWarn = v.sunset && v.sunset < TB.utils.todayIso();
       const wrap = el('details', {
         style: {
           padding: 'var(--tb-sp-2) var(--tb-sp-3)',
@@ -1035,7 +1138,7 @@
       summary.appendChild(el('span', { style: { fontWeight: '600' } },
         lang === 'ja' ? v.label_jp : v.label_en));
       summary.appendChild(el('span', { style: { fontSize: 'var(--tb-fs-12)', color: 'var(--tb-text-soft)', whiteSpace: 'nowrap', fontFamily: 'var(--tb-font-mono)' } },
-        '¥' + v.cap_jpy.toLocaleString() + ' · ' + v.cap_unit));
+        '¥' + v.cap_jpy.toLocaleString() + ' · ' + ((lang === 'ja' && v.cap_unit_jp) ? v.cap_unit_jp : v.cap_unit_en)));
       wrap.appendChild(summary);
       wrap.appendChild(el('p', { style: { marginTop: 'var(--tb-sp-2)', marginBottom: 0, fontSize: 'var(--tb-fs-12)' } },
         lang === 'ja' ? v.notes_jp : v.notes_en));
@@ -1450,6 +1553,7 @@
   // ====================================================================
 
   function genPassportExpiring() {
+    const t = TB.i18n.t;
     const out = [];
     getMembers().forEach((m) => {
       ['passport_us', 'passport_jp'].forEach((k) => {
@@ -1465,11 +1569,8 @@
           group: 'family',
           urgency: days <= 60 ? 'high' : days <= 120 ? 'medium' : 'low',
           icon: '🛂',
-          title: country + ' passport expiring — ' + name + ' (' + days + 'd)',
-          body: 'Passport expires ' + pp.expires + '. ' +
-            (country === 'US'
-              ? 'US passport renewal abroad: file Form DS-82 at the embassy/consulate. Allow 6-8 weeks. Many countries require 6mo validity for entry.'
-              : '日本パスポートは住民登録地の都道府県旅券課で更新。残存有効期間を確認。'),
+          title: t('fam.genPassportExpiring.title', { country, name, days }),
+          body: t('fam.genPassportExpiring.body.' + (country === 'US' ? 'us' : 'jp'), { expires: pp.expires }),
           deadline: pp.expires,
           module: 'family',
           snoozable: days > 60,
@@ -1480,6 +1581,7 @@
   }
 
   function genNationalityChoiceApproaching() {
+    const t = TB.i18n.t;
     const out = [];
     getMembers().forEach((m) => {
       if (m.relationship !== 'child') return;
@@ -1500,12 +1602,9 @@
       // a foreign nationality — is the provision with teeth, and it does not
       // apply to a child who was dual from birth.)
       const urgency = past ? 'low' : (days <= 365 ? 'medium' : 'low');
-      const title = past
-        ? '国籍選択 — past the formal date (no action forced) — ' + name
-        : '国籍選択 in ' + Math.floor(days / 365) + 'y — ' + name;
-      const body = past
-        ? 'Being past the 国籍選択 (nationality-choice) date carries no automatic consequence. The obligation is a non-penalized "duty of effort" (努力義務): Japanese nationality is lost only if the Minister of Justice issues a written demand (催告) and it then goes unanswered for one month — and that demand has never been issued to anyone in Japan\'s history. Hundreds of thousands of dual nationals remain in exactly this position. This is Article 14 (the choice rule), which is separate from Article 11, under which a Japanese citizen who VOLUNTARILY acquires a foreign nationality loses Japanese nationality automatically — Article 11 does not apply to someone who was dual from birth. To confirm the formal record, obtain a 戸籍謄本 (a filed 国籍選択届 would appear there); a 行政書士 or the 法務局 can verify. Note: filing 国籍選択届 selecting Japanese does NOT renounce US citizenship — that is a separate consular process.'
-        : 'Japanese law asks dual nationals to choose one nationality: acquired before age 18 → by age 20; at/after 18 → within 2 years. This is a non-penalized "duty of effort" (Article 14) — no fine and no automatic loss for missing it, and the formal demand process has never been used. Filing 国籍選択届 selecting Japanese does NOT renounce US citizenship (separate consular act; only an "endeavor" under Article 16). Many dual nationals keep both. Separate risk worth knowing: Article 11 — voluntarily ACQUIRING a foreign nationality later — causes automatic loss of Japanese nationality, but it does not apply to a child dual from birth.';
+      const years = Math.floor(days / 365);
+      const title = t('fam.genNationalityChoiceApproaching.title.' + (past ? 'past' : 'future'), { name, years });
+      const body = t('fam.genNationalityChoiceApproaching.body.' + (past ? 'past' : 'future'), { name, years });
       out.push({
         id: 'family_natchoice_' + m.id,
         group: 'family',
@@ -1522,6 +1621,7 @@
   }
 
   function genYearEndGiftOpportunity() {
+    const t = TB.i18n.t;
     const out = [];
     const today = new Date();
     const month = today.getMonth() + 1;
@@ -1537,16 +1637,16 @@
     const availableRecipients = recipients.filter((r) => !usedRecipients.has(r.id));
     if (availableRecipients.length === 0) return out;
     const dec31 = new Date(yr + '-12-31T00:00:00');
-    const days = Math.round((dec31 - today) / 86400000);
-    if (days < 0) return out;
+    const days = TB.utils.daysUntil(dec31);
+    if (TB.utils.isPastDeadline(dec31)) return out;
     out.push({
       id: 'family_year_end_gift_' + yr,
       group: 'family',
       urgency: days <= 14 ? 'high' : 'medium',
       icon: '🎁',
-      title: '暦年贈与 year-end opportunity — ' + availableRecipients.length + ' recipients unused',
-      body: 'You have ' + availableRecipients.length + ' family member(s) eligible for a ¥1.1M tax-free gift this year. Bank transfer must SETTLE by Dec 31 to count. This use-it-or-lose-it cap doesn\'t carry over.',
-      deadline: dec31.toISOString().slice(0, 10),
+      title: t('fam.genYearEndGiftOpportunity.title', { count: availableRecipients.length }),
+      body: t('fam.genYearEndGiftOpportunity.body', { count: availableRecipients.length }),
+      deadline: TB.utils.localIsoDate(dec31),
       module: 'family',
       snoozable: true,
     });
@@ -1554,6 +1654,7 @@
   }
 
   function genEduSunsetWarning() {
+    const t = TB.i18n.t;
     const out = [];
     const sunset = (window.TB && TB.constants && TB.constants.GIFT_SUNSET.education) || '2026-03-31';
     const days = daysUntil(sunset);
@@ -1569,8 +1670,8 @@
       group: 'family',
       urgency: days <= 90 ? 'high' : 'medium',
       icon: '🎓',
-      title: '教育資金一括贈与 sunset ' + sunset + ' (' + days + 'd) — extension uncertain',
-      body: '¥15M tax-free education lump sum (grandparent → grandchild) currently sunsets Mar 31, 2026. Past extensions have been granted but never guaranteed. If grandparents are considering this, review now.',
+      title: t('fam.genEduSunsetWarning.title', { sunset, days }),
+      body: t('fam.genEduSunsetWarning.body'),
       deadline: sunset,
       module: 'family',
       snoozable: true,
@@ -1579,6 +1680,7 @@
   }
 
   function genRenunciationConsultation() {
+    const t = TB.i18n.t;
     const r = getRenunciation();
     if (!r.contemplating) return [];
     if (r.consultation_complete) return [];
@@ -1587,8 +1689,8 @@
       group: 'family',
       urgency: 'medium',
       icon: '🪪',
-      title: 'US renunciation — schedule specialist consultation',
-      body: 'You\'ve marked renunciation as under consideration but haven\'t flagged a consultation as complete. Renunciation is irrevocable; the covered-expatriate exit-tax math + post-renunciation US tax rules (transfer tax on gifts to US persons, Form 8854 dual-status year) deserve a specialist before filing the DS-4079.',
+      title: t('fam.genRenunciationConsultation.title'),
+      body: t('fam.genRenunciationConsultation.body'),
       module: 'family',
       snoozable: true,
     }];

@@ -50,11 +50,12 @@
   // ── Treasury year-end Reporting Rates of Exchange (FBAR) ────────────
   // The app auto-fetches the official rates from the Fiscal Data API when
   // the FBAR module opens; this table is the OFFLINE FALLBACK only.
-  // JPY (the dominant currency for this audience) is corrected to the
-  // exact official rate for every year; 2024 EUR/KRW/CAD are also fixed.
-  // Other currencies remain close market approximations until the live
-  // fetch replaces them — that's why the fallback is labelled as such.
-  // All verified against the Fiscal Data API on 2026-06-07.
+  // JPY is the exact official rate for every year. 2025 is FULLY official
+  // (all currencies — re-pulled from the API; matches the TaiganJP
+  // fbar-calculator); 2024 has EUR/KRW/CAD fixed. Earlier years' non-JPY
+  // are close approximations until the live fetch replaces them. Verified
+  // vs the Fiscal Data API on 2026-06-07 (JPY + 2024) and 2026-06-25 (full
+  // 2025 set).
   const TREASURY_FX_FALLBACK = {
     '2019': { JPY: 108.53, EUR: 0.890, GBP: 0.755, CAD: 1.299, AUD: 1.425, CHF: 0.969, SGD: 1.347, HKD: 7.788, KRW: 1156.4, CNY: 6.962, NZD: 1.486, THB: 29.97, MXN: 18.880, BRL: 4.020, NOK: 8.78 },
     '2020': { JPY: 103.08, EUR: 0.815, GBP: 0.731, CAD: 1.272, AUD: 1.293, CHF: 0.884, SGD: 1.322, HKD: 7.752, KRW: 1086.3, CNY: 6.527, NZD: 1.388, THB: 30.04, MXN: 19.910, BRL: 5.197, NOK: 8.55 },
@@ -62,7 +63,7 @@
     '2022': { JPY: 131.83, EUR: 0.938, GBP: 0.829, CAD: 1.355, AUD: 1.471, CHF: 0.926, SGD: 1.341, HKD: 7.806, KRW: 1267.3, CNY: 6.898, NZD: 1.575, THB: 34.61, MXN: 19.360, BRL: 5.286, NOK: 9.85 },
     '2023': { JPY: 141.47, EUR: 0.905, GBP: 0.785, CAD: 1.323, AUD: 1.467, CHF: 0.842, SGD: 1.320, HKD: 7.812, KRW: 1289.2, CNY: 7.099, NZD: 1.581, THB: 34.10, MXN: 16.920, BRL: 4.846, NOK: 10.17 },
     '2024': { JPY: 156.85, EUR: 0.961, GBP: 0.799, CAD: 1.438, AUD: 1.617, CHF: 0.907, SGD: 1.365, HKD: 7.768, KRW: 1473.27, CNY: 7.299, NZD: 1.789, THB: 34.10, MXN: 20.830, BRL: 6.187, NOK: 10.56 },
-    '2025': { JPY: 156.61, EUR: 0.920, GBP: 0.785, CAD: 1.410, AUD: 1.555, CHF: 0.845, SGD: 1.358, HKD: 7.778, KRW: 1450.0, CNY: 7.250, NZD: 1.741, THB: 34.05, MXN: 20.500, BRL: 6.100, NOK: 10.88 },
+    '2025': { JPY: 156.61, EUR: 0.851, GBP: 0.743, CAD: 1.369, AUD: 1.495, CHF: 0.792, SGD: 1.285, HKD: 7.784, KRW: 1443.75, CNY: 6.998, NZD: 1.733, THB: 31.66, MXN: 17.956, BRL: 5.477, NOK: 10.072 },
   };
 
   // ── Provenance: issuing-authority source + last-verified + recheck ──

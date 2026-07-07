@@ -401,10 +401,10 @@
 
   function daysUntil(iso) {
     if (!iso) return null;
-    const d = new Date(iso + 'T00:00:00Z');
+    const d = new Date(iso + 'T00:00:00');
     if (isNaN(d.getTime())) return null;
     const today = new Date();
-    today.setUTCHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
     return Math.round((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   }
 
@@ -1146,7 +1146,7 @@
         if (i >= 0) {
           all[i] = Object.assign({}, all[i], { status: newStatus });
           if (newStatus === 'executed') {
-            all[i].executed_date = new Date().toISOString().slice(0, 10);
+            all[i].executed_date = TB.utils.todayIso();
           }
           setSteps(all);
         }
@@ -1197,7 +1197,7 @@
     let ack2 = false;
     let ack3 = !isCritical; // third ack only required for critical steps
     let amountStr = '';
-    let dateStr = new Date().toISOString().slice(0, 10);
+    let dateStr = TB.utils.todayIso();
     let notesStr = '';
 
     function rebuild() {

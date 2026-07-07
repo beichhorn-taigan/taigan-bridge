@@ -18,6 +18,75 @@
   const id = 'resident';
 
   // ====================================================================
+  // i18n — Action Center generator strings + checklist item strings
+  //
+  // Action Center titles/bodies get surfaced outside this module's own
+  // render (in the shared Action Center widget), so they must go
+  // through TB.i18n.t() rather than staying as hardcoded English
+  // literals. Registered here via TB.i18n.extend() so this module can
+  // self-contain its own translation table instead of touching the
+  // shared i18n.js dictionary.
+  // ====================================================================
+
+  TB.i18n.extend('en', {
+    'res.kakutei.windowOpens.title': '確定申告 window opens in {{days}} days (Feb 16)',
+    'res.kakutei.windowOpens.body':  'Annual Japan tax return window: Feb 16 - Mar 15. As a US person + JP resident, you also must coordinate with your US 1040 (worldwide income on both). Start gathering 源泉徴収票, US W-2s, donation receipts, mortgage balance certificates.',
+    'res.kakutei.due.title':         '確定申告 due {{date}} ({{days}} days)',
+    'res.kakutei.due.body':          'Japan tax return deadline. Late filing = 5-15% delinquent tax + interest. e-Tax or paper to your local 税務署.',
+
+    'res.tenYearClock.title':        '10-year worldwide-asset clock — {{years}}y {{months}}mo left',
+    'res.tenYearClock.body':         'JP inheritance tax expands to your WORLDWIDE assets at year 10 of residency. US 401k, IRA, brokerage, real estate all become subject to 10-55% JP inheritance tax in the event of your death. Plan mitigation NOW (gifting to non-JP heirs, leave Japan, restructure) — see Projections → Tax Strategy → Inheritance Tax Mitigation.',
+
+    'res.prEligible.title':          'Eligible to apply for 永住権 (Permanent Residency)',
+    'res.prEligible.body':           'Based on your visa + arrival date, you meet the residency requirement. PR removes visa-renewal hassle. Application process is paper-based at your local immigration office; typical 4-12 month review.',
+    'res.prApproaching.title':       '永住権 eligibility in {{months}}mo ({{date}})',
+    'res.prApproaching.body':        'Start gathering documentation now: tax records (5y), residence certificates, employment records, character references. Some processing offices accept pre-application document review.',
+
+    'res.furusato.title':            'Furusato Nozei deadline Dec 31 — ¥{{headroom}} headroom remaining',
+    'res.furusato.body':             'Donations must be made AND processed by Dec 31 to count for the current year. Annual estimated limit: ¥{{limit}}. You\'ve planned ¥{{planned}}. Stretch the rest before year-end for ~30% gift-value return.',
+
+    'res.kakutei.checklist.gensenchoshu':    '源泉徴収票 (year-end employment income statement) from each Japanese employer',
+    'res.kakutei.checklist.usW2':            'US W-2 / 1099 forms — JP residents must report worldwide income',
+    'res.kakutei.checklist.priorYearReturn': 'US tax return for prior year (for FTC calculation)',
+    'res.kakutei.checklist.medical':         'Receipts for medical expenses >¥100,000 (医療費控除)',
+    'res.kakutei.checklist.furusatoReceipts':'Furusato Nozei donation receipts (寄附金受領証明書)',
+    'res.kakutei.checklist.mortgageCert':    'Mortgage balance certificate from bank (年末残高証明書) — for 住宅ローン控除',
+    'res.kakutei.checklist.insurance':       'Life / earthquake insurance premium statements',
+    'res.kakutei.checklist.ideco':           'iDeCo / 小規模企業共済 contribution statements (if applicable + non-US-person)',
+    'res.kakutei.checklist.tokuteiKouza':    'Securities account 特定口座 annual reports (年間取引報告書)',
+    'res.kakutei.checklist.foreignSource':   'Foreign-source income documentation (for non-permanent residents only — 5-year rule)',
+  });
+
+  TB.i18n.extend('ja', {
+    'res.kakutei.windowOpens.title': '確定申告の受付開始まであと {{days}} 日(2月16日)',
+    'res.kakutei.windowOpens.body':  '日本の確定申告期間: 2月16日〜3月15日。米国人かつ日本居住者の場合、米国 1040(双方で全世界所得を申告)との調整も必要です。源泉徴収票、米国 W-2、寄附金受領証明書、住宅ローン年末残高証明書の準備を始めましょう。',
+    'res.kakutei.due.title':         '確定申告期限 {{date}}(あと {{days}} 日)',
+    'res.kakutei.due.body':          '日本の確定申告期限です。期限後申告は延滞税 5〜15% + 利子税が課されます。e-Tax または最寄りの税務署へ書面提出。',
+
+    'res.tenYearClock.title':        '10 年全世界資産時計 — 残り {{years}} 年 {{months}} ヶ月',
+    'res.tenYearClock.body':         '居住 10 年目で日本の相続税が全世界資産に拡大適用されます。米国 401k・IRA・証券口座・不動産など全てが、万一の場合 10〜55% の日本相続税の対象になります。今すぐ対策を検討してください(非居住相続人への贈与、日本からの転出、資産再編など)— Projections → 税務戦略 → 相続税対策 を参照。',
+
+    'res.prEligible.title':          '永住権(永住許可)申請資格あり',
+    'res.prEligible.body':           'ビザ種別と来日日から、居住要件を満たしています。永住権を取得するとビザ更新の手間がなくなります。申請は最寄りの入国管理局で書面にて行い、通常審査には 4〜12 ヶ月かかります。',
+    'res.prApproaching.title':       '永住権資格まであと {{months}} ヶ月({{date}})',
+    'res.prApproaching.body':        '今から書類の準備を始めましょう: 納税記録(5年分)、住民票、在職証明、身元保証人等。事前に書類レビューを受け付ける入管もあります。',
+
+    'res.furusato.title':            'ふるさと納税期限 12月31日 — 残り枠 ¥{{headroom}}',
+    'res.furusato.body':             '寄附は12月31日までに完了・処理される必要があります。年間目安上限額: ¥{{limit}}。予定寄附額: ¥{{planned}}。年末までに残り枠を活用すると、返礼品として寄附額の約30%相当の価値を受け取れます。',
+
+    'res.kakutei.checklist.gensenchoshu':    '各日本の雇用主からの源泉徴収票',
+    'res.kakutei.checklist.usW2':            '米国 W-2・1099 — 日本居住者は全世界所得を申告',
+    'res.kakutei.checklist.priorYearReturn': '前年の米国納税申告書(外国税額控除計算用)',
+    'res.kakutei.checklist.medical':         '医療費 ¥10万超の領収書(医療費控除)',
+    'res.kakutei.checklist.furusatoReceipts':'ふるさと納税の寄附金受領証明書',
+    'res.kakutei.checklist.mortgageCert':    '銀行の年末残高証明書 — 住宅ローン控除用',
+    'res.kakutei.checklist.insurance':       '生命保険・地震保険料の控除証明書',
+    'res.kakutei.checklist.ideco':           'iDeCo・小規模企業共済の掛金証明書',
+    'res.kakutei.checklist.tokuteiKouza':    '特定口座の年間取引報告書',
+    'res.kakutei.checklist.foreignSource':   '海外源泉所得の証憑(非永住者のみ — 5年ルール)',
+  });
+
+  // ====================================================================
   // Reference data
   // ====================================================================
 
@@ -64,17 +133,31 @@
   }
 
   // Mortgage credit (住宅ローン控除) estimator. The deduction is
-  // 0.7% of year-end loan balance, capped at varying amounts based
-  // on property type and acquisition year. Standard 2024 caps:
-  //   Standard new construction: ¥3,000,000 loan × 0.7% = ¥21,000/yr
-  //   Long-term excellent housing: ¥4,500,000 × 0.7% = ¥31,500/yr
-  //   Energy-efficient (省エネ): ¥4,000,000 × 0.7% = ¥28,000/yr
-  // Actually the loan caps are MUCH higher (¥30M-¥50M); the credit
-  // is 0.7% on the loan balance up to those caps.
+  // 0.7% of the year-end loan balance, capped at a per-type borrowing
+  // limit. Under the 2024+ regime (令和6年〜, for new-build homes
+  // moved into in 2024 or later) the caps tightened sharply and
+  // energy-efficiency certification became mandatory for any credit:
+  //   一般住宅 (uncertified new construction): ¥0 — NO credit
+  //   長期優良住宅・低炭素住宅:                 ¥45,000,000 cap
+  //   ZEH水準省エネ住宅:                        ¥35,000,000 cap
+  //   省エネ基準適合住宅:                       ¥30,000,000 cap
+  // (For 2024, child-rearing / young-married households get raised
+  // caps — ¥50M / ¥40M / ¥40M respectively. Not modeled here; the
+  // base caps below are the safe/lower figures.)
   const MORTGAGE_CAPS = {
-    standard:         { loan_cap_jpy: 30_000_000, label_en: 'Standard new construction', label_jp: '一般住宅(新築)' },
-    long_term:        { loan_cap_jpy: 45_000_000, label_en: 'Long-term excellent housing (長期優良住宅)', label_jp: '長期優良住宅' },
-    energy_efficient: { loan_cap_jpy: 40_000_000, label_en: 'Energy-efficient (省エネ住宅)', label_jp: '省エネ住宅' },
+    // Uncertified general new construction acquired 2024+ → ¥0 cap →
+    // no credit. estimateMortgageCredit() returns 0 for this tier.
+    standard:         { loan_cap_jpy: 0,          label_en: 'General new construction (uncertified, 2024+ → no credit)', label_jp: '一般住宅(省エネ基準未適合・2024年〜控除対象外)' },
+    long_term:        { loan_cap_jpy: 45_000_000, label_en: 'Long-term excellent / low-carbon housing (長期優良・低炭素住宅)', label_jp: '長期優良住宅・低炭素住宅' },
+    // ZEH-level energy-efficient housing.
+    zeh:              { loan_cap_jpy: 35_000_000, label_en: 'ZEH-level energy-efficient (ZEH水準省エネ住宅)', label_jp: 'ZEH水準省エネ住宅' },
+    // Energy-efficiency-standard-conforming housing (below ZEH level).
+    energy_efficient: { loan_cap_jpy: 30_000_000, label_en: 'Energy-standard-conforming (省エネ基準適合住宅)', label_jp: '省エネ基準適合住宅' },
+    // TODO(M11c): existing/used homes (既存住宅) and the 2024-only
+    // raised caps for child-rearing/young-married households are not
+    // modeled. Used-home caps (¥30M certified / ¥20M general) differ
+    // from these new-build figures — add a separate tier before using
+    // this for pre-owned properties.
   };
 
   function estimateMortgageCredit(balanceJpy, type) {
@@ -177,10 +260,28 @@
     return VISA_STATUSES.find((s) => s.id === v) || null;
   }
 
-  // Days until 10-year worldwide-asset inheritance tax clock — the
-  // year-10 anniversary of arrival in Japan is when JP inheritance
-  // tax expands from JP-situs assets only to worldwide assets for
-  // foreign nationals. Returns { years: int, days: int } or null.
+  // Worldwide-asset inheritance/gift-tax exposure clock for foreign
+  // nationals. The actual rule is NOT "10 continuous years since
+  // arrival": JP taxes worldwide assets once the person has had jūsho
+  // (domicile) in Japan for MORE THAN 10 of the PAST 15 years. Prior
+  // Japan stints count toward that total and SHORTEN the runway.
+  //
+  // The schema only stores a single `arrival_date` (no prior-stint /
+  // departure data). For the common continuous-residence case, "more
+  // than 10 of the past 15 years" is first crossed shortly after the
+  // 10-year mark from arrival, so we model the threshold as ~10 years
+  // from arrival — but this is a BEST-EFFORT floor, not the definitive
+  // rule, and it will OVERSTATE remaining runway for anyone with an
+  // earlier Japan stint.
+  //
+  // Returns { date, days, years, approximate: true } or null.
+  // `approximate` flags that this ignores prior stints; callers should
+  // surface a note that earlier Japan residence shortens the clock.
+  //
+  // TODO(M11a): once the schema captures prior Japan residence periods
+  // (arrival/departure pairs), compute the true "10 of past 15 years"
+  // date by accumulating days of domicile over a rolling 15-year window
+  // instead of assuming continuous residence from a single arrival_date.
   function tenYearClock() {
     const arrival = getResidency().arrival_date;
     if (!arrival) return null;
@@ -189,7 +290,7 @@
     const today = new Date(); today.setHours(0,0,0,0);
     const days = Math.round((tenYearMark - today) / 86400000);
     const years = days / 365.25;
-    return { date: tenYearMark.toISOString().slice(0, 10), days, years };
+    return { date: TB.utils.localIsoDate(tenYearMark), days, years, approximate: true };
   }
 
   // PR eligibility year based on visa + arrival.
@@ -201,7 +302,7 @@
     eligDate.setFullYear(eligDate.getFullYear() + spec.pr_years);
     const today = new Date(); today.setHours(0,0,0,0);
     return {
-      date: eligDate.toISOString().slice(0, 10),
+      date: TB.utils.localIsoDate(eligDate),
       days: Math.round((eligDate - today) / 86400000),
       already_eligible: eligDate <= today,
     };
@@ -675,6 +776,19 @@
     }
     card.appendChild(wrap);
 
+    // The real rule is "more than 10 of the past 15 years" of jūsho,
+    // not 10 continuous years from arrival. This countdown assumes a
+    // single continuous stay from arrival_date; prior Japan residence
+    // shortens the clock. Surface that caveat so we never understate
+    // exposure.
+    if (clock.approximate) {
+      const lang = TB.i18n.getLang();
+      card.appendChild(el('p', { class: 'tb-field-help', style: { marginTop: 'var(--tb-sp-2)' } },
+        lang === 'ja'
+          ? '※ 正確なルールは「過去 15 年のうち 10 年超」日本に住所があった場合です。この目安は来日日からの継続居住を前提としており、過去に日本に居住していた期間があると 10 年目より早く全世界資産が対象になります。'
+          : 'Note: the actual rule is domicile in Japan for MORE THAN 10 of the PAST 15 years — not 10 continuous years from arrival. This countdown assumes one continuous stay since your arrival date; any earlier Japan residence counts toward the threshold and shortens this clock (worldwide assets become taxable sooner).'));
+    }
+
     // Cross-link to inheritance tax mitigation in Projections.
     card.appendChild(el('div', { style: { marginTop: 'var(--tb-sp-3)', fontSize: 'var(--tb-fs-12)' } },
       el('a', { href: '#', style: { color: 'var(--tb-navy)' },
@@ -700,12 +814,12 @@
 
     // Deadline countdown
     const today = new Date();
-    const year = today.getUTCFullYear();
+    const year = today.getFullYear();
     const deadline = new Date(year + '-03-15T00:00:00');
-    if (today > deadline) deadline.setUTCFullYear(year + 1);
-    const days = Math.round((deadline - today) / 86400000);
-    const monthOpen = new Date(deadline.getUTCFullYear() + '-02-16T00:00:00');
-    const inWindow = today >= monthOpen && today <= deadline;
+    if (today > deadline) deadline.setFullYear(year + 1);
+    const days = TB.utils.daysUntil(deadline, today);
+    const monthOpen = new Date(deadline.getFullYear() + '-02-16T00:00:00');
+    const inWindow = today >= monthOpen && !TB.utils.isPastDeadline(deadline, today);
     const color = days <= 14 ? 'var(--tb-error)' : days <= 45 ? 'var(--tb-warn)' : 'var(--tb-text-soft)';
 
     card.appendChild(el('div', {
@@ -715,28 +829,20 @@
       el('div', { style: { fontWeight: '600', color } },
         inWindow
           ? '🔴 ' + t('resident.kakutei.window_open', { days })
-          : t('resident.kakutei.next_deadline', { date: deadline.toISOString().slice(0,10), days })),
+          : t('resident.kakutei.next_deadline', { date: TB.utils.localIsoDate(deadline), days })),
       el('div', { class: 'tb-field-help', style: { marginTop: '4px' } }, t('resident.kakutei.window_help')),
     ));
 
     // Checklist of things to gather
     card.appendChild(el('h3', null, t('resident.kakutei.checklist')));
-    const items = [
-      { en: '源泉徴収票 (year-end employment income statement) from each Japanese employer', jp: '各日本の雇用主からの源泉徴収票' },
-      { en: 'US W-2 / 1099 forms — JP residents must report worldwide income', jp: '米国 W-2・1099 — 日本居住者は全世界所得を申告' },
-      { en: 'US tax return for prior year (for FTC calculation)', jp: '前年の米国納税申告書(外国税額控除計算用)' },
-      { en: 'Receipts for medical expenses >¥100,000 (医療費控除)', jp: '医療費 ¥10万超の領収書(医療費控除)' },
-      { en: 'Furusato Nozei donation receipts (寄附金受領証明書)', jp: 'ふるさと納税の寄附金受領証明書' },
-      { en: 'Mortgage balance certificate from bank (年末残高証明書) — for 住宅ローン控除', jp: '銀行の年末残高証明書 — 住宅ローン控除用' },
-      { en: 'Life / earthquake insurance premium statements', jp: '生命保険・地震保険料の控除証明書' },
-      { en: 'iDeCo / 小規模企業共済 contribution statements (if applicable + non-US-person)', jp: 'iDeCo・小規模企業共済の掛金証明書' },
-      { en: 'Securities account 特定口座 annual reports (年間取引報告書)', jp: '特定口座の年間取引報告書' },
-      { en: 'Foreign-source income documentation (for non-permanent residents only — 5-year rule)', jp: '海外源泉所得の証憑(非永住者のみ — 5年ルール)' },
+    const itemKeys = [
+      'gensenchoshu', 'usW2', 'priorYearReturn', 'medical', 'furusatoReceipts',
+      'mortgageCert', 'insurance', 'ideco', 'tokuteiKouza', 'foreignSource',
     ];
     const list = el('ul', { style: { paddingLeft: '20px', margin: 0 } });
-    items.forEach((it) => {
+    itemKeys.forEach((key) => {
       list.appendChild(el('li', { style: { marginBottom: '6px' } },
-        TB.i18n.getLang() === 'ja' ? it.jp : it.en));
+        t('res.kakutei.checklist.' + key)));
     });
     card.appendChild(list);
 
@@ -874,7 +980,7 @@
     }
 
     const credit = estimateMortgageCredit(m.loan_balance_jpy, m.loan_type);
-    const yearsRemaining = m.purchase_year ? Math.max(0, 13 - (new Date().getUTCFullYear() - m.purchase_year)) : null;
+    const yearsRemaining = m.purchase_year ? Math.max(0, 13 - (new Date().getFullYear() - m.purchase_year)) : null;
     const typeMeta = MORTGAGE_CAPS[m.loan_type] || MORTGAGE_CAPS.standard;
 
     card.appendChild(el('div', {
@@ -1023,17 +1129,18 @@
   // ====================================================================
 
   function genKakuteiShinkokuDeadline() {
+    const t = TB.i18n.t;
     const out = [];
     // Honor the Tax Coordinator's JP-filing-responsibility setting.
     // SOFA contractors and households where a spouse handles JP-side
     // filings should not see this reminder — it's not their action.
     if (!hasJpPersonalTaxFiling()) return out;
     const today = new Date();
-    const year = today.getUTCFullYear();
+    const year = today.getFullYear();
     const deadline = new Date(year + '-03-15T00:00:00');
-    if (today > deadline) return out; // window closed for this year
+    if (TB.utils.isPastDeadline(deadline, today)) return out; // window closed for this year
     const windowOpen = new Date(year + '-02-16T00:00:00');
-    const days = Math.round((deadline - today) / 86400000);
+    const days = TB.utils.daysUntil(deadline, today);
     if (today < windowOpen) {
       // Pre-window — only show 30d before opening
       const daysToOpen = Math.round((windowOpen - today) / 86400000);
@@ -1041,43 +1148,47 @@
       out.push({
         id: 'resident_kakutei_window_opens',
         group: 'resident', urgency: 'medium', icon: '🧾',
-        title: '確定申告 window opens in ' + daysToOpen + ' days (Feb 16)',
-        body: 'Annual Japan tax return window: Feb 16 - Mar 15. As a US person + JP resident, you also must coordinate with your US 1040 (worldwide income on both). Start gathering 源泉徴収票, US W-2s, donation receipts, mortgage balance certificates.',
-        deadline: deadline.toISOString().slice(0, 10), module: 'resident', snoozable: true,
+        title: t('res.kakutei.windowOpens.title', { days: daysToOpen }),
+        body: t('res.kakutei.windowOpens.body'),
+        deadline: TB.utils.localIsoDate(deadline), module: 'resident', snoozable: true,
       });
     } else {
       const urgency = days <= 7 ? 'critical' : days <= 21 ? 'high' : 'medium';
       out.push({
         id: 'resident_kakutei_due',
         group: 'resident', urgency, icon: '🧾',
-        title: '確定申告 due ' + deadline.toISOString().slice(0,10) + ' (' + days + ' days)',
-        body: 'Japan tax return deadline. Late filing = 5-15% delinquent tax + interest. e-Tax or paper to your local 税務署.',
-        deadline: deadline.toISOString().slice(0, 10), module: 'resident', snoozable: false,
+        title: t('res.kakutei.due.title', { date: TB.utils.localIsoDate(deadline), days }),
+        body: t('res.kakutei.due.body'),
+        deadline: TB.utils.localIsoDate(deadline), module: 'resident', snoozable: false,
       });
     }
     return out;
   }
 
   function genTenYearClock() {
+    const t = TB.i18n.t;
     const out = [];
     const clock = tenYearClock();
     if (!clock) return out;
-    const r = getResidency();
-    if (r.permanent_residency) return out; // already a JP citizen / different rules anyway? actually PR doesn't change this, but let it slide for now
+    // NOTE: PR (永住権) status does NOT stop the worldwide-asset
+    // inheritance/gift-tax clock — PR holders are among the most
+    // exposed, so we intentionally do NOT suppress this warning for
+    // them. (Removed a bogus `if (r.permanent_residency) return out`.)
     if (clock.days < 0) return out; // already past
     if (clock.days > 365 * 3) return out; // not yet actionable
     const urgency = clock.days <= 365 ? 'high' : 'medium';
     out.push({
       id: 'resident_tenyear_approaching',
       group: 'resident', urgency, icon: '⏳',
-      title: '10-year worldwide-asset clock — ' + Math.floor(clock.days / 365) + 'y ' + Math.round((clock.days % 365) / 30) + 'mo left',
-      body: 'JP inheritance tax expands to your WORLDWIDE assets at year 10 of residency. US 401k, IRA, brokerage, real estate all become subject to 10-55% JP inheritance tax in the event of your death. Plan mitigation NOW (gifting to non-JP heirs, leave Japan, restructure) — see Projections → Tax Strategy → Inheritance Tax Mitigation.',
+      title: t('res.tenYearClock.title', { years: Math.floor(clock.days / 365), months: Math.round((clock.days % 365) / 30) }),
+      body: t('res.tenYearClock.body'),
       deadline: clock.date, module: 'resident', snoozable: true,
     });
     return out;
   }
 
   function genPrEligible() {
+    const t = TB.i18n.t;
     const out = [];
     const r = getResidency();
     if (r.permanent_residency || r.pr_application_filed) return out;
@@ -1087,16 +1198,16 @@
       out.push({
         id: 'resident_pr_eligible',
         group: 'resident', urgency: 'low', icon: '🇯🇵',
-        title: 'Eligible to apply for 永住権 (Permanent Residency)',
-        body: 'Based on your visa + arrival date, you meet the residency requirement. PR removes visa-renewal hassle. Application process is paper-based at your local immigration office; typical 4-12 month review.',
+        title: t('res.prEligible.title'),
+        body: t('res.prEligible.body'),
         module: 'resident', snoozable: true,
       });
     } else if (elig.days <= 365) {
       out.push({
         id: 'resident_pr_approaching',
         group: 'resident', urgency: 'low', icon: '🇯🇵',
-        title: '永住権 eligibility in ' + Math.floor(elig.days / 30) + 'mo (' + elig.date + ')',
-        body: 'Start gathering documentation now: tax records (5y), residence certificates, employment records, character references. Some processing offices accept pre-application document review.',
+        title: t('res.prApproaching.title', { months: Math.floor(elig.days / 30), date: elig.date }),
+        body: t('res.prApproaching.body'),
         deadline: elig.date, module: 'resident', snoozable: true,
       });
     }
@@ -1104,12 +1215,13 @@
   }
 
   function genFurusatoDeadline() {
+    const t = TB.i18n.t;
     const out = [];
     const today = new Date();
-    const year = today.getUTCFullYear();
+    const year = today.getFullYear();
     const deadline = new Date(year + '-12-31T00:00:00');
-    const days = Math.round((deadline - today) / 86400000);
-    if (days < 0 || days > 60) return out;
+    const days = TB.utils.daysUntil(deadline, today);
+    if (TB.utils.isPastDeadline(deadline, today) || days > 60) return out;
     const f = getFurusato();
     const limit = estimateFurusatoLimit(f.prior_year_income_jpy, f.prior_year_dependents || 0);
     const planned = f.donations_planned_jpy || 0;
@@ -1119,9 +1231,9 @@
     out.push({
       id: 'resident_furusato_year_end',
       group: 'resident', urgency: days <= 14 ? 'high' : 'medium', icon: '💴',
-      title: 'Furusato Nozei deadline Dec 31 — ¥' + headroom.toLocaleString() + ' headroom remaining',
-      body: 'Donations must be made AND processed by Dec 31 to count for the current year. Annual estimated limit: ¥' + limit.toLocaleString() + '. You\'ve planned ¥' + planned.toLocaleString() + '. Stretch the rest before year-end for ~30% gift-value return.',
-      deadline: deadline.toISOString().slice(0, 10), module: 'resident', snoozable: true,
+      title: t('res.furusato.title', { headroom: headroom.toLocaleString() }),
+      body: t('res.furusato.body', { limit: limit.toLocaleString(), planned: planned.toLocaleString() }),
+      deadline: TB.utils.localIsoDate(deadline), module: 'resident', snoozable: true,
     });
     return out;
   }

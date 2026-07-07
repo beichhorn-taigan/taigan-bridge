@@ -1,91 +1,94 @@
 # Roadmap
 
-Versioning follows the principle of "ship a usable artifact at every
-release." A user who downloads any version should get a tool whose
-boundaries are honestly labeled — placeholder modules carry visible
-"coming soon" badges so nobody mistakes a shell for a planner.
+Taigan Bridge is a single-file financial planner for Americans living in Japan, currently at **v1.0.3** (stable). This roadmap describes shipped versions and deferred features.
 
-## v0.1 — Scaffold (current)
+## Shipped Versions
 
-- Project structure, build pipeline, design tokens.
-- Onboarding wizard, track assignment, dashboard chrome.
-- Working **Profile** and **Settings** modules.
-- Placeholder shells for FBAR, Assets, SOFA Roth, Veteran, Document
-  Vault.
-- BYO Claude API key plumbing (placeholder responses).
-- Bilingual EN/JP coverage of the v0.1 surface area.
+### v1.0.0 — Initial Release (2026-06-01)
 
-## v0.2 — FBAR Tracker
+All core modules shipped at production quality:
+- **FBAR Tracker**: Multi-year, multi-account with FX conversion, threshold verdict, printable summary
+- **Assets**: US and Japan account tracking, FX toggle, net-worth rollups, tax-loss harvesting scanner
+- **Projections**: SS/pension/Roth sequencing planner with tax modeling
+- **Tax Coordinator**: PFIC/Form 8938 thresholds, FEIE modeling, CPA finder
+- **Estate Planning**: Beneficiary tracking, 相続税 estimator, will supplement generator
+- **SOFA Roth**: Step-by-step sequencing with cost-of-error calculator
+- **Family**: Dual-citizen management, renunciation tracker, education gifting planner
+- **Health**: Medical history, lab tracking, insurance gap detection, AI extraction
+- **Veteran**: VA rating tracker, TRICARE timeline, DD-214 vault
+- **Document Vault**: File organization, expiry tracking, bilingual templates
+- **Resident**: 確定申告 reminder, 住民票/PR timeline, 10-year worldwide-asset clock
+- **Property**: Foreign real estate tracker, tax exposure
+- All modules bilingual (EN/JP) with full i18n coverage
 
-- Multi-year, multi-account, max-balance entry per account per year.
-- Automatic FX conversion using stored or fetched USD/JPY rates.
-- $10K aggregate threshold logic with a clear "you do / don't need
-  to file" verdict per year.
-- Joint accounts: percent-ownership entry and aggregation handling.
-- Children / dependents with their own filings (separate sub-records).
-- Printable A4 submission summary mirroring the FinCEN 114 layout.
-- Clear disclaimer that the tool prepares records — it does not file.
+### v1.0.1 — Fact-Check Corrections (2026-06-08)
 
-## v0.3 — SOFA Roth Sequencing Planner + Encrypted Export
+- Fixed 3 user-reported claim errors (IRMAA thresholds, Form 8938 limits, SS collection ages)
+- Updated Form 8938 threshold to $600K (2025 indexed amount)
 
-- Visual timeline with checkpoints for each of the four steps:
-  retire-with-SOFA-docs → Roth distribution to US brokerage →
-  register 住民票 only after wire confirmed → same-day NHI + JA共済.
-- Cost-of-getting-this-wrong calculator (illustrative ranges).
-- Triple-confirmation modal before the calculator produces output.
-- Document checklist for each step (what to keep, what to bring).
-- Bilingual EN/JP output suitable for sharing with a CPA.
-- **Encrypted JSON export.** WebCrypto AES-GCM with a passphrase-
-  derived key (PBKDF2 or Argon2). UX includes passphrase prompt on
-  export, passphrase prompt on import, and a "passphrase lost = data
-  lost" warning. Removes the FBAR module's "exported backups are
-  plain JSON" banner once shipped.
+### v1.0.2 — Framing + Calendar Fix (2026-06-08)
 
-## v0.4 — Asset Tracker (basic)
+- **Nationality choice framing**: Added "not permanent resident" warning for new renunciation logic
+- **Calendar export RFC 5545 fix**: .ics export now produces valid 1-day duration events (DTEND – DTSTART = 1 day)
+- Improved onboarding clarity for Japan-residency concepts
 
-- US accounts, Japan accounts, retirement accounts.
-- USD/JPY toggle with stored FX rates.
-- Account-type tagging (taxable, retirement, NISA, etc.).
-- Net worth summary.
+### v1.0.3 — Site-Consistency Pass (2026-06-08, current)
 
-## v0.5 — Veteran skeleton + Document Vault skeleton
+- 77 bugs fixed across foundations, compliance, security, and data integrity layers:
+  - UTC-vs-JST timezone fixes (~25 date-handling sites)
+  - FBAR aggregate unification (removed re-implementations)
+  - Contract-drift prevention (centralized state paths + schema assertions)
+  - Critical security fixes (RCE vulnerability in update check, CSV injection, API key leakage in exports, state import validation)
+  - Compliance deadline gating (教育資金一括贈与 sunset, FEIE figures current to 2026, IRMAA/RMD thresholds)
+  - SOFA Roth solar-recapture math fix
+  - Beneficiary review card linkage fix
+  - 12-module i18n sweep (hardcoded generator strings → full translation coverage)
+- Dead code cleanup (20 unused exports removed)
+- Full CI/CD pipeline wired (GitHub Actions, state-path assertions, build smoke tests)
 
-- Veteran: VA rating, claims status, TRICARE timeline anchor,
-  DD-214 storage location field, military pension treaty notes.
-- Document Vault: account index (where, not credentials),
-  beneficiary designation tracker, 2-3 bilingual estate templates
-  (POA, simple will reference, account-credential index sheet).
+## Deferred / Post-Launch Features
 
-## v1.0 — First public release
+The following were planned but remain deferred due to scope or complexity:
 
-- All v0.1–v0.5 modules at production quality.
-- Final logo and brand mark.
-- Production obfuscation pipeline wired into `build.js`.
-- Gumroad listing live with build-hash verification instructions.
-- Soft launch in the Japan-based US veterans LinkedIn group.
+### Tax & Compliance (v2.0+)
 
-## v2.0 — Deferred items (post-launch)
+- **Form 7202 Roth recapture**: Precise calculation of deemed-disposed-basis vs. recovery exclusion
+- **Form 8839 Adoption credits**: Integration with child account data
+- **Non-SOFA tax module**: 5-year non-PR residency rule, PFIC complex security modeling, exit-tax simulator
+- **Pension contribution tracker**: 国民年金 / 厚生年金 with optional totalization agreement modeling
 
-- Form 8938 Tracker.
-- Non-SOFA tax module: 5-year non-permanent-resident rule, PFIC
-  awareness, exit tax modeler.
-- Pension contribution tracker (国民年金 / 厚生年金) with optional
-  totalization-agreement modeling.
-- Family module: dual-citizen children renunciation considerations,
-  529 limitations vs. Japanese universities, 相続税 modeler,
-  cross-border estate coordinator (公正証書遺言 vs. US will).
-- Property module: foreign real estate tracker, kominka /
-  agricultural land, 名義変更 status, 農業委員会 notification.
-- Full document vault library (10+ bilingual templates).
-- Encrypted JSON export (currently plain JSON).
+### Family & Estate (v2.0+)
 
-## Non-goals
+- **529 state comparison matrix**: Multi-state plan performance, tax implications by residence status
+- **相続税 simulator**: Full multi-heir scenarios with mitigation strategies
+- **Dual-citizen renunciation workflow**: Detailed tax consequences (Form 8854, IRC §877A cliff test)
+- **公正証書遺言 vs. US will hybrid estate coordination**
+- **Family gifting calendar**: Annual exemption tracking across recipients with tax-year cutoff logic
 
-- A backend, accounts, or sync. The privacy posture depends on
-  client-only operation. If sync becomes necessary, it's a separate
-  product.
-- Direct e-filing of FBAR or any tax form. The tool prepares the
-  user — it does not transact with the government on their behalf.
-- Real-time market data, brokerage integrations, or auto-trading.
-- A mobile app. The web build is mobile-responsive; that's the
-  ceiling for now.
+### Resident Tracking (v2.0+)
+
+- **Prior residency periods**: Support for multiple arrival/departure dates to compute true "10 of 15 years" rule
+- **Mortgage credit (existing homes)**: Expand from new-build (2024+) to pre-owned homes (既存住宅)
+- **Kaikin notification automation**: Integrated checklist with expiry alerts
+
+### Document & Archive (v2.0+)
+
+- **Encrypted JSON export**: WebCrypto AES-GCM with passphrase-derived key (PBKDF2)
+- **Full document library**: 10+ bilingual templates (POA, proxy documents, deed assignment, healthcare directive variants)
+
+### Infrastructure (v2.0+)
+
+- **Production obfuscation**: JavaScript minification and variable mangling via javascript-obfuscator
+- **Accessibility audit**: WCAG 2.1 AA compliance sweep (focus mgmt, color contrast, screen-reader testing)
+- **Performance profiling**: Asset size optimization, lazy-load module shims
+
+## Non-Goals
+
+- **Backend or sync**: Taigan Bridge is client-only. Privacy depends on it. Sync would be a separate product.
+- **Direct e-filing**: The tool prepares records; it doesn't file with government agencies.
+- **Real-time market data**: No brokerage integrations, no auto-trading, no live quote streams.
+- **Mobile app**: The web version is responsive; that's the extent of mobile support.
+
+---
+
+**Last updated**: 2026-07-06 (v1.0.3 release)

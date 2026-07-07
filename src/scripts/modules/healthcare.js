@@ -34,6 +34,55 @@
   const id = 'healthcare';
 
   // ====================================================================
+  // Action Center i18n — self-registered strings for genNhiNotEnrolled,
+  // genPrivateCoverageGap, genMedicareDecisionApproaching,
+  // genLtcEnrollmentReminder, genAdvanceDirectiveMissing,
+  // genDependentTricareGap. Keys follow hc.<generatorName>.<field>
+  // (title/body only; other fields on the pushed items aren't
+  // user-facing strings).
+  // ====================================================================
+
+  TB.i18n.extend('en', {
+    'hc.genNhiNotEnrolled.title': 'NHI / SHI not enrolled but you\'re a JP resident',
+    'hc.genNhiNotEnrolled.body': 'Mandatory under JP law for residents. Enroll at city hall (市役所/区役所) — bring residence card. Premium based on prior-year income; can be substantial. Without coverage you\'re paying full price for any medical care AND legally non-compliant.',
+
+    'hc.genPrivateCoverageGap.title': 'Private / employer health coverage not yet recorded',
+    'hc.genPrivateCoverageGap.body': 'You\'re SOFA-status — exempt from NHI but typically covered by employer-provided international insurance (CIGNA International, Aetna International, FEHB, etc.). Add the plan in Healthcare → Private / employer international insurance so your budget aggregation reflects reality + you have a record for when coverage transitions (job change, retirement).',
+
+    'hc.genMedicareDecisionApproaching.title': 'Medicare Part B decision window — you\'re {{age}}',
+    'hc.genMedicareDecisionApproaching.body': 'Initial Enrollment Period: 7 months around your 65th birthday. Part B in Japan is paid in full (${{partBBase}}/mo) but doesn\'t cover care abroad. The late-enrollment penalty (10% of premium per 12mo delayed, FOR LIFE) makes this asymmetric. Document your decision in Healthcare → Medicare.',
+
+    'hc.genLtcEnrollmentReminder.title': '介護保険 enrollment at age 40 — automatic',
+    'hc.genLtcEnrollmentReminder.body': 'Age 40 is when 介護保険 (long-term care insurance) becomes mandatory in Japan. Premium auto-deducted via NHI/SHI based on income. Document the monthly amount in Healthcare → 介護保険 so it shows in your healthcare budget aggregation.',
+
+    'hc.genAdvanceDirectiveMissing.title': 'Advance directive not in Document Vault',
+    'hc.genAdvanceDirectiveMissing.body': 'An advance directive (生前指示書 / リビング・ウィル) documents your medical wishes if you can\'t communicate. Especially important for cross-border families: US and JP medical teams may have different defaults. File one in BOTH languages if you split time. Add to Healthcare → End-of-life + scan to Document Vault.',
+
+    'hc.genDependentTricareGap.title': 'TRICARE coverage ends at 21 — {{name}} is {{age}}',
+    'hc.genDependentTricareGap.body': 'TRICARE dependent coverage normally ends at age 21 (or 23 if full-time student). Plan replacement coverage: TRICARE Young Adult ($299-$719/mo), private plan, NHI, employer SHI. Decide before the 21st birthday — gap = full out-of-pocket.',
+  });
+
+  TB.i18n.extend('ja', {
+    'hc.genNhiNotEnrolled.title': 'あなたは日本居住者ですが NHI / 社会保険 に未加入です',
+    'hc.genNhiNotEnrolled.body': '居住者は日本の法律により加入が義務付けられています。市役所/区役所で加入手続きを — 在留カードをご持参ください。保険料は前年所得に基づき、高額になる場合があります。未加入のままだと、医療費は全額自己負担となり、かつ法令違反の状態です。',
+
+    'hc.genPrivateCoverageGap.title': '民間/雇用主提供の医療保険が未記録です',
+    'hc.genPrivateCoverageGap.body': 'あなたは SOFA ステータス — NHI は免除されますが、通常は雇用主提供の国際保険(CIGNA International、Aetna International、FEHB 等)でカバーされています。Healthcare → 民間/雇用主提供の国際保険 にプランを追加すると、予算集計が実態を反映し、転職・退職などカバレッジが変わる際の記録にもなります。',
+
+    'hc.genMedicareDecisionApproaching.title': 'Medicare Part B の判断期間です — 現在{{age}}歳',
+    'hc.genMedicareDecisionApproaching.body': '当初加入期間(Initial Enrollment Period):65歳の誕生日を挟む7ヶ月間。日本在住でも Part B の保険料(月額${{partBBase}})は全額発生しますが、海外での受診はカバーされません。加入遅延ペナルティ(12ヶ月遅れるごとに保険料の10%、生涯にわたり加算)により、この判断は非対称的なリスクを伴います。Healthcare → Medicare で判断内容を記録してください。',
+
+    'hc.genLtcEnrollmentReminder.title': '介護保険加入(40歳)— 自動加入',
+    'hc.genLtcEnrollmentReminder.body': '40歳になると日本では介護保険(長期介護保険)への加入が義務となります。保険料は所得に応じて NHI/社会保険から自動天引きされます。月額を Healthcare → 介護保険 に記録すると、医療費予算の集計に反映されます。',
+
+    'hc.genAdvanceDirectiveMissing.title': '事前指示書がドキュメント保管庫に未登録です',
+    'hc.genAdvanceDirectiveMissing.body': '事前指示書(生前指示書 / リビング・ウィル)は、意思疎通ができなくなった場合の医療上の希望を記録するものです。国境をまたぐ家族には特に重要です:米国と日本の医療チームでは前提となる対応が異なる場合があります。日米を行き来する場合は両方の言語で作成してください。Healthcare → 終末期 に追加し、ドキュメント保管庫にもスキャンを保存してください。',
+
+    'hc.genDependentTricareGap.title': 'TRICARE の扶養家族カバレッジは21歳で終了します — {{name}}は{{age}}歳',
+    'hc.genDependentTricareGap.body': 'TRICARE の扶養家族カバレッジは通常21歳で終了します(フルタイム学生の場合は23歳)。代替カバレッジを計画してください:TRICARE Young Adult(月額$299〜$719)、民間保険、NHI、雇用主の社会保険など。21歳の誕生日までに決定を — 空白期間は全額自己負担になります。',
+  });
+
+  // ====================================================================
   // Reference data
   // ====================================================================
 
@@ -1596,6 +1645,7 @@
   // ====================================================================
 
   function genNhiNotEnrolled() {
+    const t = TB.i18n.t;
     if (!isJpResident()) return [];
     if (getResidentNhi().enrolled) return [];
     // SOFA-exempt users are NOT required to enroll — skip the warning
@@ -1605,8 +1655,8 @@
       group: 'health',
       urgency: 'high',
       icon: '🇯🇵',
-      title: 'NHI / SHI not enrolled but you\'re a JP resident',
-      body: 'Mandatory under JP law for residents. Enroll at city hall (市役所/区役所) — bring residence card. Premium based on prior-year income; can be substantial. Without coverage you\'re paying full price for any medical care AND legally non-compliant.',
+      title: t('hc.genNhiNotEnrolled.title'),
+      body: t('hc.genNhiNotEnrolled.body'),
       module: 'healthcare', snoozable: true,
     }];
   }
@@ -1616,6 +1666,7 @@
   // Nudge them to record it so the budget aggregation works and
   // dependent age-out / transition planning is informed.
   function genPrivateCoverageGap() {
+    const t = TB.i18n.t;
     if (!isExemptFromNhi()) return [];
     if (hasPrivateCoverage()) return [];
     const v = getVeteranHealthcare();
@@ -1629,13 +1680,14 @@
       group: 'health',
       urgency: 'low',
       icon: '🏢',
-      title: 'Private / employer health coverage not yet recorded',
-      body: 'You\'re SOFA-status — exempt from NHI but typically covered by employer-provided international insurance (CIGNA International, Aetna International, FEHB, etc.). Add the plan in Healthcare → Private / employer international insurance so your budget aggregation reflects reality + you have a record for when coverage transitions (job change, retirement).',
+      title: t('hc.genPrivateCoverageGap.title'),
+      body: t('hc.genPrivateCoverageGap.body'),
       module: 'healthcare', snoozable: true,
     }];
   }
 
   function genMedicareDecisionApproaching() {
+    const t = TB.i18n.t;
     const age = selfAge();
     if (age == null) return [];
     if (age < 64 || age > 66) return [];
@@ -1646,13 +1698,14 @@
       group: 'health',
       urgency: 'high',
       icon: '🇺🇸',
-      title: 'Medicare Part B decision window — you\'re ' + age,
-      body: 'Initial Enrollment Period: 7 months around your 65th birthday. Part B in Japan is paid in full ($' + MEDICARE_PART_B_BASE_2026.toFixed(2) + '/mo) but doesn\'t cover care abroad. The late-enrollment penalty (10% of premium per 12mo delayed, FOR LIFE) makes this asymmetric. Document your decision in Healthcare → Medicare.',
+      title: t('hc.genMedicareDecisionApproaching.title', { age }),
+      body: t('hc.genMedicareDecisionApproaching.body', { partBBase: MEDICARE_PART_B_BASE_2026.toFixed(2) }),
       module: 'healthcare', snoozable: true,
     }];
   }
 
   function genLtcEnrollmentReminder() {
+    const t = TB.i18n.t;
     const age = selfAge();
     if (age == null) return [];
     if (age < 39 || age > 41) return [];  // narrow window: turning 40
@@ -1664,13 +1717,14 @@
       group: 'health',
       urgency: 'medium',
       icon: '🧑‍⚕️',
-      title: '介護保険 enrollment at age 40 — automatic',
-      body: 'Age 40 is when 介護保険 (long-term care insurance) becomes mandatory in Japan. Premium auto-deducted via NHI/SHI based on income. Document the monthly amount in Healthcare → 介護保険 so it shows in your healthcare budget aggregation.',
+      title: t('hc.genLtcEnrollmentReminder.title'),
+      body: t('hc.genLtcEnrollmentReminder.body'),
       module: 'healthcare', snoozable: true,
     }];
   }
 
   function genAdvanceDirectiveMissing() {
+    const t = TB.i18n.t;
     if (hasAdvanceDirective()) return [];
     const age = selfAge();
     if (age == null) return [];
@@ -1680,13 +1734,14 @@
       group: 'health',
       urgency: age >= 70 ? 'high' : 'medium',
       icon: '🕊',
-      title: 'Advance directive not in Document Vault',
-      body: 'An advance directive (生前指示書 / リビング・ウィル) documents your medical wishes if you can\'t communicate. Especially important for cross-border families: US and JP medical teams may have different defaults. File one in BOTH languages if you split time. Add to Healthcare → End-of-life + scan to Document Vault.',
+      title: t('hc.genAdvanceDirectiveMissing.title'),
+      body: t('hc.genAdvanceDirectiveMissing.body'),
       module: 'healthcare', snoozable: true,
     }];
   }
 
   function genDependentTricareGap() {
+    const t = TB.i18n.t;
     const v = getVeteranHealthcare();
     if (!v.tricare_eligible && !v.tricare_plan) return [];
     const members = TB.state.get('family.members') || [];
@@ -1702,8 +1757,8 @@
           group: 'health',
           urgency: age >= 20 ? 'medium' : 'low',
           icon: '🪖',
-          title: 'TRICARE coverage ends at 21 — ' + (d.name_en || d.name_jp || 'dependent') + ' is ' + age,
-          body: 'TRICARE dependent coverage normally ends at age 21 (or 23 if full-time student). Plan replacement coverage: TRICARE Young Adult ($299-$719/mo), private plan, NHI, employer SHI. Decide before the 21st birthday — gap = full out-of-pocket.',
+          title: t('hc.genDependentTricareGap.title', { name: d.name_en || d.name_jp || 'dependent', age }),
+          body: t('hc.genDependentTricareGap.body'),
           module: 'healthcare', snoozable: true,
         });
       }

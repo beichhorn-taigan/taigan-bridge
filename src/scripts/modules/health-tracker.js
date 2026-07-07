@@ -48,6 +48,105 @@
   const id = 'health-tracker';
 
   // ====================================================================
+  // Action Center i18n — self-registered strings for genAnnualPhysicalDue,
+  // genDentalCleaningDue, genMedRefillDue, genScreeningsOverdue,
+  // genActiveEpisodeEmpty, genPendingReimbursement, genAbnormalLabFlags,
+  // genDentalNoteActionItems, genInsuranceCardExpiring,
+  // genDentalAppointmentsUpcoming, genUnpaidInvoicesOld,
+  // genInsuranceClaimsDenied. Keys follow ht.<generatorName>.<field>
+  // (title/body only; other fields on the pushed items aren't
+  // user-facing strings).
+  // ====================================================================
+
+  TB.i18n.extend('en', {
+    'ht.genAnnualPhysicalDue.none.title': 'No annual physical on file',
+    'ht.genAnnualPhysicalDue.none.body': 'Add your most recent physical to the Health Tracker so we can track preventive screenings + the 1-year cadence.',
+    'ht.genAnnualPhysicalDue.due.title': 'Annual physical: {{days}} days since last',
+    'ht.genAnnualPhysicalDue.due.body': 'Last physical was {{date}}. USPSTF recommends annual for ages 30+; SOFA / TRICARE / NHI annual coverage. Book your next.',
+
+    'ht.genDentalCleaningDue.title': 'Dental cleaning: {{days}} days since last',
+    'ht.genDentalCleaningDue.body': 'Last cleaning was {{date}}. Standard cadence is 6 months; insurance typically covers two per year.',
+
+    'ht.genMedRefillDue.title.overdue': '{{name}} refill overdue',
+    'ht.genMedRefillDue.title.upcoming': '{{name}} refill in {{days}}d',
+    'ht.genMedRefillDue.body': 'Pharmacy: {{pharmacy}}{{refillsSuffix}}',
+    'ht.genMedRefillDue.body.refillsSuffix': ' · {{n}} refills left',
+
+    'ht.genScreeningsOverdue.title': '{{label}} overdue by {{days}} days',
+    'ht.genScreeningsOverdue.body': 'Last done: {{lastDone}}. Recommended cadence: every {{years}} year(s). Open Health Tracker → Care Plan to log when completed.',
+
+    'ht.genActiveEpisodeEmpty.title': 'Episode "{{title}}" has no attached records',
+    'ht.genActiveEpisodeEmpty.body': 'Started {{date}}. Attach the related exams, medications, or invoices in Health Tracker → Care Episodes.',
+
+    'ht.genPendingReimbursement.title': 'Reimbursement {{status}} for {{days}} days',
+    'ht.genPendingReimbursement.body': '{{provider}} · {{date}} · {{amount}}. Follow up with the insurer or pharmacy benefit manager.',
+
+    'ht.genAbnormalLabFlags.title': '{{n}} abnormal lab value{{plural}} on your {{date}} panel',
+    'ht.genAbnormalLabFlags.body': 'Flagged: {{flags}}{{ellipsis}}. Review in Health Tracker; bring questions to your next appointment.',
+
+    'ht.genDentalNoteActionItems.title': '{{n}} unchecked dental action item{{plural}} from {{date}}',
+    'ht.genDentalNoteActionItems.body.more': '\n• …+{{n}} more',
+
+    'ht.genInsuranceCardExpiring.title.expired': '{{label}} expired {{days}} day{{plural}} ago',
+    'ht.genInsuranceCardExpiring.title.upcoming': '{{label}} expires in {{days}} day{{plural}}',
+    'ht.genInsuranceCardExpiring.body': 'Member ID ••••{{last4}}{{networkSuffix}}. Confirm renewal with HR / insurer; update the card details here.',
+
+    'ht.genDentalAppointmentsUpcoming.title.today': 'Dental appointment today',
+    'ht.genDentalAppointmentsUpcoming.title.tomorrow': 'Dental appointment tomorrow',
+    'ht.genDentalAppointmentsUpcoming.title.future': 'Dental appointment in {{days}} days · {{date}}',
+
+    'ht.genUnpaidInvoicesOld.title': 'Unpaid invoice from {{date}} · {{amount}}',
+    'ht.genUnpaidInvoicesOld.body': '{{provider}} · {{days}} days old. Pay it or mark paid in Health Tracker if already settled.',
+
+    'ht.genInsuranceClaimsDenied.title': 'Insurance claim denied — {{provider}}',
+    'ht.genInsuranceClaimsDenied.body': 'Invoice from {{date}}. Review the denial reason, appeal if appropriate, or mark this paid/closed.',
+  });
+
+  TB.i18n.extend('ja', {
+    'ht.genAnnualPhysicalDue.none.title': '健康診断の記録がありません',
+    'ht.genAnnualPhysicalDue.none.body': '直近の健康診断をヘルストラッカーに追加すると、予防検診と1年サイクルを追跡できます。',
+    'ht.genAnnualPhysicalDue.due.title': '健康診断:前回から{{days}}日経過',
+    'ht.genAnnualPhysicalDue.due.body': '前回の健康診断は{{date}}でした。USPSTF は30歳以上に年1回を推奨;SOFA / TRICARE / NHI も年1回カバー。次回の予約を。',
+
+    'ht.genDentalCleaningDue.title': '歯科クリーニング:前回から{{days}}日経過',
+    'ht.genDentalCleaningDue.body': '前回のクリーニングは{{date}}でした。標準サイクルは6ヶ月;保険は通常年2回までカバー。',
+
+    'ht.genMedRefillDue.title.overdue': '{{name}}の補充期限超過',
+    'ht.genMedRefillDue.title.upcoming': '{{name}}の補充まであと{{days}}日',
+    'ht.genMedRefillDue.body': '薬局:{{pharmacy}}{{refillsSuffix}}',
+    'ht.genMedRefillDue.body.refillsSuffix': ' · 残り{{n}}回分',
+
+    'ht.genScreeningsOverdue.title': '{{label}}が{{days}}日超過しています',
+    'ht.genScreeningsOverdue.body': '前回実施:{{lastDone}}。推奨サイクル:{{years}}年ごと。ヘルストラッカー → ケアプランで実施日を記録してください。',
+
+    'ht.genActiveEpisodeEmpty.title': 'エピソード「{{title}}」に紐づく記録がありません',
+    'ht.genActiveEpisodeEmpty.body': '開始日:{{date}}。ヘルストラッカー → ケアエピソードで関連する受診・処方・請求書を紐付けてください。',
+
+    'ht.genPendingReimbursement.title': '払い戻し{{status}}の状態で{{days}}日経過',
+    'ht.genPendingReimbursement.body': '{{provider}} · {{date}} · {{amount}}。保険会社または薬剤給付管理会社(PBM)にご確認ください。',
+
+    'ht.genAbnormalLabFlags.title': '{{date}}の検査で異常値が{{n}}件{{plural}}あります',
+    'ht.genAbnormalLabFlags.body': '検出項目:{{flags}}{{ellipsis}}。ヘルストラッカーで確認し、次回受診時に質問してください。',
+
+    'ht.genDentalNoteActionItems.title': '{{date}}の歯科メモに未処理の対応項目が{{n}}件{{plural}}あります',
+    'ht.genDentalNoteActionItems.body.more': '\n• 他{{n}}件',
+
+    'ht.genInsuranceCardExpiring.title.expired': '{{label}}は{{days}}日{{plural}}前に失効しました',
+    'ht.genInsuranceCardExpiring.title.upcoming': '{{label}}はあと{{days}}日{{plural}}で失効します',
+    'ht.genInsuranceCardExpiring.body': '会員ID下4桁••••{{last4}}{{networkSuffix}}。更新をHR/保険会社に確認し、カード情報をここで更新してください。',
+
+    'ht.genDentalAppointmentsUpcoming.title.today': '本日、歯科の予約があります',
+    'ht.genDentalAppointmentsUpcoming.title.tomorrow': '明日、歯科の予約があります',
+    'ht.genDentalAppointmentsUpcoming.title.future': 'あと{{days}}日で歯科の予約があります · {{date}}',
+
+    'ht.genUnpaidInvoicesOld.title': '{{date}}付の未払い請求書 · {{amount}}',
+    'ht.genUnpaidInvoicesOld.body': '{{provider}} · {{days}}日経過。支払うか、すでに精算済みならヘルストラッカーで支払済みにしてください。',
+
+    'ht.genInsuranceClaimsDenied.title': '保険金請求が却下されました — {{provider}}',
+    'ht.genInsuranceClaimsDenied.body': '{{date}}付の請求書。却下理由を確認し、必要に応じて異議申立てを行うか、支払済み/解決済みにしてください。',
+  });
+
+  // ====================================================================
   // Reference data
   // ====================================================================
 
@@ -2544,16 +2643,38 @@
     opts = opts || {};
     const net = opts.net !== false;
     const invs = invoicesForEpisode(epId);
-    let gross = 0, reimbursed = 0;
+    let gross = 0, reimbursed = 0, unconverted = 0;
     for (const i of invs) {
-      const u = i.amount_usd_calc;
-      if (typeof u === 'number' && isFinite(u)) gross += u;
+      let u = i.amount_usd_calc;
+      // Heal stale nulls: amount_usd_calc can be null when the invoice
+      // was created (or a non-USD amount was edited) while
+      // TB.assets.toUsd wasn't available yet. Recompute from the
+      // stored native amount/currency at read time rather than
+      // silently contributing $0 to the total while still counting
+      // the invoice — that made real charges (e.g. a JPY hospital
+      // bill) vanish from the episode cost with no indication.
+      if ((typeof u !== 'number' || !isFinite(u)) &&
+          typeof i.amount_native === 'number' && isFinite(i.amount_native) && i.currency) {
+        if (i.currency === 'USD') {
+          u = i.amount_native;
+        } else if (TB.assets && typeof TB.assets.toUsd === 'function') {
+          const conv = TB.assets.toUsd(i.amount_native, i.currency);
+          u = (conv != null && isFinite(conv)) ? conv : null;
+        }
+      }
+      if (typeof u === 'number' && isFinite(u)) {
+        gross += u;
+      } else if (typeof i.amount_native === 'number' && isFinite(i.amount_native) && i.currency && i.currency !== 'USD') {
+        // Still couldn't convert (e.g. TB.assets unavailable right now)
+        // — surface it instead of letting it disappear silently.
+        unconverted++;
+      }
       const r = i.reimbursed_usd_calc;
       if (typeof r === 'number' && isFinite(r) && i.reimbursement_status === 'received') {
         reimbursed += r;
       }
     }
-    return { gross, reimbursed, net: gross - reimbursed, count: invs.length };
+    return { gross, reimbursed, net: gross - reimbursed, count: invs.length, unconverted_count: unconverted };
   }
 
   function getPrefs() { return getHt().preferences || { units: 'metric', track_trends: true, default_lab_panel: 'cmp' }; }
@@ -2798,7 +2919,28 @@
     if (a.birth_year && /^\d{4}$/.test(String(a.birth_year))) {
       const by = parseInt(a.birth_year, 10);
       if (by > 1900 && by < 2100) {
-        return new Date().getFullYear() - by;
+        const now = new Date();
+        // Use full-date math (year, month, and day when available)
+        // rather than a bare year subtraction — a year-only subtraction
+        // overstates age by up to 1 before the user's birthday each
+        // calendar year, which then feeds screening-due calculations
+        // and fires "due" warnings up to a year early. Fall back to
+        // year-only when month/day weren't captured.
+        const bm = parseInt(a.birth_month, 10);
+        const hasMonth = isFinite(bm) && bm >= 1 && bm <= 12;
+        if (hasMonth) {
+          const bd = parseInt(a.birth_day, 10);
+          const hasDay = isFinite(bd) && bd >= 1 && bd <= 31;
+          let age = now.getFullYear() - by;
+          const monthDiff = (now.getMonth() + 1) - bm;
+          if (monthDiff < 0) {
+            age--;
+          } else if (monthDiff === 0 && hasDay && now.getDate() < bd) {
+            age--;
+          }
+          return age;
+        }
+        return now.getFullYear() - by;
       }
     }
     // Health Tracker preference override (set inline if onboarding skipped)
@@ -3211,7 +3353,7 @@
     }
     const inv = {
       id: 'inv-' + Date.now().toString(36),
-      date: ext.date || new Date().toISOString().slice(0, 10),
+      date: ext.date || TB.utils.todayIso(),
       billing_date: ext.billing_date || null,
       provider: ext.provider || '',
       facility: ext.facility || '',
@@ -3321,10 +3463,19 @@
         name: m.name,
         generic_name: m.generic_name || '',
         dosage: (typeof m.dosage === 'number' && isFinite(m.dosage)) ? m.dosage : null,
-        dosage_unit: m.dosage_unit || 'mg',
+        // Do NOT fabricate a unit when extraction didn't detect one —
+        // a med actually dosed in mcg (e.g. levothyroxine 75mcg) would
+        // silently display as "75mg", a 1000x error. Leave blank and
+        // flag for verification instead (see needs_unit_verification).
+        dosage_unit: m.dosage_unit || '',
+        needs_unit_verification: !m.dosage_unit,
         frequency: m.frequency || '',
-        route: 'oral',
-        started_date: draft.date || new Date().toISOString().slice(0, 10),
+        // Same treatment for route — don't assume oral when the
+        // extraction didn't identify one (could be injectable, inhaled,
+        // topical, etc.). Leave blank and flag for verification.
+        route: m.route || '',
+        needs_route_verification: !m.route,
+        started_date: draft.date || TB.utils.todayIso(),
         ended_date: null,
         prescriber,
         pharmacy,
@@ -3525,9 +3676,10 @@
   }
 
   // Merge a vision-extracted document into an existing exam:
-  //   • Append new lab_results (don't overwrite — preserves history
-  //     when both docs report the same test from the same day, the
-  //     user can dedupe manually if needed)
+  //   • Append new lab_results (don't overwrite — preserves history),
+  //     but skip any incoming row that's a duplicate of an existing one
+  //     (same canonical test name + date + value) so re-importing the
+  //     same lab PDF (or a re-scanned copy) doesn't double every value
   //   • Fill missing vitals (don't overwrite existing values)
   //   • Append unique diagnoses + procedures
   //   • Upgrade provider/facility name when the extracted value is a
@@ -3550,9 +3702,27 @@
       merged.facility = extracted.facility;
     }
 
-    // Append lab results
+    // Append lab results — deduped against what's already on the exam.
+    // Re-importing the same lab PDF (or a re-scanned / slightly-updated
+    // copy) would otherwise duplicate every value, which then double-
+    // counts points on the trend sparklines for that date. Key on the
+    // canonicalized test name (reuse normalizeLabName so naming
+    // variants that mean the same test collapse together) + the exam
+    // date (lab_results rows don't carry their own date — they share
+    // the parent exam's) + numeric value.
     if (Array.isArray(extracted.lab_results) && extracted.lab_results.length > 0) {
-      merged.lab_results = (merged.lab_results || []).concat(extracted.lab_results);
+      const examDate = merged.date || '';
+      const existingKeys = new Set(
+        (merged.lab_results || []).map((lr) =>
+          normalizeLabName(lr.name) + '|' + examDate + '|' + (lr.value != null ? lr.value : ''))
+      );
+      const toAppend = extracted.lab_results.filter((lr) => {
+        const key = normalizeLabName(lr.name) + '|' + examDate + '|' + (lr.value != null ? lr.value : '');
+        if (existingKeys.has(key)) return false;
+        existingKeys.add(key);
+        return true;
+      });
+      merged.lab_results = (merged.lab_results || []).concat(toAppend);
     }
     // Fill missing vitals
     if (extracted.vitals && typeof extracted.vitals === 'object') {
@@ -3594,7 +3764,7 @@
       title: (meta && meta.title) || extracted.summary || '',
       filename: meta && meta.filename || '',
       filesize_kb: meta && meta.filesize_kb || null,
-      date_imported: new Date().toISOString().slice(0, 10),
+      date_imported: TB.utils.todayIso(),
       ai_summary: extracted.summary || '',
       cost_usd: meta && meta.cost_usd != null ? meta.cost_usd : null,
     });
@@ -3620,7 +3790,7 @@
     }
     const exam = {
       id: 'exam-' + Date.now().toString(36),
-      date: extracted.date || new Date().toISOString().slice(0, 10),
+      date: extracted.date || TB.utils.todayIso(),
       type: extracted.exam_type || 'blood_panel',
       provider: extracted.provider || '',
       facility: extracted.facility || '',
@@ -3637,7 +3807,7 @@
         title: (meta && meta.title) || extracted.summary || '',
         filename: meta && meta.filename || '',
         filesize_kb: meta && meta.filesize_kb || null,
-        date_imported: new Date().toISOString().slice(0, 10),
+        date_imported: TB.utils.todayIso(),
         ai_summary: extracted.summary || '',
         cost_usd: meta && meta.cost_usd != null ? meta.cost_usd : null,
       }],
@@ -4998,13 +5168,13 @@
       id: 'ref-' + Date.now().toString(36),
       specialty: specialty.trim(),
       doctor: doctor.trim(),
-      requested_date: new Date().toISOString().slice(0, 10),
+      requested_date: TB.utils.todayIso(),
     });
     setCarePlan(cp);
     rerender();
   }
   function addAppointment() {
-    const date = prompt(TB.i18n.t('ht.care.appointments.prompt.date'), new Date().toISOString().slice(0, 10));
+    const date = prompt(TB.i18n.t('ht.care.appointments.prompt.date'), TB.utils.todayIso());
     if (!date) return;
     const provider = prompt(TB.i18n.t('ht.care.appointments.prompt.provider')) || '';
     const purpose = prompt(TB.i18n.t('ht.care.appointments.prompt.purpose')) || '';
@@ -5213,6 +5383,17 @@
           (med.name || '?') +
           (med.dosage ? ' · ' + med.dosage + (med.dosage_unit || '') : '') +
           (med.frequency ? ' · ' + med.frequency : '')),
+        // Visible warning when the unit and/or route were not detected
+        // during AI extraction and haven't been confirmed by the user
+        // yet — never let an unconfirmed value display as if it were
+        // fact (e.g. a missing unit silently reading as "mg").
+        (med.needs_unit_verification || med.needs_route_verification) ? el('div', {
+          style: { color: 'var(--tb-warn)', fontSize: '11px', fontWeight: '600', marginTop: '2px' },
+        },
+          '⚠ verify ' + [
+            med.needs_unit_verification ? 'unit' : '',
+            med.needs_route_verification ? 'route' : '',
+          ].filter(Boolean).join(' & ')) : null,
         el('div', { class: 'tb-card-meta', style: { marginTop: '2px' } },
           (med.purpose ? med.purpose + ' · ' : '') +
           (med.prescriber ? med.prescriber : '') +
@@ -5235,7 +5416,7 @@
     const med = getMeds().find((m) => m.id === medId);
     if (!med) return;
     const updated = Object.assign({}, med);
-    const today = new Date().toISOString().slice(0, 10);
+    const today = TB.utils.todayIso();
     // Compute gap days. Prefer previous interval (next_refill_date -
     // last_refill_date / started_date). Fall back to 30 days.
     let gapDays = 30;
@@ -5249,7 +5430,7 @@
     }
     const next = new Date(today + 'T00:00:00');
     next.setDate(next.getDate() + gapDays);
-    updated.next_refill_date = next.toISOString().slice(0, 10);
+    updated.next_refill_date = TB.utils.localIsoDate(next);
     updated.last_refill_date = today;
     if (typeof updated.refills_remaining === 'number' && updated.refills_remaining > 0) {
       updated.refills_remaining -= 1;
@@ -5263,7 +5444,7 @@
     const med = getMeds().find((m) => m.id === medId);
     if (!med) return;
     const updated = Object.assign({}, med, {
-      ended_date: new Date().toISOString().slice(0, 10),
+      ended_date: TB.utils.todayIso(),
       updated_at: new Date().toISOString(),
     });
     upsertMed(updated);
@@ -5302,7 +5483,7 @@
       id: 'med-' + Date.now().toString(36),
       name: '', generic_name: '', dosage: null, dosage_unit: 'mg',
       frequency: '', route: 'oral',
-      started_date: new Date().toISOString().slice(0, 10),
+      started_date: TB.utils.todayIso(),
       ended_date: null,
       prescriber: '', pharmacy: '',
       refills_remaining: null, next_refill_date: null,
@@ -5576,7 +5757,7 @@
     row.appendChild(left);
 
     // Right column — cost summary
-    if (cost.gross > 0) {
+    if (cost.gross > 0 || cost.unconverted_count > 0) {
       const right = el('div', { style: { textAlign: 'right', minWidth: '90px' } });
       right.appendChild(el('div', {
         style: { fontFamily: 'var(--tb-font-mono)', fontWeight: '700', fontSize: 'var(--tb-fs-16)' },
@@ -5586,6 +5767,14 @@
           '−$' + Math.round(cost.reimbursed).toLocaleString() + ' ' + t('ht.episodes.reimbursed')));
         right.appendChild(el('div', { style: { fontSize: '11px', fontFamily: 'var(--tb-font-mono)', color: 'var(--tb-text-soft)' } },
           'net $' + Math.round(cost.net).toLocaleString()));
+      }
+      // Surface any invoices whose non-USD amount still couldn't be
+      // converted (FX helper unavailable) — otherwise those charges
+      // would silently drop out of the total with no indication.
+      if (cost.unconverted_count > 0) {
+        right.appendChild(el('div', {
+          style: { fontSize: '10px', color: 'var(--tb-warn)', fontWeight: '600' },
+        }, '⚠ ' + cost.unconverted_count + ' unconverted'));
       }
       row.appendChild(right);
     }
@@ -5613,7 +5802,7 @@
       title: '',
       status: 'active',
       category: 'procedure',
-      started_date: new Date().toISOString().slice(0, 10),
+      started_date: TB.utils.todayIso(),
       completed_date: null,
       specialty: '',
       provider: '',
@@ -6149,7 +6338,7 @@
     const isEdit = !!existing;
     const draft = existing ? Object.assign({}, existing) : {
       id: 'inv-' + Date.now().toString(36),
-      date: new Date().toISOString().slice(0, 10),
+      date: TB.utils.todayIso(),
       provider: '',
       facility: '',
       amount_native: null,
@@ -6271,7 +6460,7 @@
           type: 'checkbox', checked: !!draft.paid,
           onchange: (e) => {
             draft.paid = !!e.target.checked;
-            if (draft.paid && !draft.paid_date) draft.paid_date = new Date().toISOString().slice(0, 10);
+            if (draft.paid && !draft.paid_date) draft.paid_date = TB.utils.todayIso();
           },
         }),
         el('span', null, t('ht.invoices.field.paid')),
@@ -7336,7 +7525,7 @@
     const isEdit = !!existing;
     const draft = existing ? JSON.parse(JSON.stringify(existing)) : {
       id: (TB.utils && TB.utils.uuid) ? TB.utils.uuid() : ('proc-' + Date.now().toString(36)),
-      date: new Date().toISOString().slice(0, 10),
+      date: TB.utils.todayIso(),
       name_en: '', name_jp: '', code: '',
       cost: null, currency: 'JPY', points: null, qty: 1,
       provider_id: null, invoice_id: null,
@@ -7409,7 +7598,7 @@
     const t = TB.i18n.t;
     const card = el('div', { class: 'tb-card', 'data-track': 'health' });
     card.appendChild(el('h3', { style: { margin: 0 } }, '📅 ' + t('ht.dental.appts.title')));
-    const today = new Date().toISOString().slice(0, 10);
+    const today = TB.utils.todayIso();
     const upcoming = getDentalAppointments().filter((a) => !a.date || a.date >= today);
     if (upcoming.length === 0) {
       card.appendChild(el('p', { class: 'tb-field-help', style: { textAlign: 'center', marginTop: 'var(--tb-sp-2)' } },
@@ -7454,7 +7643,7 @@
     const root = document.getElementById('tb-modal-root');
     const draft = {
       id: (TB.utils && TB.utils.uuid) ? TB.utils.uuid() : ('apt-' + Date.now().toString(36)),
-      date: new Date().toISOString().slice(0, 10),
+      date: TB.utils.todayIso(),
       time: '',
       provider_id: null,
       purpose: '',
@@ -7680,7 +7869,7 @@
         onclick: () => {
           const updated = Object.assign({}, inv, {
             paid: true,
-            paid_date: new Date().toISOString().slice(0, 10),
+            paid_date: TB.utils.todayIso(),
             updated_at: new Date().toISOString(),
           });
           upsertInvoice(updated);
@@ -7959,7 +8148,7 @@
     const isEdit = !!existing;
     const draft = existing ? JSON.parse(JSON.stringify(existing)) : {
       id: (TB.utils && TB.utils.uuid) ? TB.utils.uuid() : ('dn-' + Date.now().toString(36)),
-      date: new Date().toISOString().slice(0, 10),
+      date: TB.utils.todayIso(),
       provider_id: null,
       status: 'open',
       findings: '', clinical_interpretation: '', recommendations: '',
@@ -8251,7 +8440,7 @@
       const existingProcs = getDentalProcedures();
       for (const p of ext.procedures) {
         if (!p) continue;
-        const procDate = p.date || ext.exam_date || new Date().toISOString().slice(0, 10);
+        const procDate = p.date || ext.exam_date || TB.utils.todayIso();
         const name = (p.name_en || p.name_jp || '').trim();
         if (!name && !p.code) continue;
         // Dedupe check
@@ -8310,7 +8499,7 @@
       // PDFs often place a placeholder there that's actually the
       // current visit's time, not a real future appointment.
       let nextAppt = ext.next_appointment || '';
-      const examDate = ext.exam_date || new Date().toISOString().slice(0, 10);
+      const examDate = ext.exam_date || TB.utils.todayIso();
       if (nextAppt && examDate) {
         // Compare just the YYYY-MM-DD portion
         const naDate = String(nextAppt).slice(0, 10);
@@ -8318,7 +8507,7 @@
       }
       upsertDentalNote({
         id: noteId,
-        date: ext.exam_date || new Date().toISOString().slice(0, 10),
+        date: ext.exam_date || TB.utils.todayIso(),
         provider_id: providerId,
         status: 'open',
         findings: ext.findings || '',
@@ -9607,7 +9796,7 @@
     const isEdit = !!existing;
     const draft = existing ? JSON.parse(JSON.stringify(existing)) : Object.assign({
       id: 'exam-' + Date.now().toString(36),
-      date: new Date().toISOString().slice(0, 10),
+      date: TB.utils.todayIso(),
       type: 'blood_panel',
       provider: '',
       facility: '',
@@ -10082,7 +10271,7 @@
             // Pre-fill exam_id + episode_id so it lands attached.
             exam_id: draft.id,
             episode_id: draft.episode_id || null,
-            started_date: draft.date || new Date().toISOString().slice(0, 10),
+            started_date: draft.date || TB.utils.todayIso(),
             prescriber: draft.provider || '',
           });
         },
@@ -11447,7 +11636,7 @@
         year + ' ' + t('ht.yir.headerTitle')),
       userName ? el('div', { class: 'tb-card-meta', style: { marginTop: '4px' } }, userName) : null,
       el('div', { class: 'tb-card-meta', style: { fontSize: '11px', marginTop: '4px' } },
-        t('ht.yir.generated') + ': ' + new Date().toISOString().slice(0, 10)),
+        t('ht.yir.generated') + ': ' + TB.utils.todayIso()),
     ));
 
     // ─── Overview tiles
@@ -11832,7 +12021,7 @@
       const s = String(c == null ? '' : c);
       return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
     }).join(',')).join('\n');
-    const fname = 'taigan-health-labs-' + new Date().toISOString().slice(0, 10) + '.csv';
+    const fname = 'taigan-health-labs-' + TB.utils.todayIso() + '.csv';
     TB.utils.downloadFile(fname, csv, 'text/csv');
   }
 
@@ -11881,6 +12070,7 @@
   // ====================================================================
 
   function genAnnualPhysicalDue() {
+    const t = TB.i18n.t;
     const physical = latestExamOfType('physical');
     if (!physical) {
       // No physical on file — surface a low-priority "first physical" item
@@ -11891,8 +12081,8 @@
       return [{
         id: 'ht_no_physical',
         group: 'health', urgency: 'low', icon: '🩺',
-        title: 'No annual physical on file',
-        body: 'Add your most recent physical to the Health Tracker so we can track preventive screenings + the 1-year cadence.',
+        title: t('ht.genAnnualPhysicalDue.none.title'),
+        body: t('ht.genAnnualPhysicalDue.none.body'),
         module: 'health-tracker', snoozable: true,
       }];
     }
@@ -11902,13 +12092,14 @@
     return [{
       id: 'ht_physical_due',
       group: 'health', urgency, icon: '🩺',
-      title: 'Annual physical: ' + days + ' days since last',
-      body: 'Last physical was ' + physical.date + '. USPSTF recommends annual for ages 30+; SOFA / TRICARE / NHI annual coverage. Book your next.',
+      title: t('ht.genAnnualPhysicalDue.due.title', { days }),
+      body: t('ht.genAnnualPhysicalDue.due.body', { date: physical.date }),
       module: 'health-tracker', snoozable: true,
     }];
   }
 
   function genDentalCleaningDue() {
+    const t = TB.i18n.t;
     const d = getDental();
     if (!d.last_cleaning) return [];
     const days = daysSince(d.last_cleaning);
@@ -11917,24 +12108,31 @@
     return [{
       id: 'ht_dental_due',
       group: 'health', urgency, icon: '🦷',
-      title: 'Dental cleaning: ' + days + ' days since last',
-      body: 'Last cleaning was ' + d.last_cleaning + '. Standard cadence is 6 months; insurance typically covers two per year.',
+      title: t('ht.genDentalCleaningDue.title', { days }),
+      body: t('ht.genDentalCleaningDue.body', { date: d.last_cleaning }),
       module: 'health-tracker', snoozable: true,
     }];
   }
 
   function genMedRefillDue() {
+    const t = TB.i18n.t;
     const out = [];
     for (const m of activeMeds()) {
       if (!m.next_refill_date) continue;
       const days = daysUntil(m.next_refill_date);
       if (days > 14 || days < -7) continue;  // window: 2 weeks ahead → 1 week past
       const urgency = days < 0 ? 'high' : days <= 3 ? 'high' : days <= 7 ? 'medium' : 'low';
+      const name = m.name || 'Medication';
+      const refillsSuffix = m.refills_remaining != null
+        ? t('ht.genMedRefillDue.body.refillsSuffix', { n: m.refills_remaining })
+        : '';
       out.push({
         id: 'ht_refill_' + m.id,
         group: 'health', urgency, icon: '💊',
-        title: (m.name || 'Medication') + ' refill ' + (days < 0 ? 'overdue' : 'in ' + days + 'd'),
-        body: 'Pharmacy: ' + (m.pharmacy || '?') + (m.refills_remaining != null ? ' · ' + m.refills_remaining + ' refills left' : ''),
+        title: days < 0
+          ? t('ht.genMedRefillDue.title.overdue', { name })
+          : t('ht.genMedRefillDue.title.upcoming', { name, days }),
+        body: t('ht.genMedRefillDue.body', { pharmacy: m.pharmacy || '?', refillsSuffix }),
         deadline: m.next_refill_date,
         module: 'health-tracker', snoozable: true,
       });
@@ -11948,6 +12146,7 @@
   // screening on first load is too noisy (especially before they've
   // set their sex/age preferences and the library is fully filtered).
   function genScreeningsOverdue() {
+    const t = TB.i18n.t;
     const out = [];
     const lang = TB.i18n.getLang();
     for (const s of computeScreeningsDue()) {
@@ -11958,8 +12157,8 @@
       out.push({
         id: 'ht_screen_' + s.library_id,
         group: 'health', urgency: 'medium', icon: '🎯',
-        title: label + ' overdue by ' + Math.round(s.overdue_days) + ' days',
-        body: 'Last done: ' + s.last_done + '. Recommended cadence: every ' + s.interval_years + ' year(s). Open Health Tracker → Care Plan to log when completed.',
+        title: t('ht.genScreeningsOverdue.title', { label, days: Math.round(s.overdue_days) }),
+        body: t('ht.genScreeningsOverdue.body', { lastDone: s.last_done, years: s.interval_years }),
         module: 'health-tracker', snoozable: true,
       });
     }
@@ -11974,6 +12173,7 @@
   //   • Completed-status episodes with future-dated "next appointment"
   //     hints in notes (not implemented — would need NLP)
   function genActiveEpisodeEmpty() {
+    const t = TB.i18n.t;
     const out = [];
     for (const ep of getEpisodes()) {
       if (ep.status !== 'active') continue;
@@ -11986,8 +12186,8 @@
       out.push({
         id: 'ht_ep_empty_' + ep.id,
         group: 'health', urgency: 'low', icon: '🧭',
-        title: 'Episode "' + (ep.title || 'untitled') + '" has no attached records',
-        body: 'Started ' + (ep.started_date || '?') + '. Attach the related exams, medications, or invoices in Health Tracker → Care Episodes.',
+        title: t('ht.genActiveEpisodeEmpty.title', { title: ep.title || 'untitled' }),
+        body: t('ht.genActiveEpisodeEmpty.body', { date: ep.started_date || '?' }),
         module: 'health-tracker', snoozable: true,
       });
     }
@@ -11995,6 +12195,7 @@
   }
 
   function genPendingReimbursement() {
+    const t = TB.i18n.t;
     const out = [];
     const today = new Date();
     for (const inv of getInvoices()) {
@@ -12004,13 +12205,12 @@
       const days = Math.floor((today.getTime() - new Date(submittedDate + 'T00:00:00').getTime()) / 86400000);
       if (days < 30) continue;
       const urgency = days > 90 ? 'high' : days > 60 ? 'medium' : 'low';
+      const amount = inv.amount_native != null ? inv.amount_native.toLocaleString() + ' ' + (inv.currency || 'USD') : '?';
       out.push({
         id: 'ht_reim_pending_' + inv.id,
         group: 'health', urgency, icon: '🏥',
-        title: 'Reimbursement ' + inv.reimbursement_status + ' for ' + days + ' days',
-        body: (inv.provider || 'Unknown provider') + ' · ' + inv.date + ' · ' +
-              (inv.amount_native != null ? inv.amount_native.toLocaleString() + ' ' + (inv.currency || 'USD') : '?') +
-              '. Follow up with the insurer or pharmacy benefit manager.',
+        title: t('ht.genPendingReimbursement.title', { status: inv.reimbursement_status, days }),
+        body: t('ht.genPendingReimbursement.body', { provider: inv.provider || 'Unknown provider', date: inv.date, amount }),
         deadline: null,
         module: 'health-tracker', snoozable: true,
       });
@@ -12019,6 +12219,7 @@
   }
 
   function genAbnormalLabFlags() {
+    const t = TB.i18n.t;
     const out = [];
     const latest = latestExam();
     if (!latest) return out;
@@ -12032,9 +12233,13 @@
     out.push({
       id: 'ht_abnormal_' + latest.id,
       group: 'health', urgency, icon: critical.length > 0 ? '🚨' : '⚠',
-      title: flagged.length + ' abnormal lab value' + (flagged.length === 1 ? '' : 's') + ' on your ' + latest.date + ' panel',
-      body: 'Flagged: ' + flagged.map((lr) => lr.name + ' ' + (lr.flag || '').toUpperCase()).slice(0, 4).join(', ') +
-        (flagged.length > 4 ? '…' : '') + '. Review in Health Tracker; bring questions to your next appointment.',
+      title: t('ht.genAbnormalLabFlags.title', {
+        n: flagged.length, plural: flagged.length === 1 ? '' : 's', date: latest.date,
+      }),
+      body: t('ht.genAbnormalLabFlags.body', {
+        flags: flagged.map((lr) => lr.name + ' ' + (lr.flag || '').toUpperCase()).slice(0, 4).join(', '),
+        ellipsis: flagged.length > 4 ? '…' : '',
+      }),
       module: 'health-tracker', snoozable: true,
     });
     return out;
@@ -12047,6 +12252,7 @@
   // the note is ≥7 days old (so we give the user some breathing room
   // right after import). Severity escalates with age.
   function genDentalNoteActionItems() {
+    const t = TB.i18n.t;
     const out = [];
     const notes = (getDental().notes_log) || [];
     for (const n of notes) {
@@ -12059,10 +12265,13 @@
       out.push({
         id: 'ht_dental_actions_' + n.id,
         group: 'health', urgency, icon: '🦷',
-        title: items.length + ' unchecked dental action item' + (items.length === 1 ? '' : 's') +
-          ' from ' + n.date,
+        title: t('ht.genDentalNoteActionItems.title', {
+          n: items.length, plural: items.length === 1 ? '' : 's', date: n.date,
+        }),
+        // Body is mostly the user's own dental-note text (action_items[].text)
+        // — not translatable literal content — plus a translated "+N more" tail.
         body: items.slice(0, 3).map((x) => '• ' + x.text).join('\n') +
-          (items.length > 3 ? '\n• …+' + (items.length - 3) + ' more' : ''),
+          (items.length > 3 ? t('ht.genDentalNoteActionItems.body.more', { n: items.length - 3 }) : ''),
         module: 'health-tracker', snoozable: true,
       });
     }
@@ -12073,6 +12282,7 @@
   // ahead, since insurance renewal logistics (employer election,
   // provider re-verification) take real time.
   function genInsuranceCardExpiring() {
+    const t = TB.i18n.t;
     const out = [];
     const ins = getInsuranceSummary();
     const cards = ins.cards || [];
@@ -12082,15 +12292,15 @@
       if (days > 60 || days < -7) continue;  // skip far-future + long-past
       const urgency = days < 0 ? 'critical' : days <= 14 ? 'high' : days <= 30 ? 'medium' : 'low';
       const label = c.insurer ? (c.insurer + (c.plan_name ? ' — ' + c.plan_name : '')) : (c.plan_name || 'Insurance card');
+      const networkSuffix = c.network_type ? ' · ' + c.network_type : '';
       out.push({
         id: 'ht_ins_expiry_' + c.id,
         group: 'health', urgency,
         icon: c.card_type === 'dental' ? '🦷' : c.card_type === 'vision' ? '👁' : '🛡️',
         title: days < 0
-          ? label + ' expired ' + Math.abs(days) + ' day' + (Math.abs(days) === 1 ? '' : 's') + ' ago'
-          : label + ' expires in ' + days + ' day' + (days === 1 ? '' : 's'),
-        body: 'Member ID ••••' + (c.member_id_last4 || '????') + (c.network_type ? ' · ' + c.network_type : '') +
-          '. Confirm renewal with HR / insurer; update the card details here.',
+          ? t('ht.genInsuranceCardExpiring.title.expired', { label, days: Math.abs(days), plural: Math.abs(days) === 1 ? '' : 's' })
+          : t('ht.genInsuranceCardExpiring.title.upcoming', { label, days, plural: days === 1 ? '' : 's' }),
+        body: t('ht.genInsuranceCardExpiring.body', { last4: c.member_id_last4 || '????', networkSuffix }),
         deadline: c.expiry_date,
         module: 'health-tracker', snoozable: true,
       });
@@ -12101,8 +12311,9 @@
   // Upcoming dental appointments — 7-day window. Useful as a "this
   // week" prompt; doesn't fire for events further out.
   function genDentalAppointmentsUpcoming() {
+    const t = TB.i18n.t;
     const out = [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = TB.utils.todayIso();
     const appts = (getDental().appointments || []).filter((a) => a.date && a.date >= today);
     appts.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
     for (const a of appts.slice(0, 3)) {
@@ -12114,9 +12325,11 @@
       out.push({
         id: 'ht_dental_appt_' + a.id,
         group: 'health', urgency, icon: '📅',
-        title: days === 0 ? 'Dental appointment today'
-              : days === 1 ? 'Dental appointment tomorrow'
-              : 'Dental appointment in ' + days + ' days · ' + a.date,
+        title: days === 0 ? t('ht.genDentalAppointmentsUpcoming.title.today')
+              : days === 1 ? t('ht.genDentalAppointmentsUpcoming.title.tomorrow')
+              : t('ht.genDentalAppointmentsUpcoming.title.future', { days, date: a.date }),
+        // Time / provider name / purpose are user-entered data joined
+        // with literal punctuation — not translatable literal content.
         body: (a.time ? a.time + ' · ' : '') +
               (prov ? (prov.name_en || prov.name_jp || '') : '') +
               (a.purpose ? ' — ' + a.purpose : ''),
@@ -12131,6 +12344,7 @@
   // the cracks. Skips invoices that are insurance-pending (waiting on
   // claim resolution is normal and tracked separately).
   function genUnpaidInvoicesOld() {
+    const t = TB.i18n.t;
     const out = [];
     const today = new Date();
     for (const inv of getInvoices()) {
@@ -12149,9 +12363,8 @@
       out.push({
         id: 'ht_unpaid_inv_' + inv.id,
         group: 'health', urgency, icon: '🧾',
-        title: 'Unpaid invoice from ' + inv.date + ' · ' + amt,
-        body: (inv.provider || 'Provider unknown') + ' · ' + days + ' days old. ' +
-          'Pay it or mark paid in Health Tracker if already settled.',
+        title: t('ht.genUnpaidInvoicesOld.title', { date: inv.date, amount: amt }),
+        body: t('ht.genUnpaidInvoicesOld.body', { provider: inv.provider || 'Provider unknown', days }),
         module: 'health-tracker', snoozable: true,
       });
     }
@@ -12162,14 +12375,15 @@
   // from genPendingReimbursement (broader): this checks denial status
   // explicitly and surfaces "denied" claims so they don't get forgotten.
   function genInsuranceClaimsDenied() {
+    const t = TB.i18n.t;
     const out = [];
     for (const inv of getInvoices()) {
       if (inv.reimbursement_status !== 'denied') continue;
       out.push({
         id: 'ht_claim_denied_' + inv.id,
         group: 'health', urgency: 'high', icon: '✗',
-        title: 'Insurance claim denied — ' + (inv.provider || 'Provider'),
-        body: 'Invoice from ' + inv.date + '. Review the denial reason, appeal if appropriate, or mark this paid/closed.',
+        title: t('ht.genInsuranceClaimsDenied.title', { provider: inv.provider || 'Provider' }),
+        body: t('ht.genInsuranceClaimsDenied.body', { date: inv.date }),
         module: 'health-tracker', snoozable: true,
       });
     }

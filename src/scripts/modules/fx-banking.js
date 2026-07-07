@@ -29,6 +29,53 @@
   const id = 'fx-banking';
 
   // ====================================================================
+  // i18n — Action Center generator strings (self-registered here so
+  // this module doesn't require touching the shared i18n.js table).
+  // ====================================================================
+
+  TB.i18n.extend('en', {
+    'fxb.genFbarThresholdApproaching.approaching.title':
+      'FBAR threshold approaching — ${{aggregate}} of $10K',
+    'fxb.genFbarThresholdApproaching.approaching.body':
+      'Your foreign account aggregate is within 25% of the $10K FBAR threshold. Crossing it (at any point during the year, even briefly) requires filing FinCEN 114 by April 15. Plan transfers carefully — open FX & Banking → FBAR threshold awareness for context.',
+    'fxb.genFbarThresholdApproaching.requiredUnfiled.title':
+      'FBAR required but not yet filed for {{year}}',
+    'fxb.genFbarThresholdApproaching.requiredUnfiled.body':
+      'Your foreign account aggregate (${{aggregate}}) exceeded the $10K FBAR threshold. FinCEN 114 due April 15 (auto-extended to October 15). File via the BSA E-Filing System (separate from your 1040). Penalties for non-filing: up to $16,536 per report (non-willful), or the greater of $165,353 or 50% of the balance (willful).',
+    'fxb.genRateAlertTriggered.title':
+      'USD/JPY {{directionWord}} ¥{{threshold}} (now ¥{{current}})',
+    'fxb.genRateAlertTriggered.dir.above': 'above',
+    'fxb.genRateAlertTriggered.dir.below': 'below',
+    'fxb.genRateAlertTriggered.labelSuffix': ': {{label}}',
+    'fxb.genRateAlertTriggered.body':
+      'Your rate alert is triggered{{labelSuffix}}. Open FX & Banking → Transfer cost calculator to lock in the rate, OR review the multi-currency holding strategy if you want to hold instead of convert.',
+    'fxb.platformType.fintech':      'Fintech',
+    'fxb.platformType.jp_bank':      'JP bank',
+    'fxb.platformType.us_brokerage': 'US brokerage',
+  });
+
+  TB.i18n.extend('ja', {
+    'fxb.genFbarThresholdApproaching.approaching.title':
+      'FBAR 閾値接近 — ${{aggregate}} / $10K',
+    'fxb.genFbarThresholdApproaching.approaching.body':
+      '外国口座総額が $10K FBAR 閾値の 25% 以内に接近しています。年間の任意の時点で(短時間でも)超過すると FinCEN 114 を 4月15日までに提出する必要があります。送金は計画的に — 詳細は FX・銀行 → FBAR 閾値の認識を開いてください。',
+    'fxb.genFbarThresholdApproaching.requiredUnfiled.title':
+      '{{year}} 年分の FBAR 提出義務が発生していますが未提出です',
+    'fxb.genFbarThresholdApproaching.requiredUnfiled.body':
+      '外国口座総額(${{aggregate}})が $10K FBAR 閾値を超過しました。FinCEN 114 は 4月15日期限(自動延長で10月15日)。BSA E-Filing System から提出してください(1040 とは別)。不申告罰則:非故意は1報告あたり最大 $16,536、故意は $165,353 または残高の 50% のいずれか高い方。',
+    'fxb.genRateAlertTriggered.title':
+      'USD/JPY が ¥{{threshold}} を{{directionWord}}(現在 ¥{{current}})',
+    'fxb.genRateAlertTriggered.dir.above': '上回りました',
+    'fxb.genRateAlertTriggered.dir.below': '下回りました',
+    'fxb.genRateAlertTriggered.labelSuffix': '(メモ:{{label}})',
+    'fxb.genRateAlertTriggered.body':
+      'レートアラートが発動しました{{labelSuffix}}。FX・銀行 → 送金コスト計算機を開いてレートを確定するか、転換せず保有する場合は複数通貨保有戦略をご確認ください。',
+    'fxb.platformType.fintech':      'フィンテック',
+    'fxb.platformType.jp_bank':      '日本の銀行',
+    'fxb.platformType.us_brokerage': '米国証券会社',
+  });
+
+  // ====================================================================
   // Reference data — platforms
   // ====================================================================
 
@@ -146,6 +193,13 @@
     },
   ];
 
+  // Translated label for a PLATFORMS `type` enum value (e.g. 'jp_bank'
+  // -> 'JP bank' / '日本の銀行'). Falls back to the raw enum string if
+  // an unmapped type ever shows up, so this never renders blank.
+  function platformTypeLabel(type) {
+    return TB.i18n.t('fxb.platformType.' + type) || type;
+  }
+
   // Returns the fee fields for a platform, preferring user-recorded
   // overrides (from the "Update fees" workflow) over the hardcoded
   // typical values. The override carries last_verified_at so the UI
@@ -224,9 +278,13 @@
       const fixedFeeJpy = fixedFeeUsd * midRate;
       const jpyAfterFixedFee = Math.max(0, amount - fixedFeeJpy);
       const jpyAfterPctFee = jpyAfterFixedFee * (1 - feePct);
-      // jpy / (jpy/usd) = usd, but at the spread-adjusted rate the
-      // user only gets fewer USD per yen sold.
-      delivered = jpyAfterPctFee / effectiveRate;
+      // jpy / (jpy/usd) = usd. Selling yen, the spread makes each USD
+      // cost MORE yen, so we divide by a rate that's ABOVE mid
+      // (midRate * (1 + bps/10000)) — the user gets fewer USD as the
+      // spread widens. (effectiveRate is the below-mid buy rate, only
+      // correct for the USD→JPY branch.)
+      const sellRate = midRate * (1 + ((fees.spread_bps || 0) / 10000));
+      delivered = jpyAfterPctFee / sellRate;
       jpyAtMid = amount; // mid-market source-side reference is the input
       totalCostJpy = amount - (delivered * midRate);
     } else {
@@ -1067,8 +1125,11 @@
       const wasOver = agg.usd >= FBAR_THRESHOLD_USD;
       const willBeOver = projected >= FBAR_THRESHOLD_USD;
       let color, icon, label, body;
-      if (direction === 'jpy_to_usd' && wasOver && !willBeOver) {
-        // Pulling out — drops back below threshold
+      if (direction === 'jpy_to_usd' && wasOver && !willBeOver
+          && agg.source !== 'fbar_peak') {
+        // Pulling out — drops back below threshold. Only assert this for a
+        // CURRENT-balance aggregate: a year PEAK can't decrease, so
+        // subtracting a withdrawal from it doesn't put the user "under."
         color = 'var(--tb-success)'; icon = '✓';
         label = t('fx.calculator.fbar_dropping_below.label');
         body = t('fx.calculator.fbar_dropping_below.body', {
@@ -1140,7 +1201,7 @@
       // Sort platforms by delivered amount descending (best first).
       // Always uses the LIVE rate for the math.
       const computed = PLATFORMS
-        .filter((p) => p.direction === 'both' || p.direction === 'usd_to_jpy')
+        .filter((p) => p.direction === 'both' || p.direction === direction)
         .map((p) => ({ p, r: platformDelivers(p, currentAmount(), liveFx.rate, direction) }))
         .filter((x) => x.r != null)
         .sort((a, b) => (b.r.delivered || 0) - (a.r.delivered || 0));
@@ -1170,7 +1231,7 @@
           el('span', null,
             el('span', { style: { fontWeight: isBest ? '700' : '500' } },
               (isBest ? '🏆 ' : '') + row.p.name),
-            el('div', { class: 'tb-field-help', style: { marginTop: '2px' } }, row.p.type)),
+            el('div', { class: 'tb-field-help', style: { marginTop: '2px' } }, platformTypeLabel(row.p.type))),
           el('span', { style: { fontFamily: 'var(--tb-font-mono)', textAlign: 'right', fontWeight: '600' } },
             fmtDelivered(r.delivered)),
           el('span', { style: { fontFamily: 'var(--tb-font-mono)', textAlign: 'right',
@@ -1743,6 +1804,7 @@
   // already over but no FBAR filed for the current year.
   function genFbarThresholdApproaching() {
     const out = [];
+    const t = TB.i18n.t;
     const agg = computeForeignAggregateUsd();
     const status = fbarStatus(agg.usd);
     const fbar = TB.state.get('fbar') || {};
@@ -1755,8 +1817,10 @@
         group: 'fx',
         urgency: 'medium',
         icon: '🚨',
-        title: 'FBAR threshold approaching — $' + Math.round(agg.usd).toLocaleString() + ' of $10K',
-        body: 'Your foreign account aggregate is within 25% of the $10K FBAR threshold. Crossing it (at any point during the year, even briefly) requires filing FinCEN 114 by April 15. Plan transfers carefully — open FX & Banking → FBAR threshold awareness for context.',
+        title: t('fxb.genFbarThresholdApproaching.approaching.title', {
+          aggregate: Math.round(agg.usd).toLocaleString(),
+        }),
+        body: t('fxb.genFbarThresholdApproaching.approaching.body'),
         module: 'fx-banking', snoozable: true,
       });
     } else if (status.level === 'required' && !filedThisYear) {
@@ -1765,9 +1829,10 @@
         group: 'fx',
         urgency: 'high',
         icon: '🚨',
-        title: 'FBAR required but not yet filed for ' + agg.year,
-        body: 'Your foreign account aggregate ($' + Math.round(agg.usd).toLocaleString() +
-          ') exceeded the $10K FBAR threshold. FinCEN 114 due April 15 (auto-extended to October 15). File via the BSA E-Filing System (separate from your 1040). Penalties for non-filing: up to $16,536 per report (non-willful), or the greater of $165,353 or 50% of the balance (willful).',
+        title: t('fxb.genFbarThresholdApproaching.requiredUnfiled.title', { year: agg.year }),
+        body: t('fxb.genFbarThresholdApproaching.requiredUnfiled.body', {
+          aggregate: Math.round(agg.usd).toLocaleString(),
+        }),
         module: 'fx-banking', snoozable: false,
       });
     }
@@ -1776,6 +1841,7 @@
 
   function genRateAlertTriggered() {
     const out = [];
+    const t = TB.i18n.t;
     const alerts = getAlerts();
     if (alerts.length === 0) return out;
     const fx = currentJpyPerUsd();
@@ -1789,10 +1855,14 @@
         group: 'fx',
         urgency: 'medium',
         icon: '🔔',
-        title: 'USD/JPY ' + (a.direction === 'gt' ? 'above' : 'below') + ' ¥' +
-          a.threshold_jpy_per_usd + ' (now ¥' + fx.rate.toFixed(2) + ')',
-        body: 'Your rate alert is triggered' + (a.label ? ': ' + a.label : '') +
-          '. Open FX & Banking → Transfer cost calculator to lock in the rate, OR review the multi-currency holding strategy if you want to hold instead of convert.',
+        title: t('fxb.genRateAlertTriggered.title', {
+          directionWord: a.direction === 'gt' ? t('fxb.genRateAlertTriggered.dir.above') : t('fxb.genRateAlertTriggered.dir.below'),
+          threshold: a.threshold_jpy_per_usd,
+          current: fx.rate.toFixed(2),
+        }),
+        body: t('fxb.genRateAlertTriggered.body', {
+          labelSuffix: a.label ? t('fxb.genRateAlertTriggered.labelSuffix', { label: a.label }) : '',
+        }),
         module: 'fx-banking', snoozable: true,
       });
     });

@@ -349,7 +349,7 @@
     // the FBAR year currently in scope between Jan 1 and Oct 15 of
     // the following year.
     const now = new Date();
-    return String(now.getUTCFullYear() - 1);
+    return String(now.getFullYear() - 1);
   }
 
   function knownYears() {
@@ -680,9 +680,52 @@
       }
     }
     TB.state.set('settings.fx.treasury_rates', next);
-    TB.state.set('settings.fx.treasury_fetched_at', new Date().toISOString());
+    // Only stamp treasury_fetched_at when at least one year's fetch
+    // actually succeeded. Stamping on a fully-offline run would (a) block
+    // the 7-day auto-retry and (b) make the rates card claim "last fetched
+    // {today}" over stale offline-fallback values.
+    const anyFetched = Object.keys(fetched).length > 0;
+    if (anyFetched) {
+      TB.state.set('settings.fx.treasury_fetched_at', new Date().toISOString());
+    }
     TB.state.set('settings.fx.treasury_fetch_errors', errors);
+
+    // Recompute existing balance rows against the freshly-fetched rates.
+    // Rows freeze fx_rate_used / max_balance_usd at entry time, so without
+    // this a rate refresh would leave old (often offline-fallback) figures
+    // in place. Only touch rows the user has NOT manually overridden.
+    if (anyFetched) {
+      recomputeBalancesForFetchedRates(fetched);
+    }
+
     return { fetched, errors };
+  }
+
+  // For each year whose rates were just fetched, re-derive max_balance_usd
+  // and refresh fx_rate_source on every non-overridden balance row in that
+  // year whose currency has a new rate. Leaves manual overrides untouched.
+  function recomputeBalancesForFetchedRates(fetched) {
+    const balances = getBalances();
+    const accounts = getAccounts();
+    let changed = false;
+    for (const bal of balances) {
+      if (bal.fx_rate_overridden) continue;
+      const yr = String(bal.year || '');
+      const yearRates = fetched[yr];
+      if (!yearRates) continue;
+      const acct = accounts.find(a => a.id === bal.account_id);
+      if (!acct || acct.currency === 'USD') continue;
+      const rate = yearRates[acct.currency];
+      if (typeof rate !== 'number' || !(rate > 0)) continue;
+      const native = Number(bal.max_balance_native);
+      bal.fx_rate_used = rate;
+      bal.fx_rate_source = 'Treasury Year-End ' + yr;
+      bal.max_balance_usd = (bal.max_balance_native != null && isFinite(native) && native >= 0)
+        ? native / rate
+        : null;
+      changed = true;
+    }
+    if (changed) setBalances(balances);
   }
 
   // Auto-fetch official Treasury year-end rates when the FBAR module is
@@ -717,7 +760,7 @@
     // completed calendar year (FBAR uses year-end rates; the current
     // year's December 31 rate doesn't exist until next year).
     const balances = getBalances();
-    const today = new Date().getUTCFullYear();
+    const today = new Date().getFullYear();
     const lastCompleted = today - 1;
     let earliest = lastCompleted - 5;
     for (const b of balances) {
@@ -769,6 +812,12 @@
     );
     const warnings = [];
     let total = 0;
+    // Sum EXCLUDING carried-forward (synthesized) rows. A confirmed
+    // at_or_over verdict may only be locked from verified balances — a
+    // carried-forward row is a stale prior-year peak for a dormant/drained
+    // account and must not by itself assert "FBAR REQUIRED".
+    let verifiedTotal = 0;
+    let carriedForwardContributing = false;
     const contributing = [];
     let missing = 0;
 
@@ -783,6 +832,12 @@
       }
       total += Number(bal.max_balance_usd);
       contributing.push(acct.id);
+      if (bal.carried_forward) {
+        carriedForwardContributing = true;
+        warnings.push('Balance for ' + acct.currency + ' in ' + year + ' is carried forward from a prior year and unverified.');
+      } else {
+        verifiedTotal += Number(bal.max_balance_usd);
+      }
 
       // Surface FX-unverified warning per contributing currency.
       if (bal.fx_rate_source && bal.fx_rate_source.indexOf('UNVERIFIED') !== -1) {
@@ -795,9 +850,19 @@
     }
 
     let status;
-    if (total > FBAR_THRESHOLD_USD) {
-      status = 'at_or_over';   // verdict locked in regardless of missing
+    if (verifiedTotal > FBAR_THRESHOLD_USD) {
+      // Over the threshold on VERIFIED balances alone — locked in
+      // regardless of missing or carried-forward rows.
+      status = 'at_or_over';
+    } else if (total > FBAR_THRESHOLD_USD) {
+      // Only reaches the threshold once carried-forward estimates are
+      // included: do NOT assert a confirmed positive verdict. Flag as
+      // needs-verification.
+      status = 'insufficient_data';
     } else if (missing > 0) {
+      status = 'insufficient_data';
+    } else if (carriedForwardContributing) {
+      // Under threshold but the figure leans on unverified carry-forward.
       status = 'insufficient_data';
     } else if (contributing.length === 0) {
       status = 'insufficient_data';
@@ -811,6 +876,96 @@
       status,
       contributing_accounts: contributing,
       warnings: Array.from(new Set(warnings)),
+    };
+  }
+
+  // Canonical household FBAR aggregate for a single year — the ONE
+  // function other modules (tax-coordinator, net-worth, fx-banking)
+  // must call instead of re-deriving the aggregate themselves. Prior
+  // to this, tax-coordinator re-implemented the sum with a string/number
+  // year-comparison bug that always returned $0 (see REVIEW.md C1); the
+  // net-worth wizard and the fx-banking callout each rolled their own
+  // variants too. Route them all here.
+  //
+  //   year: pass a specific year ('2024'); omit to use the most recent
+  //         year present in yearly_balances.
+  //
+  // Returns:
+  //   {
+  //     year,                  // resolved year string, or null if no data
+  //     aggregate_usd,         // sum of max_balance_usd across DISTINCT
+  //                            //   non-US accounts active that year (joint
+  //                            //   accounts counted ONCE — this is a
+  //                            //   household display total, not a filing
+  //                            //   figure)
+  //     any_filer_over,        // TRUE iff any US-person filer is at/over
+  //                            //   $10k by the real per-filer rules (joint
+  //                            //   accounts count FULL value per filer).
+  //                            //   THIS is the "is FBAR required" signal.
+  //     status,                // 'at_or_over' | 'under' | 'insufficient_data'
+  //                            //   | 'no_data'
+  //     per_filer,             // [{ filerId, status, aggregate_usd }]
+  //     contributing_accounts, // account ids in the household total
+  //   }
+  //
+  // Filing is per-filer: any single filer at/over threshold means that
+  // filer must file, so `any_filer_over` is the correct required/not
+  // verdict — never compare `aggregate_usd` to the threshold directly.
+  function aggregateForYear(year) {
+    const balances = getBalances();
+    const accounts = getAccounts();
+
+    let target = (year != null && year !== '') ? String(year) : null;
+    if (!target) {
+      for (const b of balances) {
+        const y = String(b.year || '');
+        if (y && (target == null || y > target)) target = y;
+      }
+    }
+    if (!target) {
+      return {
+        year: null, aggregate_usd: 0, any_filer_over: false,
+        status: 'no_data', per_filer: [], contributing_accounts: [],
+      };
+    }
+
+    // Household display total: distinct non-US accounts active in the
+    // year. Iterating accounts (not balances) keeps joint accounts
+    // counted once regardless of how many filers own them.
+    let total = 0;
+    let missing = 0;
+    const contributing = [];
+    for (const acct of accounts) {
+      if (acct.country === 'US') continue;
+      if (!isAccountActiveInYear(acct, target)) continue;
+      const bal = balances.find(b => b.account_id === acct.id && String(b.year) === target);
+      if (!bal || bal.max_balance_usd == null) { missing += 1; continue; }
+      total += Number(bal.max_balance_usd) || 0;
+      contributing.push(acct.id);
+    }
+
+    // Filing verdict: run the real per-filer threshold test.
+    const perFiler = [];
+    let anyOver = false;
+    for (const f of getFilers()) {
+      if (!f.isUSPerson) continue;
+      const st = thresholdStatus(f.id, target);
+      perFiler.push({ filerId: f.id, status: st.status, aggregate_usd: st.aggregate_usd });
+      if (st.status === 'at_or_over') anyOver = true;
+    }
+
+    let status;
+    if (anyOver) status = 'at_or_over';
+    else if (missing > 0 || contributing.length === 0) status = 'insufficient_data';
+    else status = 'under';
+
+    return {
+      year: target,
+      aggregate_usd: total,
+      any_filer_over: anyOver,
+      status,
+      per_filer: perFiler,
+      contributing_accounts: contributing,
     };
   }
 
@@ -2873,7 +3028,7 @@
     //   - closed_year < opened_year    → reject (impossible)
     //   - closed_year === opened_year  → warn (often a misread)
     {
-      const todayYr = new Date().getUTCFullYear();
+      const todayYr = new Date().getFullYear();
 
       // Look up primary filer's DOB year, if any, so we can reject
       // open dates earlier than the account holder was born.
@@ -3098,6 +3253,11 @@
           fx_rate_source: fxInfo.source || (fresh.currency === 'USD' ? 'USD' : ''),
           fx_rate_overridden: false,
           max_balance_usd: usd,
+          // Synthesized (carried-forward) rows are unverified estimates:
+          // flag them so threshold logic won't assert a confirmed
+          // "FBAR REQUIRED" verdict off a dormant/drained account's stale
+          // prior-year peak.
+          carried_forward: !!entry._carry_forward,
           notes: noteSuffix,
         });
         extractedYearsList.push(entry.year);
@@ -3327,7 +3487,7 @@
       // vs 平成24, etc.) or confuse deposit-row dates with payment-row
       // dates. The apply path enforces several invariants and rejects
       // values that violate them, surfacing warnings for user review.
-      const today = new Date().getUTCFullYear();
+      const today = new Date().getFullYear();
 
       // Look up the primary filer's DOB year, if any — accounts can't
       // be opened before the account holder is born.
@@ -3442,6 +3602,11 @@
           fx_rate_source: fxInfo.source || (account.currency === 'USD' ? 'USD' : ''),
           fx_rate_overridden: false,
           max_balance_usd: usd,
+          // Synthesized (carried-forward) rows are unverified estimates:
+          // flag them so threshold logic won't assert a confirmed
+          // "FBAR REQUIRED" verdict off a dormant/drained account's stale
+          // prior-year peak.
+          carried_forward: !!entry._carry_forward,
           notes: noteSuffix,
         });
         trackedYears.push(entry.year);
@@ -3552,6 +3717,11 @@
           fx_rate_source: fxInfo.source || (existingAccount.currency === 'USD' ? 'USD' : ''),
           fx_rate_overridden: false,
           max_balance_usd: usd,
+          // Synthesized (carried-forward) rows are unverified estimates:
+          // flag them so threshold logic won't assert a confirmed
+          // "FBAR REQUIRED" verdict off a dormant/drained account's stale
+          // prior-year peak.
+          carried_forward: !!entry._carry_forward,
           notes: noteSuffix,
         });
         summary.added.push(entry.year);
@@ -3962,7 +4132,7 @@
   function fillCarryForwardYears(yearEntries, closedYear) {
     if (!Array.isArray(yearEntries) || yearEntries.length === 0) return [];
 
-    const today = new Date().getUTCFullYear();
+    const today = new Date().getFullYear();
 
     // Defense in depth: drop any extracted entries whose year is in
     // the future. This catches FD certificates and other documents
@@ -4194,6 +4364,33 @@
     );
   }
 
+  // Derive the display label for a balance row's FX source from the
+  // value ACTUALLY stored on the row (bal.fx_rate_source), not from a
+  // fresh fxRateFor() lookup. This keeps the SOURCE cell honest: a rate
+  // computed from the offline fallback reads "(offline fallback)", and a
+  // live-fetched rate reads plainly — instead of both showing the same
+  // "Treasury Year-End {year}" whenever any auto rate happens to exist.
+  function sourceLabelForBalance(bal, currency, year) {
+    const t = TB.i18n.t;
+    if (currency === 'USD') return 'USD';
+    if (bal.fx_rate_overridden) return t('fbar.balances.fx.override');
+    const stored = String(bal.fx_rate_source || '');
+    if (!stored) {
+      // No source recorded: fall back to whether an auto rate is available.
+      return fxRateFor(currency, year).rate != null
+        ? t('fbar.balances.fx.auto', { year })
+        : t('fbar.balances.fx.missing');
+    }
+    if (stored.indexOf('offline fallback') !== -1) {
+      return t('fbar.balances.fx.auto', { year }) + ' (offline)';
+    }
+    if (stored.indexOf('Treasury Year-End') !== -1) {
+      return t('fbar.balances.fx.auto', { year });
+    }
+    // Manual/missing labels are already localized strings — pass through.
+    return stored;
+  }
+
   function buildBalanceRow(acct, year) {
     const el = TB.utils.el;
     const t = TB.i18n.t;
@@ -4219,7 +4416,13 @@
 
       const native = parseFloat(updated.max_balance_native);
       const rate = parseFloat(updated.fx_rate_used);
-      if (isFinite(native) && isFinite(rate) && rate > 0) {
+      // A max balance can never be negative; a stored negative would
+      // SUBTRACT from the FBAR aggregate and could flip at_or_over→under.
+      // Reject it: drop the bad native value and null the USD figure.
+      if (isFinite(native) && native < 0) {
+        updated.max_balance_native = null;
+        updated.max_balance_usd = null;
+      } else if (isFinite(native) && isFinite(rate) && rate > 0) {
         updated.max_balance_usd = acct.currency === 'USD' ? native : (native / rate);
       } else {
         updated.max_balance_usd = null;
@@ -4293,12 +4496,11 @@
       'data-fbar-balance-usd': bal.id,
     }, bal.max_balance_usd == null ? '—' : TB.utils.formatUSD(bal.max_balance_usd));
 
-    const sourceLabel = acct.currency === 'USD'
-      ? 'USD'
-      : (bal.fx_rate_overridden ? t('fbar.balances.fx.override')
-        : fxRateFor(acct.currency, year).rate != null
-          ? t('fbar.balances.fx.auto', { year })
-          : t('fbar.balances.fx.missing'));
+    // Render the source cell from the row's ACTUAL stored fx_rate_source
+    // rather than from "does any auto rate exist" — otherwise a value that
+    // was computed from the offline fallback would still be labelled as if
+    // it came from a live Treasury rate.
+    const sourceLabel = sourceLabelForBalance(bal, acct.currency, year);
 
     const isCarryForward = String(bal.notes || '').startsWith('Carry-forward from');
     const carryHint = isCarryForward
@@ -4433,6 +4635,25 @@
       ));
     }
     card.appendChild(list);
+  }
+
+  // Format a native (non-USD-normalized) balance in its own currency.
+  // JPY renders as integer yen; USD via the shared USD formatter; other
+  // ISO codes via Intl currency formatting, falling back to a rounded
+  // number + code for currencies Intl doesn't recognize.
+  function formatNative(amount, currency) {
+    if (amount == null || isNaN(amount)) return '—';
+    if (currency === 'JPY') return TB.utils.formatJPY(amount);
+    if (currency === 'USD') return TB.utils.formatUSD(amount);
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: currency,
+      }).format(amount);
+    } catch (_) {
+      // Unknown / non-ISO currency code — Intl throws on these.
+      return Math.round(amount).toLocaleString() + ' ' + currency;
+    }
   }
 
   // Expandable per-filer breakdown showing EVERY account where the
@@ -4831,12 +5052,8 @@
         onchange: (e) => {
           if (e.target.checked) {
             // Pre-fill filed_on with today if blank.
-            const today = new Date();
-            const iso = today.getUTCFullYear() + '-'
-              + String(today.getUTCMonth() + 1).padStart(2, '0') + '-'
-              + String(today.getUTCDate()).padStart(2, '0');
             upsertFilingRecord(filer.id, year, {
-              filed_on: (record && record.filed_on) || iso,
+              filed_on: (record && record.filed_on) || TB.utils.todayIso(),
             });
           } else {
             upsertFilingRecord(filer.id, year, { filed_on: '', bsa_id: '' });
@@ -5950,7 +6167,7 @@
 
       <footer class="ftr">
         <strong>RETAIN, DO NOT SUBMIT.</strong> Form 114a is retained by the preparer for 5 years following the FBAR filing. Do NOT submit to FinCEN.<br>
-        Generated by Taigan Bridge v${esc(version)}, build ${esc(buildHash)} on ${new Date().toISOString().slice(0, 10)}.
+        Generated by Taigan Bridge v${esc(version)}, build ${esc(buildHash)} on ${TB.utils.todayIso()}.
         Educational organizational tool only — verify all field values against the official FinCEN 114a before signing.
       </footer>
     `;
@@ -6122,7 +6339,22 @@ ${inner}
           btn.disabled = true;
           btn.textContent = t('fbar.filing.rates.refreshing');
           try {
-            await refreshTreasuryRates(showYears);
+            const res = await refreshTreasuryRates(showYears);
+            const fetchedCount = res && res.fetched ? Object.keys(res.fetched).length : 0;
+            const errs = (res && res.errors) || [];
+            // Promise.allSettled never rejects, so an offline run reaches
+            // here with zero years fetched. Report that instead of silently
+            // claiming success over stale offline-fallback values.
+            if (fetchedCount === 0) {
+              const detail = errs.length
+                ? '\n\n' + errs.map(e => e.year + ': ' + e.error).join('\n')
+                : '';
+              alert(t('fbar.filing.rates.refreshFailed') + detail);
+            } else if (errs.length) {
+              // Partial success — surface which years couldn't be fetched.
+              alert(t('fbar.filing.rates.refreshFailed')
+                + '\n\n' + errs.map(e => e.year + ': ' + e.error).join('\n'));
+            }
             renderActiveTab();
           } catch (err) {
             alert(t('fbar.filing.rates.refreshFailed') + '\n\n' + (err && err.message || err));
@@ -6634,6 +6866,7 @@ ${inner}
   // Expose pure functions for tests / AI sanitizer integration.
   window.TB.fbar = {
     thresholdStatus,
+    aggregateForYear,
     summarizeFbarForAi,
     FBAR_THRESHOLD_USD,
     TREASURY_FX,

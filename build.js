@@ -27,6 +27,13 @@ const DIST_HTML = path.join(DIST_DIR, 'taigan-bridge.html');
 // which is what update-check.js fetches. jsDelivr's public hit stats
 // then double as a coarse, anonymous active-install signal.
 const VERSION_JS = path.join(ROOT, 'version.js');
+// Pure-JSON sibling of version.js. update-check.js fetches THIS file
+// via fetch()/res.json() (no cross-origin <script> injection), served
+// from the same jsDelivr @latest path:
+//   https://cdn.jsdelivr.net/gh/<owner>/<repo>@latest/version.json
+// version.js is still emitted for older installs that read the payload
+// via legacy <script> injection; do not drop it.
+const VERSION_JSON = path.join(ROOT, 'version.json');
 const PKG = require(path.join(ROOT, 'package.json'));
 const canary = require(path.join(ROOT, 'tools', 'canary.js'));
 
@@ -69,7 +76,15 @@ function inlineStylesheets(html) {
 
 function inlineScripts(html) {
   return html.replace(
-    /<script\s+[^>]*src=["']([^"']+)["'][^>]*><\/script>/gi,
+    // (?<=[\s"']) before src= excludes data-src="..." (the char right
+    // before "src=" would be "-", not whitespace/quote) while still
+    // matching the first attribute right after "<script " (whitespace)
+    // or any later attribute (preceded by the previous attr's closing
+    // quote). \s* before </script> tolerates whitespace/newlines
+    // between the opening tag and the closing tag — without it, a tag
+    // like `<script src="x.js">\n</script>` silently failed to match
+    // and shipped as an unresolved external reference in dist.
+    /<script\s+[^>]*(?<=[\s"'])src=["']([^"']+)["'][^>]*>\s*<\/script>/gi,
     (tag, src) => {
       if (/^https?:\/\//i.test(src)) return tag;
       const filePath = path.join(SRC_DIR, src);
@@ -125,16 +140,44 @@ function inlineSvgAssets(html) {
   return out;
 }
 
+// Stamps a single <meta ...> tag's content="..." attribute, matching
+// the tag as a whole first so name="..." and content="..." can appear
+// in either order (the old per-stamp regexes hard-required name= to
+// come first and silently no-opped on `<meta content="..." name="...">`).
+function stampMetaTag(html, name, value) {
+  const nameRe = new RegExp(`name=["']${name}["']`, 'i');
+  return html.replace(/<meta\s+[^>]*>/gi, (tag) => {
+    if (!nameRe.test(tag)) return tag;
+    if (/content=["'][^"']*["']/i.test(tag)) {
+      return tag.replace(/content=["'][^"']*["']/i, `content="${value}"`);
+    }
+    return tag.replace(/\/?>$/, ` content="${value}">`);
+  });
+}
+
 function stampMetadata(html, meta) {
   let out = html;
-  out = out.replace(/<meta\s+name=["']tb-version["'][^>]*>/i,
-    `<meta name="tb-version" content="${meta.version}">`);
-  out = out.replace(/<meta\s+name=["']tb-build-hash["'][^>]*>/i,
-    `<meta name="tb-build-hash" content="${meta.buildHash}">`);
-  out = out.replace(/<meta\s+name=["']tb-build-date["'][^>]*>/i,
-    `<meta name="tb-build-date" content="${meta.buildDate}">`);
+  out = stampMetaTag(out, 'tb-version', meta.version);
+  out = stampMetaTag(out, 'tb-build-hash', meta.buildHash);
+  out = stampMetaTag(out, 'tb-build-date', meta.buildDate);
 
   // Stamp visible elements with data-* attributes.
+  //
+  // KNOWN LIMITATION: these regexes match against the raw HTML text
+  // and have no awareness of <script> boundaries, so a JS string
+  // literal that happens to contain the exact substring
+  // `<span data-version></span>` (e.g. a fallback-HTML template used
+  // when content/about.html can't be fetched) will also match and get
+  // rewritten. A quote-lookbehind was considered to skip matches
+  // immediately preceded by a JS quote character, but string literals
+  // are built with string concatenation here (see aboutHtmlFallback()
+  // in src/index.html), so the tag itself is not adjacent to a quote
+  // and such a check would not catch it anyway. A real fix would
+  // require parsing (or at least tracking <script>...</script> spans)
+  // rather than a single regex pass; treated as an accepted risk for
+  // this surgical change since the corrupted output is cosmetic
+  // (version text is injected as plain string content, which does not
+  // break the surrounding JS syntax).
   out = out.replace(/(<[^>]*\sdata-version[^>]*>)([^<]*)(<\/)/gi,
     (m, open, _inner, close) => `${open}${meta.version}${close}`);
   out = out.replace(/(<[^>]*\sdata-build-hash[^>]*>)([^<]*)(<\/)/gi,
@@ -232,11 +275,20 @@ function isoDate(d) {
   return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
 }
 
-// Writes version.js (repo root) — a tiny static file the in-app
-// update checker fetches via cross-origin <script> injection (the
-// only mechanism that works from file:// where fetch is blocked).
-// Committed to git and served by jsDelivr from the latest release
-// tag; see the VERSION_JS path note above for why it isn't in dist/.
+// Writes version.js AND version.json (repo root) from one payload.
+//
+//   version.json — the modern endpoint. update-check.js fetches it via
+//     fetch()/res.json() (no remote code execution). Preferred whenever
+//     cross-origin fetch is available (dev server / hosted demo); on
+//     file:// downloads the browser blocks cross-origin fetch and the
+//     checker simply skips (fails silently) rather than injecting code.
+//   version.js — legacy endpoint kept for OLDER installs still shipping
+//     the <script>-injection checker. Do NOT drop it; those installs
+//     have no other way to learn about updates.
+//
+// Both are committed to git and served by jsDelivr from the latest
+// release tag; see the VERSION_JS/VERSION_JSON path notes above for why
+// they aren't in dist/.
 //
 // Schema (bump SUPPORTED_SCHEMAS in update-check.js if you change
 // shape incompatibly):
@@ -279,7 +331,10 @@ function writeVersionJs(meta) {
     '  } catch (e) {}\n' +
     '})();\n';
   fs.writeFileSync(VERSION_JS, js, 'utf8');
-  return js.length;
+  // Pure-JSON sibling fetched by the modern update-check.js.
+  const json = JSON.stringify(payload, null, 2) + '\n';
+  fs.writeFileSync(VERSION_JSON, json, 'utf8');
+  return { jsLen: js.length, jsonLen: json.length };
 }
 
 function main() {
@@ -321,11 +376,14 @@ function main() {
   console.log(`  output     ${path.relative(ROOT, DIST_HTML)}`);
   console.log(`  size       ${bytes} bytes (${kb} KB)`);
 
-  // Emit version.js at the repo root so the in-app update checker can
-  // read it via jsDelivr (served from the latest release tag). Commit
-  // + tag this file after bumping package.json — see writeVersionJs().
-  const versionBytes = writeVersionJs(meta);
-  console.log(`  version.js ${path.relative(ROOT, VERSION_JS)} (${versionBytes} bytes)`);
+  // Emit version.js + version.json at the repo root so the in-app
+  // update checker can read them via jsDelivr (served from the latest
+  // release tag). update-check.js fetches version.json; version.js is
+  // kept for legacy installs. Commit + tag both after bumping
+  // package.json — see writeVersionJs().
+  const { jsLen, jsonLen } = writeVersionJs(meta);
+  console.log(`  version.js   ${path.relative(ROOT, VERSION_JS)} (${jsLen} bytes)`);
+  console.log(`  version.json ${path.relative(ROOT, VERSION_JSON)} (${jsonLen} bytes)`);
 }
 
 main();

@@ -29,6 +29,36 @@
   const id = 'decumulation';
 
   // ====================================================================
+  // i18n — Action Center generator strings
+  // ====================================================================
+
+  TB.i18n.extend('en', {
+    'decum.genSsDecisionApproaching.title': 'SS claiming decision: {{years}}y to next milestone',
+    'decum.genSsDecisionApproaching.body':  'Major SS claiming milestones are 62 (earliest), 67 (FRA), 70 (max). With WEP/GPO repealed in late 2024, JP-pension recipients no longer face automatic SS reductions. Open Decumulation → SS claiming to model the trade-offs.',
+
+    'decum.genRmdApproaching.title': 'RMD age 73 in {{years}}y{{activeSuffix}}',
+    'decum.genRmdApproaching.activeSuffix': ' (active now)',
+    'decum.genRmdApproaching.body.convert':    'Required Minimum Distributions begin the year you turn 73. Pre-RMD years are the LAST window for tax-efficient Roth conversions before required income kicks in. You\'ve flagged pre-RMD conversion as a strategy — model it in Projections.',
+    'decum.genRmdApproaching.body.noConvert':  'Required Minimum Distributions begin the year you turn 73. Pre-RMD years are the LAST window for tax-efficient Roth conversions before required income kicks in. Consider pre-RMD Roth conversions to manage future bracket. Penalty for missing an RMD is 25% (was 50% pre-SECURE 2.0).',
+
+    'decum.genJpPensionGap.title': 'JP pension: {{years}}y short of eligibility',
+    'decum.genJpPensionGap.body':  'Need 10y total contributions for any JP pension benefit. You have {{total}}y. Voluntary 国民年金 contributions can fill gaps; lump-sum back-pay also possible for missed years (up to 10y back).',
+  });
+
+  TB.i18n.extend('ja', {
+    'decum.genSsDecisionApproaching.title': 'SS受給開始の判断: 次の節目まであと{{years}}年',
+    'decum.genSsDecisionApproaching.body':  '主なSS受給開始の節目は62歳（最速）、67歳（FRA）、70歳（最大）です。2024年末のWEP/GPO廃止により、日本の年金受給者はSSの自動減額を受けなくなりました。Decumulation → SS claimingを開いてトレードオフをシミュレーションしてください。',
+
+    'decum.genRmdApproaching.title': 'RMD開始年齢73歳まであと{{years}}年{{activeSuffix}}',
+    'decum.genRmdApproaching.activeSuffix': '（現在対象中）',
+    'decum.genRmdApproaching.body.convert':    'RMD（必要最低分配金）は73歳になる年から開始します。RMD開始前の年は、必要な所得が発生する前に税効率の良いRoth変換を行える最後の期間です。あなたはRMD開始前のRoth変換を戦略として設定済みです — Projectionsでモデル化してください。',
+    'decum.genRmdApproaching.body.noConvert':  'RMD（必要最低分配金）は73歳になる年から開始します。RMD開始前の年は、必要な所得が発生する前に税効率の良いRoth変換を行える最後の期間です。将来の税率区分を管理するため、RMD開始前のRoth変換を検討してください。RMDを怠った場合のペナルティは25%です（SECURE 2.0以前は50%でした）。',
+
+    'decum.genJpPensionGap.title': '日本の年金: 受給資格まであと{{years}}年不足',
+    'decum.genJpPensionGap.body':  'いずれかの日本の年金給付を受けるには通算10年の納付が必要です。現在{{total}}年です。任意の国民年金保険料の納付で不足分を補うことができ、未納期間についても遡って（最大10年分）追納できる場合があります。',
+  });
+
+  // ====================================================================
   // Reference data
   // ====================================================================
 
@@ -432,9 +462,21 @@
     const el = TB.utils.el;
     const t = TB.i18n.t;
     const ss = getSs();
-    const baseFra = ssMonthlyAt70UsdFromProjections() || ss.estimated_monthly_at_chosen_age_usd || 0;
-    // Derive the FRA-equivalent if user gave us "at 70" amount.
-    const fraEquivalent = baseFra ? baseFra / 1.24 : 0;
+    // Normalize whichever estimate we have to the FRA/PIA base, then the
+    // per-claim-age table below re-scales it via SS_CLAIM_AGES.
+    let fraEquivalent = 0;
+    const projAt70 = ssMonthlyAt70UsdFromProjections();
+    if (projAt70) {
+      // Projections value is stated at age 70 → divide by the age-70 multiplier.
+      fraEquivalent = projAt70 / 1.24;
+    } else if (ss.estimated_monthly_at_chosen_age_usd) {
+      // Fallback estimate is stated at chosen_age → divide by that age's
+      // multiplier (not the constant 1.24). Defaults to FRA (1.0) if unknown.
+      const chosenAge = ss.chosen_age;
+      const row = SS_CLAIM_AGES.find((c) => c.age === chosenAge);
+      const mult = row ? row.monthly_pct_of_fra : 1.0;
+      fraEquivalent = ss.estimated_monthly_at_chosen_age_usd / mult;
+    }
 
     const card = el('div', { class: 'tb-card', 'data-track': 'retire' });
     card.appendChild(el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' } },
@@ -1297,6 +1339,7 @@
   // ====================================================================
 
   function genSsDecisionApproaching() {
+    const t = TB.i18n.t;
     const age = selfAge();
     if (age == null) return [];
     const ss = getSs();
@@ -1313,31 +1356,34 @@
       group: 'retire',
       urgency: proximity[0] <= 1 ? 'high' : 'medium',
       icon: '🌅',
-      title: 'SS claiming decision: ' + proximity[0] + 'y to next milestone',
-      body: 'Major SS claiming milestones are 62 (earliest), 67 (FRA), 70 (max). With WEP/GPO repealed in late 2024, JP-pension recipients no longer face automatic SS reductions. Open Decumulation → SS claiming to model the trade-offs.',
+      title: t('decum.genSsDecisionApproaching.title', { years: proximity[0] }),
+      body: t('decum.genSsDecisionApproaching.body'),
       module: 'decumulation', snoozable: true,
     }];
   }
 
   function genRmdApproaching() {
+    const t = TB.i18n.t;
     const age = selfAge();
     if (age == null) return [];
     if (age < 68 || age > 73) return [];
     const r = getRmdPlanning();
+    const activeSuffix = age >= 73 ? t('decum.genRmdApproaching.activeSuffix') : '';
     return [{
       id: 'decum_rmd_approaching',
       group: 'retire',
       urgency: age >= 72 ? 'high' : 'medium',
       icon: '⏰',
-      title: 'RMD age 73 in ' + Math.max(0, 73 - age) + 'y' + (age >= 73 ? ' (active now)' : ''),
-      body: 'Required Minimum Distributions begin the year you turn 73. Pre-RMD years are the LAST window for tax-efficient Roth conversions before required income kicks in. ' +
-        (r.convert_pre_rmd ? 'You\'ve flagged pre-RMD conversion as a strategy — model it in Projections.' :
-          'Consider pre-RMD Roth conversions to manage future bracket. Penalty for missing an RMD is 25% (was 50% pre-SECURE 2.0).'),
+      title: t('decum.genRmdApproaching.title', { years: Math.max(0, 73 - age), activeSuffix }),
+      body: r.convert_pre_rmd
+        ? t('decum.genRmdApproaching.body.convert')
+        : t('decum.genRmdApproaching.body.noConvert'),
       module: 'decumulation', snoozable: true,
     }];
   }
 
   function genJpPensionGap() {
+    const t = TB.i18n.t;
     if (!isJpResident()) return [];
     const jp = getJpPension();
     const total = (jp.kokumin_nenkin_years || 0) + (jp.kosei_nenkin_years || 0);
@@ -1348,8 +1394,8 @@
       group: 'retire',
       urgency: total >= 8 ? 'medium' : 'low',
       icon: '🇯🇵',
-      title: 'JP pension: ' + (JP_PENSION_MIN_YEARS - total) + 'y short of eligibility',
-      body: 'Need 10y total contributions for any JP pension benefit. You have ' + total + 'y. Voluntary 国民年金 contributions can fill gaps; lump-sum back-pay also possible for missed years (up to 10y back).',
+      title: t('decum.genJpPensionGap.title', { years: JP_PENSION_MIN_YEARS - total }),
+      body: t('decum.genJpPensionGap.body', { total }),
       module: 'decumulation', snoozable: true,
     }];
   }

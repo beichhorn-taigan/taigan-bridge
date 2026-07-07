@@ -53,11 +53,6 @@
     }).format(n);
   }
 
-  function formatPercent(n, digits) {
-    if (n == null || isNaN(n)) return '—';
-    return (n * 100).toFixed(digits == null ? 1 : digits) + '%';
-  }
-
   function formatDate(input, lang) {
     if (!input) return '—';
     const d = input instanceof Date ? input : new Date(input);
@@ -74,6 +69,85 @@
     return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
   }
 
+  // ─── Local-time date helpers (JST-safe) ─────────────────────────────
+  //
+  // The app's users are in Japan (UTC+9). Two idioms elsewhere in the
+  // codebase silently shift dates by a day for them:
+  //   • `new Date().toISOString().slice(0,10)` yields the UTC calendar
+  //     date, which is still "yesterday" until 09:00 JST.
+  //   • `new Date('YYYY-MM-DD')` parses as UTC midnight; rendered in a
+  //     JST locale it can display as the previous day.
+  // These helpers work entirely in LOCAL time so "today", record
+  // stamps, and deadline math match the user's wall clock. They are the
+  // single source of truth the date sweep migrates call sites onto.
+  //
+  // NOTE: `isoDate()` above is intentionally UTC and must stay that way
+  // — it stamps Treasury year-end (Dec 31) snapshots, a genuinely
+  // UTC/date-only concept. Do not migrate isoDate() onto these.
+
+  // Format a Date (or anything Date accepts; default = now) as a local
+  // YYYY-MM-DD string. Returns '' for unparseable input.
+  function localIsoDate(input) {
+    let d;
+    if (input == null) d = new Date();
+    else if (input instanceof Date) d = input;
+    else d = new Date(input);
+    if (isNaN(d.getTime())) return '';
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+
+  // Today's local calendar date as YYYY-MM-DD. Use this instead of
+  // `new Date().toISOString().slice(0,10)` for "today".
+  function todayIso() {
+    return localIsoDate();
+  }
+
+  // Parse a 'YYYY-MM-DD' (or longer ISO) string as LOCAL midnight, so
+  // date-only values don't get pulled back a day by UTC parsing. Passes
+  // Date instances through untouched. Returns null on unparseable input.
+  function parseLocalDate(value) {
+    if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
+    if (value == null || value === '') return null;
+    const m = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    const d = new Date(value);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  // End of a local calendar day (23:59:59.999). A deadline hasn't
+  // "passed" until its whole day is over — compare against this, not
+  // against local midnight, so an alert survives its own due date.
+  function endOfLocalDay(value) {
+    const d = parseLocalDate(value);
+    if (!d) return null;
+    const end = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+    return end;
+  }
+
+  // Whole local days from `from` (default = today) to `value`. Positive
+  // = future, negative = past, 0 = same day. Both endpoints are floored
+  // to local midnight so the count is a clean day difference regardless
+  // of the time of day. Returns null on unparseable input.
+  function daysUntil(value, from) {
+    const target = parseLocalDate(value);
+    if (!target) return null;
+    const base = from != null ? parseLocalDate(from) : new Date();
+    if (!base) return null;
+    const a = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+    const b = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+    return Math.round((a - b) / 86400000);
+  }
+
+  // True once `now` (default = current time) is past the END of the
+  // deadline's local day. The correct test for "did this deadline lapse"
+  // in a reminders context — it stays false throughout the due date.
+  function isPastDeadline(value, now) {
+    const end = endOfLocalDay(value);
+    if (!end) return false;
+    const ref = now instanceof Date ? now : new Date();
+    return ref.getTime() > end.getTime();
+  }
+
   function uuid() {
     if (window.crypto && window.crypto.randomUUID) {
       return window.crypto.randomUUID();
@@ -84,10 +158,6 @@
       const v = c === 'x' ? r : (r & 0x3) | 0x8;
       return v.toString(16);
     });
-  }
-
-  function shortId(prefix) {
-    return (prefix || '') + Math.random().toString(36).slice(2, 8);
   }
 
   function escapeHtml(str) {
@@ -140,14 +210,6 @@
     const hashBuf = await crypto.subtle.digest('SHA-256', buf);
     const arr = Array.from(new Uint8Array(hashBuf));
     return arr.map((b) => b.toString(16).padStart(2, '0')).join('');
-  }
-
-  // FX rate fetch stub. v0.1 returns the hardcoded rate immediately.
-  // TODO(v0.x): swap for a real fetch (e.g., exchangerate.host / BoJ
-  // reference rate) gated behind an explicit "Fetch live rate" button
-  // so the tool stays offline-by-default.
-  function getFxRate() {
-    return Promise.resolve(Object.assign({}, FX_FALLBACK));
   }
 
   // ─── Live "current" FX rates from Treasury Fiscal Data ─────────
@@ -1019,63 +1081,16 @@
   //   4. Cleaning up after the print dialog closes
   //
   // The data-print-target marker has to be on a direct child of .tb-main
-  // for the CSS selector to work. If cardEl is nested deeper, walk up
-  // to the nearest direct child of .tb-main.
-  function printCard(cardEl) {
-    if (!cardEl) return;
-    // Find the nearest direct child of .tb-main
-    let target = cardEl;
-    while (target && target.parentElement && !target.parentElement.classList.contains('tb-main')) {
-      target = target.parentElement;
-    }
-    if (!target) target = cardEl;
-
-    document.body.setAttribute('data-print-only', '');
-    target.setAttribute('data-print-target', '');
-
-    function cleanup() {
-      document.body.removeAttribute('data-print-only');
-      target.removeAttribute('data-print-target');
-      window.removeEventListener('afterprint', cleanup);
-    }
-    window.addEventListener('afterprint', cleanup);
-    // Belt-and-suspenders for browsers that don't fire afterprint:
-    // also clean up on a setTimeout fallback.
-    setTimeout(() => {
-      // Only clean up if afterprint hasn't already
-      if (document.body.hasAttribute('data-print-only')) cleanup();
-    }, 5000);
-
-    window.print();
-  }
-
-  // Helper to build a "🖨 Print" button for a card. Pass `() => containerEl`
-  // (deferred so the DOM is ready) or the card element directly.
-  function printButton(cardElOrFn, label) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'tb-btn tb-btn--ghost';
-    btn.style.padding = '4px 12px';
-    btn.style.fontSize = 'var(--tb-fs-12)';
-    btn.setAttribute('data-print-hide', '');  // hide the button itself when printing
-    btn.textContent = '🖨 ' + (label || 'Print');
-    btn.addEventListener('click', () => {
-      const cardEl = typeof cardElOrFn === 'function' ? cardElOrFn() : cardElOrFn;
-      printCard(cardEl);
-    });
-    return btn;
-  }
-
   window.TB = window.TB || {};
   window.TB.utils = {
-    formatUSD, formatJPY, formatPercent, formatDate,
-    isoDate, pad, uuid, shortId, escapeHtml,
-    downloadFile, readFileAsText, sha256, getFxRate, el,
+    formatUSD, formatJPY, formatDate,
+    isoDate, pad, uuid, escapeHtml,
+    localIsoDate, todayIso, parseLocalDate, endOfLocalDay, daysUntil, isPastDeadline,
+    downloadFile, readFileAsText, sha256, el,
     annotateJpTerms,
     fetchCurrentTreasuryRates, fetchExchangerateHost, refreshCurrentFx,
     refreshLiveFx, getLiveJpyRate,
     buildSlider, attachFileDrop,
-    printCard, printButton,
     FX_FALLBACK,
   };
 })();

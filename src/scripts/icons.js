@@ -276,5 +276,5 @@
   function list() { return Object.keys(ICONS); }
 
   window.TB = window.TB || {};
-  window.TB.icons = { get, has, list };
+  window.TB.icons = { get };
 })();

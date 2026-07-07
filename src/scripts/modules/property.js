@@ -225,15 +225,22 @@
   }
 
   // §121 eligibility — must have owned AND used as primary residence
-  // for at least 2 of the last 5 years.
+  // for at least 2 of the last 5 years. Ownership length alone does NOT
+  // establish eligibility — the "use test" (2-of-5-years lived-in) is a
+  // separate fact the user must confirm. Returns:
+  //   true    — explicitly confirmed both tests met
+  //   false   — not a primary residence, or use test explicitly failed
+  //   'unknown' — primary residence, ownership ok, but use test unconfirmed
+  //   null    — not a US property at all (n/a)
   function us121Eligible(rec) {
     if (rec.country !== 'US') return null;
     if (rec.type !== 'primary_residence') return false;
     if (rec.lived_2_of_5_years === false) return false;
     if (rec.lived_2_of_5_years === true) return true;
-    // Default: assume yes if owned ≥2 years
-    const yrs = yearsOwned(rec);
-    return yrs != null && yrs >= 2;
+    // Unset/unknown: most of this app's audience has relocated to Japan
+    // and likely does NOT satisfy the use test even with long ownership.
+    // Do not default to eligible — flag for user verification instead.
+    return 'unknown';
   }
 
   // Annual rental net income estimate.
@@ -895,6 +902,9 @@
       } else if (eligible === false) {
         statusColor = 'var(--tb-warn)';
         statusLabel = '⚠ ' + t('property.us_sale.not_eligible');
+      } else if (eligible === 'unknown') {
+        statusColor = 'var(--tb-warn)';
+        statusLabel = '⚠ Verify 2-of-5-year use test';
       } else {
         statusColor = 'var(--tb-text-soft)';
         statusLabel = '○ ' + t('property.us_sale.na');
@@ -919,6 +929,10 @@
           ? el('div', { class: 'tb-field-help', style: { marginTop: '4px' } },
               t('property.us_sale.exclusion_amount') + ': $' + US_121_EXCLUSION.single.toLocaleString() +
               ' / $' + US_121_EXCLUSION.mfj.toLocaleString() + ' (MFJ)')
+          : null,
+        eligible === 'unknown'
+          ? el('div', { class: 'tb-field-help', style: { marginTop: '4px' } },
+              'Ownership length alone doesn\'t qualify — §121 also requires living in this home as your primary residence for 2 of the last 5 years. Set this in the property\'s Sale planning details.')
           : null,
       ));
     });

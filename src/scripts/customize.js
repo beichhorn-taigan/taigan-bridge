@@ -188,8 +188,6 @@
   window.TB = window.TB || {};
   window.TB.customize = {
     isSectionEnabled,
-    setOverride,
-    getSectionState,
     buildPanel,
     onChange,
   };

@@ -82,13 +82,17 @@
       (taxStatus === 'japan_resident' || taxStatus === 'japan_filer') ||
       (juminhyo === 'yes' && !tracks.has('sofa')) ||
       ((yearsInJapan === '5_to_10' || yearsInJapan === 'over_10') && !tracks.has('sofa'));
-    if (longResident) tracks.add('resident');
+    if (longResident) {
+      tracks.add('resident');
+      modules.add('resident');
+    }
 
     // ----- Family track -------------------------------------------
     if (family.includes('jp_spouse') ||
         family.includes('dual_children') ||
         family.includes('jp_children')) {
       tracks.add('family');
+      modules.add('family');
     }
 
     // ----- Property track -----------------------------------------

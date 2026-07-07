@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Content-Security-Policy. KEEP IN SYNC: when a new external origin is added,
+       add it to the matching directive below (usually connect-src for a fetch/XHR host).
+       In the shipped dist everything is inlined, so script/style rely on 'unsafe-inline';
+       'self' is included so the multi-file DEV tree (npm run dev serves src/ with external
+       scripts/styles as same-origin files) also loads — it's harmless/unused in the inlined
+       single-file build and opaque (thus inert) under file://. Images are 'self'/data:/blob:
+       (inlined assets, the dev favicon, and user-upload previews); the connect-src hosts are
+       the ONLY outbound endpoints. Google Fonts needs fonts.googleapis.com (the @import
+       stylesheet) + fonts.gstatic.com (the font files) — if the @import is later self-hosted,
+       those two entries can be dropped. default-src 'none' denies all else; no 'unsafe-eval'
+       (no eval/new Function anywhere in the app). -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.anthropic.com https://api.fiscaldata.treasury.gov https://cdn.jsdelivr.net https://latest.currency-api.pages.dev https://open.er-api.com https://api.exchangerate.host; base-uri 'none'; form-action 'none'">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Taigan Bridge — financial planning organizer for Americans living in Japan. SOFA, FBAR, retirement, estate. Single-file, browser-only, BYO Claude API key.">
@@ -154,11 +166,15 @@
        too (where fetch is blocked). -->
   <script src="content/inline.js"></script>
 
-  <!-- Core scripts. Order matters: state → utils → i18n → tracks
-       → ai-client → onboarding → modules → boot. -->
+  <!-- Core scripts. Order matters: constants → schema → state → utils
+       → i18n → icons → glossary → tracks → ai-client → onboarding →
+       modules → search → overlays → integrity → boot. -->
   <!-- Single source of truth for time-decaying facts (FX, penalties,
        premiums, sunsets). Loads first so TB.constants is always available. -->
   <script src="scripts/constants.js"></script>
+  <!-- Canonical state-path / record-field names (TB.schema). Pure data,
+       no deps; loads before state.js so readers can reference it. -->
+  <script src="scripts/schema.js"></script>
   <script src="scripts/state.js"></script>
   <script src="scripts/utils.js"></script>
   <script src="scripts/i18n.js"></script>

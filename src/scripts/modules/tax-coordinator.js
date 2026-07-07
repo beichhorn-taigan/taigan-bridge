@@ -33,6 +33,33 @@
   const id = 'tax-coordinator';
 
   // ====================================================================
+  // i18n — Action Center generator strings (self-registered so this
+  // module doesn't need to touch the shared i18n.js dictionary file).
+  // ====================================================================
+
+  TB.i18n.extend('en', {
+    'tc.genUpcomingDeadlines.title': '{{jurisdictionTag}} {{name}} — {{days}}d',
+    'tc.genUpcomingDeadlines.body': 'Filing deadline: {{date}}. Open Tax Coordinator for the per-form checklist + document list.',
+    'tc.genPficAlert.title': 'PFIC investments detected — Form 8621 required',
+    'tc.genPficAlert.body': 'Detected likely PFIC: {{accounts}}. Default tax treatment is punitive; consider QEF / mark-to-market election or replacement with US-domiciled equivalents. CPA strongly recommended.',
+    'tc.gen8938Approaching.title': 'Form 8938 threshold approaching — ${{headroom}} headroom',
+    'tc.gen8938Approaching.body': 'Your foreign financial assets (${{assets}}) are within 25% of the {{filingStatusLabel}} threshold (${{threshold}} year-end). Once exceeded, Form 8938 becomes required.',
+    'tc.genPreparerAppointment.title': 'Tax preparer appointment in {{days}}d — {{name}}',
+    'tc.genPreparerAppointment.body': 'Scheduled: {{date}}. Review the document checklist in Tax Coordinator before your meeting.',
+  });
+
+  TB.i18n.extend('ja', {
+    'tc.genUpcomingDeadlines.title': '{{jurisdictionTag}} {{name}} — 残り{{days}}日',
+    'tc.genUpcomingDeadlines.body': '申告期限:{{date}}。タックスコーディネーターでフォーム別チェックリストと必要書類を確認。',
+    'tc.genPficAlert.title': 'PFIC 投資を検出 — Form 8621 が必要',
+    'tc.genPficAlert.body': 'PFIC の可能性を検出:{{accounts}}。デフォルトの課税は懲罰的。QEF・時価評価(MTM)選択、または米国籍の代替商品への切替を検討してください。CPA への相談を強く推奨。',
+    'tc.gen8938Approaching.title': 'Form 8938 基準額に接近 — 残り ${{headroom}}',
+    'tc.gen8938Approaching.body': '海外金融資産(${{assets}})が {{filingStatusLabel}} の基準額(年末 ${{threshold}})の 25% 以内に接近しています。基準額を超えると Form 8938 が必須になります。',
+    'tc.genPreparerAppointment.title': '税務担当者との予約まで残り{{days}}日 — {{name}}',
+    'tc.genPreparerAppointment.body': '予定日:{{date}}。打合せ前にタックスコーディネーターで書類チェックリストを確認してください。',
+  });
+
+  // ====================================================================
   // Reference data — forms + deadlines
   // ====================================================================
 
@@ -66,8 +93,10 @@
         if (ctx.feie_choice === 'ftc') return { reason_en: 'You\'ve elected FTC. FEIE not used.',
                                                 reason_jp: 'FTC を選択済み。FEIE は不使用。',
                                                 informational: true };
-        return { reason_en: 'Excludes up to $126,500 (2024) of foreign earned income. Available if you\'re a bona fide resident of Japan or pass the physical-presence test (330d/12mo).',
-                 reason_jp: '日本居住者またはフィジカル・プレゼンス・テスト合格者は、最大 $126,500(2024年)の海外勤労所得を控除可能。' };
+        const feieYear = currentFeieYear();
+        const feieAmt = feieAmountForYear(feieYear);
+        return { reason_en: 'Excludes up to $' + feieAmt.toLocaleString() + ' (' + feieYear + ') of foreign earned income. Available if you\'re a bona fide resident of Japan or pass the physical-presence test (330d/12mo).',
+                 reason_jp: '日本居住者またはフィジカル・プレゼンス・テスト合格者は、最大 $' + feieAmt.toLocaleString() + '(' + feieYear + '年)の海外勤労所得を控除可能。' };
       },
       docs_needed: ['gensen_choshu', 'jp_residency_certificate', 'travel_calendar'],
     },
@@ -121,7 +150,7 @@
       threshold_note_en: 'Filed separately from 1040 (BSA E-Filing System). $10,000 aggregate any time during the year — single threshold, no filing-status variant.',
       threshold_note_jp: '1040 とは別に提出(BSA E-Filing システム)。年間ピーク総額 $10,000 超で必須。',
       applies: (ctx) => {
-        if (ctx.fbar_aggregate_usd > 10000) {
+        if (ctx.fbar_required) {
           return { reason_en: 'Your aggregate foreign account peak ($' + Math.round(ctx.fbar_aggregate_usd).toLocaleString() + ') exceeds the $10,000 threshold. FBAR is required.',
                    reason_jp: '外国口座の年間ピーク総額が $10,000 を超過。FBAR 必須。' };
         }
@@ -401,6 +430,7 @@
     // Foreign assets aggregation — pull from Assets module.
     const foreign_assets = computeForeignAssetsUsd();
     const fbar_aggregate = computeFbarAggregateUsd();
+    const fbar_required = computeFbarRequired(fbar_aggregate);
 
     // PFIC detection — scan Assets for likely PFIC accounts unless
     // user has explicitly set the override.
@@ -418,6 +448,7 @@
       foreign_assets_usd: foreign_assets.year_end,
       foreign_assets_usd_max: foreign_assets.peak,
       fbar_aggregate_usd: fbar_aggregate,
+      fbar_required: fbar_required,
       has_pfic: has_pfic,
       pfic_account_names: pfic_scan.names,
       has_foreign_corp: overrides.has_foreign_corp === true,
@@ -457,21 +488,51 @@
     return { year_end: total, peak: total };
   }
 
-  // FBAR aggregate — sum yearly_balances for the most recent year if
-  // FBAR data exists, else fall back to Assets computation.
+  // FEIE exclusion figure for a given tax year, sourced from
+  // TB.constants.FEIE. Falls back to the most recent available year, then
+  // to the last-known literal if constants are unavailable.
+  function feieAmountForYear(year) {
+    const FALLBACK = 132900; // 2026 figure — last resort only.
+    if (!(window.TB && TB.constants && TB.constants.FEIE)) return FALLBACK;
+    const table = TB.constants.FEIE;
+    const y = String(year);
+    if (table[y] != null) return table[y];
+    // No exact match — use the latest year we do have.
+    const years = Object.keys(table).sort();
+    if (years.length === 0) return FALLBACK;
+    return table[years[years.length - 1]];
+  }
+
+  // Relevant filing year for FEIE display — the prior tax year is the one
+  // being filed during the current season.
+  function currentFeieYear() {
+    return new Date().getFullYear() - 1;
+  }
+
+  // FBAR aggregate — delegate to TB.fbar.aggregateForYear, which applies
+  // all the FBAR rules (distinct non-US accounts, joint counted once,
+  // US-country accounts excluded, per-filer $10K test). Returns the
+  // household display aggregate as a NUMBER (existing callers expect a
+  // number). The real "is FBAR required" verdict is threaded separately
+  // via ctx.fbar_required (see buildContext). Falls back to the Assets
+  // computation when no FBAR module / data is available.
   function computeFbarAggregateUsd() {
-    const fbar = TB.state.get('fbar') || {};
-    const yb = Array.isArray(fbar.yearly_balances) ? fbar.yearly_balances : [];
-    if (yb.length === 0) return computeForeignAssetsUsd().year_end;
-    // Find most recent year with data.
-    const latest = yb.reduce((max, b) => Math.max(max, b.year || 0), 0);
-    if (!latest) return 0;
-    let sum = 0;
-    for (const b of yb) {
-      if (b.year !== latest) continue;
-      sum += b.max_balance_usd || 0;
+    if (window.TB && TB.fbar && typeof TB.fbar.aggregateForYear === 'function') {
+      const a = TB.fbar.aggregateForYear();
+      if (a && typeof a.aggregate_usd === 'number') return a.aggregate_usd;
     }
-    return sum;
+    return computeForeignAssetsUsd().year_end;
+  }
+
+  // FBAR filing verdict — true when FBAR is actually required. Prefers the
+  // canonical per-filer any_filer_over signal from TB.fbar; falls back to
+  // the > $10K aggregate heuristic when no FBAR data is available.
+  function computeFbarRequired(aggregateUsd) {
+    if (window.TB && TB.fbar && typeof TB.fbar.aggregateForYear === 'function') {
+      const a = TB.fbar.aggregateForYear();
+      if (a && typeof a.any_filer_over === 'boolean') return a.any_filer_over;
+    }
+    return aggregateUsd > 10000;
   }
 
   // PFIC detector — scans Assets for likely PFIC holdings. Heuristics:
@@ -566,7 +627,7 @@
       '10-15', 'us', '1040_ext', { informational: usSpouseHandles, spouseHandles: usSpouseHandles });
 
     // FBAR — Apr 15 with automatic Oct 15 extension
-    if (ctx.fbar_aggregate_usd > 0 || ctx.foreign_assets_usd > 5000) {
+    if (ctx.fbar_required || ctx.foreign_assets_usd > 5000) {
       addRecurring('FBAR (FinCEN 114) deadline' + usSuffix, 'FBAR(FinCEN 114)期限' + usSuffixJp,
         '04-15', 'us', 'fbar', { informational: usSpouseHandles, spouseHandles: usSpouseHandles });
       addRecurring('FBAR auto-extended deadline' + usSuffix, 'FBAR 自動延長期限' + usSuffixJp,
@@ -969,7 +1030,7 @@
       row.appendChild(el('div', null,
         titleNode,
         el('div', { class: 'tb-field-help', style: { marginTop: '2px' } },
-          d.date.toISOString().slice(0, 10)),
+          TB.utils.localIsoDate(d.date)),
       ));
       row.appendChild(el('div', {
         style: {
@@ -1318,9 +1379,11 @@
     const grid = el('div', {
       style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--tb-sp-3)', marginTop: 'var(--tb-sp-3)' },
     });
+    const feieYear = currentFeieYear();
+    const feieAmt = feieAmountForYear(feieYear);
     grid.appendChild(buildElectionTile('feie',
       'Form 2555 (FEIE)',
-      'Excludes up to ~$126,500/yr (2024) of foreign earned income from US tax.',
+      'Excludes up to ~$' + feieAmt.toLocaleString() + '/yr (' + feieYear + ') of foreign earned income from US tax.',
       [
         '✓ Simpler on paper',
         '✓ Drops you to lower brackets / phaseouts',
@@ -1837,7 +1900,7 @@
       onclick: () => {
         try {
           const md = buildCpaBriefingMarkdown();
-          const fname = 'taigan-cpa-briefing-' + new Date().toISOString().slice(0, 10) + '.md';
+          const fname = 'taigan-cpa-briefing-' + TB.utils.todayIso() + '.md';
           TB.utils.downloadFile(fname, md, 'text/markdown');
           status.textContent = '✓ ' + t('tax.cpa.downloaded');
           status.style.color = 'var(--tb-success)';
@@ -1884,7 +1947,7 @@
     const profile = TB.state.get('profile') || {};
     const onboarding = TB.state.get('onboarding') || {};
     const a = onboarding.answers || {};
-    const today = new Date().toISOString().slice(0, 10);
+    const today = TB.utils.todayIso();
     const ctx = buildContext();
     const lines = [];
 
@@ -1977,7 +2040,7 @@
     if (deadlines.length > 0) {
       lines.push('## Upcoming Deadlines (≤ 180 days)');
       for (const d of deadlines) {
-        lines.push('- **' + d.date.toISOString().slice(0, 10) + '** (' + d.days_until + 'd) — ' + d.name_en);
+        lines.push('- **' + TB.utils.localIsoDate(d.date) + '** (' + d.days_until + 'd) — ' + d.name_en);
       }
       lines.push('');
     }
@@ -2064,14 +2127,17 @@
       const urgency = d.days_until <= 7 ? 'critical'
                     : d.days_until <= 21 ? 'high'
                     : d.days_until <= 45 ? 'medium' : 'low';
+      const dateStr = TB.utils.localIsoDate(d.date);
       out.push({
         id: 'tax_deadline_' + d.id,
         group: 'tax', urgency,
         icon: '📅',
-        title: (d.jurisdiction === 'jp' ? '[JP] ' : '[US] ') + d.name_en + ' — ' + d.days_until + 'd',
-        body: 'Filing deadline: ' + d.date.toISOString().slice(0, 10) +
-              '. Open Tax Coordinator for the per-form checklist + document list.',
-        deadline: d.date.toISOString().slice(0, 10),
+        title: TB.i18n.t('tc.genUpcomingDeadlines.title', {
+          jurisdictionTag: d.jurisdiction === 'jp' ? '[JP]' : '[US]',
+          name: d.name_en, days: d.days_until,
+        }),
+        body: TB.i18n.t('tc.genUpcomingDeadlines.body', { date: dateStr }),
+        deadline: dateStr,
         module: 'tax-coordinator', snoozable: d.days_until > 7,
       });
     });
@@ -2085,9 +2151,8 @@
     return [{
       id: 'tax_pfic_detected',
       group: 'tax', urgency: 'high', icon: '⚠',
-      title: 'PFIC investments detected — Form 8621 required',
-      body: 'Detected likely PFIC: ' + ctx.pfic_account_names.join(', ') +
-            '. Default tax treatment is punitive; consider QEF / mark-to-market election or replacement with US-domiciled equivalents. CPA strongly recommended.',
+      title: TB.i18n.t('tc.genPficAlert.title'),
+      body: TB.i18n.t('tc.genPficAlert.body', { accounts: ctx.pfic_account_names.join(', ') }),
       module: 'tax-coordinator', snoozable: true,
     }];
   }
@@ -2103,10 +2168,12 @@
     return [{
       id: 'tax_8938_approaching',
       group: 'tax', urgency: 'medium', icon: '📊',
-      title: 'Form 8938 threshold approaching — $' + Math.round(headroom).toLocaleString() + ' headroom',
-      body: 'Your foreign financial assets ($' + Math.round(ctx.foreign_assets_usd).toLocaleString() +
-            ') are within 25% of the ' + ctx.filing_status_label + ' threshold ($' + t.year_end.toLocaleString() +
-            ' year-end). Once exceeded, Form 8938 becomes required.',
+      title: TB.i18n.t('tc.gen8938Approaching.title', { headroom: Math.round(headroom).toLocaleString() }),
+      body: TB.i18n.t('tc.gen8938Approaching.body', {
+        assets: Math.round(ctx.foreign_assets_usd).toLocaleString(),
+        filingStatusLabel: ctx.filing_status_label,
+        threshold: t.year_end.toLocaleString(),
+      }),
       module: 'tax-coordinator', snoozable: true,
     }];
   }
@@ -2123,8 +2190,8 @@
       id: 'tax_preparer_appt',
       group: 'tax', urgency: days <= 3 ? 'high' : 'medium',
       icon: '🤝',
-      title: 'Tax preparer appointment in ' + days + 'd — ' + (p.name || 'preparer'),
-      body: 'Scheduled: ' + p.next_appointment + '. Review the document checklist in Tax Coordinator before your meeting.',
+      title: TB.i18n.t('tc.genPreparerAppointment.title', { days, name: p.name || TB.i18n.t('tax.section.preparer') }),
+      body: TB.i18n.t('tc.genPreparerAppointment.body', { date: p.next_appointment }),
       deadline: p.next_appointment,
       module: 'tax-coordinator', snoozable: false,
     }];

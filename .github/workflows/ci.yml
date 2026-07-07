@@ -1,0 +1,36 @@
+name: CI
+
+# Build + test on every push and PR to main. The review found 77k lines
+# of financial logic with no automated verification and no CI build, so a
+# broken build.js or a regressed FBAR threshold was only caught on the
+# author's machine. This job runs the build and the test suite (threshold
+# logic, state-path assertions, and a build smoke check that every asset
+# was inlined into the dist).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test (threshold + paths + build smoke)
+        run: npm test

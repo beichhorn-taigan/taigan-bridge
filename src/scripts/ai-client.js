@@ -542,7 +542,12 @@
     const purchased = activeTopups().reduce((s, t) => s + (Number(t.amount_usd) || 0), 0);
 
     if (c.last_reconciled_at && c.last_reconciled_balance != null) {
-      const reconcileDate = String(c.last_reconciled_at).slice(0, 10);
+      // Use the LOCAL calendar date of the reconcile moment (not a UTC
+      // slice of the ISO timestamp) so it lines up with todayKey()'s
+      // local-date keys in u.daily. Strict `>` excludes the reconcile
+      // day itself: last_reconciled_balance already reflects any spend
+      // earlier that same day, so re-subtracting it would double-count.
+      const reconcileDate = TB.utils.localIsoDate(c.last_reconciled_at);
       let spentSince = 0;
       for (const [day, info] of Object.entries(u.daily || {})) {
         if (day > reconcileDate) spentSince += (Number(info.cost_usd) || 0);

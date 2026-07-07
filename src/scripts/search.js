@@ -169,41 +169,37 @@
 
   function indexFbar() {
     const out = [];
-    const years = TB.state.get('fbar.years') || {};
+    const accts = TB.state.get(TB.schema.PATHS.fbarAccounts) || [];
+    const balances = TB.state.get(TB.schema.PATHS.fbarYearlyBalances) || [];
     const lang = getLang();
-    const seen = new Set();
-    for (const yr of Object.keys(years)) {
-      const data = years[yr] || {};
-      const accts = data.accounts || [];
-      for (const a of accts) {
-        const inst = a.institution || a.institution_name_en || a.institution_name_jp;
-        if (!inst) continue;
-        const dedupeKey = inst + ':' + (a.country || '');
-        // Show one entry per unique institution; tag latest year in subtitle.
-        if (seen.has(dedupeKey)) continue;
-        seen.add(dedupeKey);
-        out.push({
-          kind: 'record',
-          id: 'rec:fbar:' + dedupeKey,
-          title: inst,
-          subtitle: (lang === 'ja' ? 'FBAR 機関' : 'FBAR institution') +
-            (a.country ? ' · ' + a.country : '') +
-            (a.currency ? ' · ' + a.currency : ''),
-          icon: '🏛',
-          terms: [a.institution_name_en, a.institution_name_jp, a.country, a.currency].filter(Boolean),
-          navigate: () => navigateToView('fbar'),
-        });
-      }
+    // Institutions — one entry per FBAR account (flat table, not per-year).
+    for (const a of accts) {
+      if (!a) continue;
+      const inst = a[TB.schema.FIELDS.fbarAccount.institution] || a.institution_name_jp;
+      if (!inst) continue;
+      out.push({
+        kind: 'record',
+        id: 'rec:fbar:' + (a.id || inst),
+        title: inst,
+        subtitle: (lang === 'ja' ? 'FBAR 機関' : 'FBAR institution') +
+          (a.country ? ' · ' + a.country : '') +
+          (a.currency ? ' · ' + a.currency : ''),
+        icon: '🏛',
+        terms: [a.institution_name_jp, a.country, a.currency].filter(Boolean),
+        navigate: () => navigateToView('fbar'),
+      });
     }
-    // Years themselves are searchable ("FBAR 2024")
-    for (const yr of Object.keys(years).sort()) {
+    // Years themselves are searchable ("FBAR 2024") — derived from the
+    // yearly-balances table.
+    const years = Array.from(new Set(balances.map(b => b && b[TB.schema.FIELDS.fbarBalance.year]).filter(Boolean))).sort();
+    for (const yr of years) {
       out.push({
         kind: 'record',
         id: 'rec:fbar-year:' + yr,
         title: 'FBAR ' + yr,
         subtitle: lang === 'ja' ? 'FBAR 年度ワークシート' : 'FBAR year worksheet',
         icon: '📅',
-        terms: [yr, 'fbar', 'fincen', '114'],
+        terms: [String(yr), 'fbar', 'fincen', '114'],
         navigate: () => navigateToView('fbar'),
       });
     }
@@ -212,19 +208,24 @@
 
   function indexFamily() {
     const out = [];
-    const members = TB.state.get('family.members') || [];
+    const F = TB.schema.FIELDS.familyMember;
+    const members = TB.state.get(TB.schema.PATHS.familyMembers) || [];
     const lang = getLang();
     for (const m of members) {
-      if (!m || !m.name) continue;
+      const nameEn = m && m[F.nameEn];
+      const nameJp = m && m[F.nameJp];
+      const name = lang === 'ja' ? (nameJp || nameEn) : (nameEn || nameJp);
+      if (!m || !name) continue;
       const rel = m.relationship ? ' · ' + m.relationship : '';
-      const cit = m.citizenship && Array.isArray(m.citizenship) ? ' · ' + m.citizenship.join('/') : '';
+      const citizenships = m[F.citizenships];
+      const cit = Array.isArray(citizenships) && citizenships.length ? ' · ' + citizenships.join('/') : '';
       out.push({
         kind: 'record',
-        id: 'rec:family:' + (m.id || m.name),
-        title: m.name,
+        id: 'rec:family:' + (m.id || name),
+        title: name,
         subtitle: (lang === 'ja' ? '家族メンバー' : 'Family member') + rel + cit,
         icon: '👤',
-        terms: [m.relationship, m.name_jp].concat(m.citizenship || []).filter(Boolean),
+        terms: [m.relationship, nameEn, nameJp].concat(citizenships || []).filter(Boolean),
         navigate: () => navigateToView('family'),
       });
     }
@@ -256,13 +257,15 @@
 
   function indexDocuments() {
     const out = [];
-    const docs = TB.state.get('documents') || [];
+    const expiryField = TB.schema.FIELDS.documentVaultItem.expiry;
+    const docs = TB.state.get(TB.schema.PATHS.documentVaultItems) || [];
     const lang = getLang();
     for (const d of docs) {
       if (!d) continue;
       const title = d.title || d.label || d.type;
       if (!title) continue;
-      const exp = d.expires ? ' · ' + (lang === 'ja' ? '有効期限 ' : 'expires ') + d.expires : '';
+      const expiry = d[expiryField];
+      const exp = expiry ? ' · ' + (lang === 'ja' ? '有効期限 ' : 'expires ') + expiry : '';
       out.push({
         kind: 'record',
         id: 'rec:doc:' + (d.id || title),
@@ -279,21 +282,30 @@
 
   function indexGifts() {
     const out = [];
-    const gifts = TB.state.get('family.gifts') || [];
+    const G = TB.schema.FIELDS.familyGift;
+    const F = TB.schema.FIELDS.familyMember;
+    const gifts = TB.state.get(TB.schema.PATHS.familyGiftsLog) || [];
+    const members = TB.state.get(TB.schema.PATHS.familyMembers) || [];
     const lang = getLang();
     for (const g of gifts) {
       if (!g) continue;
-      const recipient = g.to || g.recipient;
-      if (!recipient) continue;
-      const yr = g.year || (g.date ? String(g.date).slice(0, 4) : '');
-      const amt = g.amount != null ? ' · ' + (g.currency || '$') + g.amount : '';
+      const recipientId = g[G.recipientId];
+      if (!recipientId) continue;
+      // Resolve recipient_id to a display name against family.members;
+      // fall back to the raw id if the member can't be found.
+      const member = members.find((m) => m && m.id === recipientId);
+      const recipient = member
+        ? ((lang === 'ja' ? member[F.nameJp] : member[F.nameEn]) || member[F.nameEn] || member[F.nameJp] || recipientId)
+        : recipientId;
+      const yr = g[G.year] || '';
+      const amt = g.amount_jpy != null ? ' · ¥' + g.amount_jpy : '';
       out.push({
         kind: 'record',
-        id: 'rec:gift:' + (g.id || recipient + yr),
+        id: 'rec:gift:' + (g.id || recipientId + yr),
         title: (lang === 'ja' ? '贈与: ' : 'Gift: ') + recipient + (yr ? ' (' + yr + ')' : ''),
         subtitle: (lang === 'ja' ? '贈与記録' : 'Gift record') + amt,
         icon: '🎁',
-        terms: [recipient, yr, g.notes_short].filter(Boolean),
+        terms: [recipient, String(yr), g.notes].filter(Boolean),
         navigate: () => navigateToView('family'),
       });
     }
@@ -302,18 +314,22 @@
 
   function indexSnapshots() {
     const out = [];
-    const snaps = TB.state.get('net_worth.snapshots') || [];
+    const S = TB.schema.FIELDS.assetSnapshot;
+    const snaps = TB.state.get(TB.schema.PATHS.assetsSnapshots) || [];
     const lang = getLang();
     for (const s of snaps) {
-      if (!s || !s.date) continue;
+      const takenAt = s && s[S.takenAt];
+      if (!s || !takenAt) continue;
+      const dateLabel = String(takenAt).slice(0, 10);
+      const totalUsd = s[S.totalUsd];
       out.push({
         kind: 'record',
-        id: 'rec:snap:' + s.date,
-        title: (lang === 'ja' ? '純資産スナップショット ' : 'Net worth snapshot ') + s.date,
+        id: 'rec:snap:' + takenAt,
+        title: (lang === 'ja' ? '純資産スナップショット ' : 'Net worth snapshot ') + dateLabel,
         subtitle: (lang === 'ja' ? '純資産履歴' : 'Net worth history') +
-          (s.total_usd != null ? ' · $' + Math.round(s.total_usd).toLocaleString() : ''),
+          (totalUsd != null ? ' · $' + Math.round(totalUsd).toLocaleString() : ''),
         icon: '📈',
-        terms: [s.date, s.note].filter(Boolean),
+        terms: [dateLabel, s.note].filter(Boolean),
         navigate: () => navigateToView('net-worth'),
       });
     }
@@ -322,20 +338,25 @@
 
   function indexConsultations() {
     const out = [];
-    const log = TB.state.get('consultations.log') || [];
+    const professionals = TB.state.get(TB.schema.PATHS.consultationsProfessionals) || [];
+    const log = TB.state.get(TB.schema.PATHS.consultationsConsultations) || [];
     const lang = getLang();
     for (const c of log) {
       if (!c) continue;
-      const who = c.professional_name || c.type;
+      // Log entries reference a professional by id — resolve the roster
+      // entry to get a display name; fall back to topic/type if unresolved.
+      const pro = professionals.find((p) => p && p.id === c.professional_id);
+      const who = (pro && pro.name) || c.topic || c.type;
       if (!who) continue;
       out.push({
         kind: 'record',
         id: 'rec:cons:' + (c.id || who + (c.date || '')),
         title: who,
         subtitle: (lang === 'ja' ? '相談記録' : 'Consultation') +
-          (c.type ? ' · ' + c.type : '') + (c.date ? ' · ' + c.date : ''),
+          (c.topic && pro && pro.name ? ' · ' + c.topic : '') +
+          (c.date ? ' · ' + c.date : ''),
         icon: '💼',
-        terms: [c.type, c.firm, c.location].filter(Boolean),
+        terms: [c.topic, pro && pro.firm, pro && pro.type].filter(Boolean),
         navigate: () => navigateToView('consultations'),
       });
     }
@@ -731,8 +752,8 @@
 
     // Active query → run search and group by kind.
     const results = search(query, _index);
-    _currentResults = results;
     if (results.length === 0) {
+      _currentResults = [];
       _resultsHost.appendChild(emptyHint(t('search.noResults', { q: query })));
       return;
     }
@@ -744,12 +765,18 @@
       (groups[r.kind] = groups[r.kind] || []).push(r);
     }
 
+    // Rebuild _currentResults in the same order rows are actually rendered
+    // (grouped by kind, per ORDER) so that _activeIdx / selectActive() index
+    // into the array that matches what's on screen — the raw score-sorted
+    // `results` order does NOT match the regrouped display order.
+    _currentResults = [];
     let runningIdx = 0;
     for (const kind of ORDER) {
       const list = groups[kind];
       if (!list || !list.length) continue;
       _resultsHost.appendChild(sectionLabel(kindLabel(kind, lang) + ' · ' + list.length));
       list.forEach((entry) => {
+        _currentResults.push(entry);
         _resultsHost.appendChild(buildRow(entry, runningIdx, query));
         runningIdx++;
       });
@@ -919,9 +946,6 @@
   window.TB = window.TB || {};
   window.TB.search = {
     open,
-    close,
-    buildIndex,
-    search,
     shortcutLabel,
     installShortcut,
   };

@@ -89,7 +89,27 @@
     editOnlyId = opts.editQuestionId || null;
     editReturnView = opts.returnTo || 'profile';
     stepIndex = 0;
-    await loadQuestions();
+    try {
+      await loadQuestions();
+    } catch (err) {
+      // loadQuestions() throws when content/inline.js wasn't loaded AND
+      // the fallback fetch failed (always the case under file://, since
+      // local fetch is blocked there). Without this catch, callers that
+      // don't attach a .catch (e.g. index.html's start() call) leave the
+      // user staring at an indefinite "Loading…" state with only a
+      // console rejection to go on. Render a visible message directly
+      // into the container we were given instead.
+      console.error('[onboarding] failed to load questions:', err);
+      if (host) {
+        host.innerHTML = '';
+        host.appendChild(TB.utils.el('div', { class: 'tb-card', 'data-track': 'core' },
+          TB.utils.el('p', { class: 'tb-disclaimer-inline' },
+            'Onboarding content failed to load — try reloading the page.',
+          ),
+        ));
+      }
+      return;
+    }
     if (editOnlyId) {
       // Find the matching question and render directly.
       const idx = QUESTIONS.findIndex((q) => q.id === editOnlyId);
@@ -300,7 +320,7 @@
     const merged = Object.assign({}, existing, workingAnswers);
     const result = TB.tracks.assign(merged);
     TB.state.set('onboarding', {
-      complete: TB.state.get('onboarding.complete') || true,
+      complete: TB.state.get('onboarding.complete') === true,
       answers: merged,
       completedAt: TB.state.get('onboarding.completedAt') || new Date().toISOString(),
       lastEditedAt: new Date().toISOString(),

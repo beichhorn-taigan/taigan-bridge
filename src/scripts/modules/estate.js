@@ -96,6 +96,69 @@
   const US_ESTATE_EXEMPTION_2026 = 15_000_000;
 
   // ====================================================================
+  // Action Center i18n — hardcoded English literals in the gen*()
+  // generators below. Registered here via TB.i18n.extend() so this
+  // module can self-contain its own translation table instead of
+  // touching the shared i18n.js dictionary.
+  // ====================================================================
+
+  TB.i18n.extend('en', {
+    'est.genBeneficiaryReviewOverdue.title.gaps': '{{count}} account(s) need beneficiary review',
+    'est.genBeneficiaryReviewOverdue.title.clean': 'Annual beneficiary review',
+    'est.genBeneficiaryReviewOverdue.body': 'Open Estate → Beneficiary Review. Common gaps: TSP/401(k) without contingent beneficiary, IRAs left to "estate" instead of named persons, JP bank accounts with no 受取人 designation. After divorce, marriage, birth, death — review immediately.',
+
+    'est.genWillMissing.title': 'No will on record',
+    'est.genWillMissing.body': 'Without a will, your estate distributes per Japanese intestacy (民法 §887, §889, §890) for JP-situs and per US state intestacy for US-situs — neither may match your intent. For US persons in Japan, you generally want BOTH a US will (covers US-situs) and a JP 公正証書遺言 (notarized JP will, fastest probate path).',
+
+    'est.genDualWillIncomplete.title': 'Single will may not cover both jurisdictions',
+    'est.genDualWillIncomplete.body': 'You have a will in Document Vault but it\'s not tagged as both US + JP. Cross-border estates work best with two wills (one per jurisdiction), each with a "no conflict / no revocation" clause. JP probate without a 公正証書遺言 routes through 家庭裁判所 — typically slower and more expensive.',
+
+    'est.genJpTaxExposure.title': 'JP 相続税 exposure: ¥{{jpyM}}M (${{usdK}}K USD)',
+    'est.genJpTaxExposure.body': 'Your projected JP inheritance tax. Consider mitigation: lifetime 暦年贈与 to heirs (¥1.1M/yr each), {{eduClause}}residential 小規模宅地等の特例 if heir continues to live in the home. Open Family → Inheritance Pre-Positioning to track.',
+    'est.genJpTaxExposure.eduClause.open': '教育資金一括贈与 to grandkids (¥15M lump sum), ',
+    'est.genJpTaxExposure.eduClause.closed': '(note: 教育資金一括贈与 has closed to new lump-sum contributions — existing funds remain covered) ',
+
+    'est.genTenYearClockApproaching.title': 'JP worldwide-asset clock — estate scope expanding in {{years}}y {{months}}mo',
+    'est.genTenYearClockApproaching.body': 'When you cross 永住者 status (year 6+ as JP tax resident), your WORLDWIDE assets — US 401(k), IRA, brokerage, real estate — become subject to JP inheritance tax. Review Asset Situs in Estate to see the scope shift. Plan now: structured gifting, trust strategies, situs reorganization.',
+
+    'est.genPostRenunciationTransferTax.title': '§2801 transfer tax — covered-expat gifts to US-person heirs',
+    'est.genPostRenunciationTransferTax.body': 'You\'re considering renunciation AND have US-citizen family members. Post-renunciation, future gifts/bequests from a covered expatriate to a US-person heir trigger IRC §2801 — a 40% transfer tax PAID BY THE RECIPIENT (your kids). For estates intended for US-person heirs, this can dwarf the exit tax. Discuss alternatives with a specialist BEFORE filing DS-4079.',
+
+    'est.genLoiStale.title.never': 'Letter of Instruction never generated',
+    'est.genLoiStale.body.never': 'A Letter of Instruction stitches together heirs, accounts, beneficiaries, gifts, will locations, funeral wishes, and a survivor\'s 30-day checklist. It\'s informational (not a will) — but it dramatically reduces survivor confusion. Generate a Markdown file from Estate → Letter of Instruction, print it, and store it with your will.',
+    'est.genLoiStale.title.stale': 'Letter of Instruction is {{years}}y stale',
+    'est.genLoiStale.body.stale': 'Family / asset / beneficiary state has likely changed. Regenerate from Estate → Letter of Instruction.',
+  });
+
+  TB.i18n.extend('ja', {
+    'est.genBeneficiaryReviewOverdue.title.gaps': '{{count}} 件の口座で受取人レビューが必要です',
+    'est.genBeneficiaryReviewOverdue.title.clean': '年次受取人レビュー',
+    'est.genBeneficiaryReviewOverdue.body': 'Estate → 受取人レビュー を開いてください。よくあるギャップ:TSP/401(k) の次受取人未指定、IRA を「estate」宛のままにしている、日本の銀行口座で受取人未設定。離婚・婚姻・出生・死亡の後は直ちに見直しを。',
+
+    'est.genWillMissing.title': '遺言が登録されていません',
+    'est.genWillMissing.body': '遺言がない場合、日本所在地資産は日本の法定相続(民法 §887・§889・§890)、米国所在地資産は各州の法定相続に従って分配されます — いずれもご意向と一致しない可能性があります。日本在住の米国人は通常、米国遺言(米国所在地資産対象)と日本の公正証書遺言(検認が最速)の両方が必要です。',
+
+    'est.genDualWillIncomplete.title': '単一の遺言では両法域をカバーできない可能性',
+    'est.genDualWillIncomplete.body': 'Document Vault に遺言はありますが、米国・日本両方のタグが付いていません。国境を越える相続では、法域ごとに 2 通の遺言(それぞれに「他管轄資産には及ばない・互いに取消しない」旨の条項)を用意するのが最善です。公正証書遺言がない日本の遺言検認は家庭裁判所を経由するため、通常より時間と費用がかかります。',
+
+    'est.genJpTaxExposure.title': '日本 相続税 負担見込み:¥{{jpyM}}M(${{usdK}}K)',
+    'est.genJpTaxExposure.body': '推定される日本の相続税額です。軽減策の検討を:相続人への暦年贈与(受贈者ごとに年 ¥110 万)、{{eduClause}}相続人が居住継続する場合は居住用宅地の小規模宅地等の特例。Family → 相続前ポジショニング で追跡できます。',
+    'est.genJpTaxExposure.eduClause.open': '孫への教育資金一括贈与(¥1,500 万の一括贈与)、',
+    'est.genJpTaxExposure.eduClause.closed': '(注:教育資金一括贈与は新規の一括拠出を締め切りました — 既存の拠出分は引き続き対象です)',
+
+    'est.genTenYearClockApproaching.title': '日本の全世界資産時計 — 相続税の対象範囲が {{years}}年{{months}}ヶ月後に拡大',
+    'est.genTenYearClockApproaching.body': '永住者ステータス(日本の税務居住 6 年目以降)に達すると、米国 401(k)・IRA・証券口座・不動産などの全世界資産が日本の相続税対象になります。Estate の資産所在地分析で範囲の変化を確認してください。今のうちに計画を:計画的な贈与、信託戦略、所在地の再構成。',
+
+    'est.genPostRenunciationTransferTax.title': '§2801 移転税 — 対象拡大者から米国人相続人への贈与',
+    'est.genPostRenunciationTransferTax.body': '米国市民権の放棄を検討中で、かつ米国市民のご家族がいます。放棄後、対象拡大者から米国人相続人への将来の贈与・遺贈には IRC §2801 が適用され、40% の移転税が「受取人」(お子様など)に課されます。米国人相続人向けの遺産では、これが出国税を上回る負担になる場合があります。DS-4079 提出前に専門家に代替案を相談してください。',
+
+    'est.genLoiStale.title.never': '遺言補足書がまだ生成されていません',
+    'est.genLoiStale.body.never': '遺言補足書は、相続人・口座・受取人・贈与・遺言保管場所・葬儀希望・遺族向け 30 日チェックリストを一つにまとめます。参考情報であり遺言そのものではありませんが、遺族の混乱を大きく減らします。Estate → 遺言補足書 から Markdown ファイルを生成し、印刷して遺言と一緒に保管してください。',
+    'est.genLoiStale.title.stale': '遺言補足書が生成から {{years}} 年経過し古くなっています',
+    'est.genLoiStale.body.stale': '家族構成・資産・受取人の状況が変化している可能性があります。Estate → 遺言補足書 から再生成してください。',
+  });
+
+  // ====================================================================
   // State accessors
   // ====================================================================
 
@@ -1101,7 +1164,7 @@
       primary: account.beneficiary || '',
       contingent: '',
       percentage: 100,
-      last_reviewed: new Date().toISOString().slice(0, 10),
+      last_reviewed: TB.utils.todayIso(),
       notes: '',
     }, overrides[account.id] || {});
 
@@ -1493,7 +1556,7 @@
     const willStatus = deriveWillStatus();
     const otherDocs = deriveOtherEstateDocs();
     const giftsLog = TB.state.get('family.gifts_log') || [];
-    const today = new Date().toISOString().slice(0, 10);
+    const today = TB.utils.todayIso();
 
     const lines = [];
     lines.push('# Letter of Instruction');
@@ -1646,7 +1709,8 @@
     lines.push('- [ ] Contact named executor(s) and/or attorneys');
     lines.push('- [ ] Notify all banks, brokerages, retirement plan administrators');
     lines.push('- [ ] If decedent was Japan tax resident: engage 税理士 (10-month clock starts)');
-    lines.push('- [ ] If US-citizen decedent: engage CPA for final 1040 + 706 (if estate >$13.99M)');
+    lines.push('- [ ] If US-citizen decedent: engage CPA for final 1040 + 706 (if estate >$' +
+      (US_ESTATE_EXEMPTION_2026 / 1_000_000).toFixed(1) + 'M)');
     lines.push('- [ ] Cancel/transfer credit cards, utilities, subscriptions');
     lines.push('- [ ] Update beneficiaries on surviving spouse\'s accounts');
     lines.push('');
@@ -1820,6 +1884,7 @@
   // ====================================================================
 
   function genBeneficiaryReviewOverdue() {
+    const t = TB.i18n.t;
     const status = getStatus();
     const last = status.last_beneficiary_review;
     if (last) {
@@ -1835,14 +1900,15 @@
       urgency: gaps.length > 3 ? 'high' : 'medium',
       icon: '👤',
       title: gaps.length > 0
-        ? gaps.length + ' account(s) need beneficiary review'
-        : 'Annual beneficiary review',
-      body: 'Open Estate → Beneficiary Review. Common gaps: TSP/401(k) without contingent beneficiary, IRAs left to "estate" instead of named persons, JP bank accounts with no 受取人 designation. After divorce, marriage, birth, death — review immediately.',
+        ? t('est.genBeneficiaryReviewOverdue.title.gaps', { count: gaps.length })
+        : t('est.genBeneficiaryReviewOverdue.title.clean'),
+      body: t('est.genBeneficiaryReviewOverdue.body'),
       module: 'estate', snoozable: true,
     }];
   }
 
   function genWillMissing() {
+    const t = TB.i18n.t;
     const willStatus = deriveWillStatus();
     if (willStatus.has_any) return [];
     return [{
@@ -1850,13 +1916,14 @@
       group: 'estate',
       urgency: 'high',
       icon: '📜',
-      title: 'No will on record',
-      body: 'Without a will, your estate distributes per Japanese intestacy (民法 §887, §889, §890) for JP-situs and per US state intestacy for US-situs — neither may match your intent. For US persons in Japan, you generally want BOTH a US will (covers US-situs) and a JP 公正証書遺言 (notarized JP will, fastest probate path).',
+      title: t('est.genWillMissing.title'),
+      body: t('est.genWillMissing.body'),
       module: 'estate', snoozable: true,
     }];
   }
 
   function genDualWillIncomplete() {
+    const t = TB.i18n.t;
     const willStatus = deriveWillStatus();
     if (!willStatus.has_any) return [];  // covered by genWillMissing
     if (willStatus.has_us_explicit && willStatus.has_jp_explicit) return [];
@@ -1865,29 +1932,41 @@
       group: 'estate',
       urgency: 'medium',
       icon: '📑',
-      title: 'Single will may not cover both jurisdictions',
-      body: 'You have a will in Document Vault but it\'s not tagged as both US + JP. Cross-border estates work best with two wills (one per jurisdiction), each with a "no conflict / no revocation" clause. JP probate without a 公正証書遺言 routes through 家庭裁判所 — typically slower and more expensive.',
+      title: t('est.genDualWillIncomplete.title'),
+      body: t('est.genDualWillIncomplete.body'),
       module: 'estate', snoozable: true,
     }];
   }
 
   function genJpTaxExposure() {
+    const t = TB.i18n.t;
     const tax = computeJpInheritanceTax();
     if (tax.net_tax === 0) return [];
     if (tax.net_tax < 5_000_000) return [];  // <¥5M not worth flagging
+    // 教育資金一括贈与 closed to NEW contributions after GIFT_SUNSET.education
+    // (2026-03-31). Only recommend a fresh lump sum while the window is open.
+    const eduSunset = TB.constants && TB.constants.GIFT_SUNSET &&
+      TB.constants.GIFT_SUNSET.education;
+    const eduClosed = eduSunset && TB.utils.isPastDeadline(eduSunset);
+    const eduClause = eduClosed
+      ? t('est.genJpTaxExposure.eduClause.closed')
+      : t('est.genJpTaxExposure.eduClause.open');
     return [{
       id: 'estate_jp_tax_exposure',
       group: 'estate',
       urgency: tax.net_tax > 50_000_000 ? 'high' : 'medium',
       icon: '💴',
-      title: 'JP 相続税 exposure: ¥' + Math.round(tax.net_tax / 1_000_000) + 'M ($' +
-        Math.round(jpyToUsd(tax.net_tax) / 1000) + 'K USD)',
-      body: 'Your projected JP inheritance tax. Consider mitigation: lifetime 暦年贈与 to heirs (¥1.1M/yr each), 教育資金一括贈与 to grandkids (¥15M lump sum), residential 小規模宅地等の特例 if heir continues to live in the home. Open Family → Inheritance Pre-Positioning to track.',
+      title: t('est.genJpTaxExposure.title', {
+        jpyM: Math.round(tax.net_tax / 1_000_000),
+        usdK: Math.round(jpyToUsd(tax.net_tax) / 1000),
+      }),
+      body: t('est.genJpTaxExposure.body', { eduClause }),
       module: 'estate', snoozable: true,
     }];
   }
 
   function genTenYearClockApproaching() {
+    const t = TB.i18n.t;
     if (!TB.resident || typeof TB.resident.tenYearClock !== 'function') return [];
     const clock = TB.resident.tenYearClock();
     if (!clock) return [];
@@ -1898,15 +1977,18 @@
       group: 'estate',
       urgency: clock.days < 365 ? 'high' : 'medium',
       icon: '⏳',
-      title: 'JP worldwide-asset clock — estate scope expanding in ' +
-        Math.floor(clock.days / 365) + 'y ' + Math.round((clock.days % 365) / 30) + 'mo',
-      body: 'When you cross 永住者 status (year 6+ as JP tax resident), your WORLDWIDE assets — US 401(k), IRA, brokerage, real estate — become subject to JP inheritance tax. Review Asset Situs in Estate to see the scope shift. Plan now: structured gifting, trust strategies, situs reorganization.',
+      title: t('est.genTenYearClockApproaching.title', {
+        years: Math.floor(clock.days / 365),
+        months: Math.round((clock.days % 365) / 30),
+      }),
+      body: t('est.genTenYearClockApproaching.body'),
       deadline: clock.date,
       module: 'estate', snoozable: true,
     }];
   }
 
   function genPostRenunciationTransferTax() {
+    const t = TB.i18n.t;
     const r = TB.state.get('family.renunciation') || {};
     if (!r.contemplating) return [];
     // Only fires if there are US-citizen children/heirs
@@ -1920,13 +2002,14 @@
       group: 'estate',
       urgency: 'medium',
       icon: '⚠',
-      title: '§2801 transfer tax — covered-expat gifts to US-person heirs',
-      body: 'You\'re considering renunciation AND have US-citizen family members. Post-renunciation, future gifts/bequests from a covered expatriate to a US-person heir trigger IRC §2801 — a 40% transfer tax PAID BY THE RECIPIENT (your kids). For estates intended for US-person heirs, this can dwarf the exit tax. Discuss alternatives with a specialist BEFORE filing DS-4079.',
+      title: t('est.genPostRenunciationTransferTax.title'),
+      body: t('est.genPostRenunciationTransferTax.body'),
       module: 'estate', snoozable: true,
     }];
   }
 
   function genLoiStale() {
+    const t = TB.i18n.t;
     const loi = getLoI();
     if (!loi.last_generated) {
       return [{
@@ -1934,8 +2017,8 @@
         group: 'estate',
         urgency: 'low',
         icon: '✉',
-        title: 'Letter of Instruction never generated',
-        body: 'A Letter of Instruction stitches together heirs, accounts, beneficiaries, gifts, will locations, funeral wishes, and a survivor\'s 30-day checklist. It\'s informational (not a will) — but it dramatically reduces survivor confusion. Generate a Markdown file from Estate → Letter of Instruction, print it, and store it with your will.',
+        title: t('est.genLoiStale.title.never'),
+        body: t('est.genLoiStale.body.never'),
         module: 'estate', snoozable: true,
       }];
     }
@@ -1946,8 +2029,8 @@
       group: 'estate',
       urgency: 'low',
       icon: '✉',
-      title: 'Letter of Instruction is ' + Math.floor(days / 365) + 'y stale',
-      body: 'Family / asset / beneficiary state has likely changed. Regenerate from Estate → Letter of Instruction.',
+      title: t('est.genLoiStale.title.stale', { years: Math.floor(days / 365) }),
+      body: t('est.genLoiStale.body.stale'),
       module: 'estate', snoozable: true,
     }];
   }

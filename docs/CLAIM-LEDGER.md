@@ -8,7 +8,7 @@ Status: **Active. The v1.0.0 errors in the Rejected table below were corrected
 in v1.0.1** — every "Value to use" here is now what the app ships.
 Risk tier: Level 3 (financial / legal / health — wrong claims harm the user)
 Ledger status: Current for the claims listed; NOT exhaustive (see Scope)
-Last full verification: 2026-06-07
+Last full verification: 2026-06-08 (v1.0.3 corrections finalized)
 Next required verification: 2027-01-15 (annual constants batch — see Recheck queue)
 
 **How to use this file:** one row per factual claim shipped in the app. "Value
@@ -158,6 +158,11 @@ Cross-checked the tool against the TaiganJP guides + their `watched-facts.yaml`.
   Family module + glossary — closing the one consequential gap vs the site.
 - Note (nenkin): tool's FY2026 国民年金 ¥17,920 confirmed correct; the SITE registry
   (¥17,510/FY2025) was the stale side and was updated there.
+- **Offline FX fallback** — the 2025 row in `constants.js` was re-pulled to the
+  FULL official Treasury year-end rate set (all currencies, not just JPY), so it
+  now matches the TaiganJP fbar-calculator's official 2025 table exactly. **IRMAA**
+  glossary thresholds → 2026 ($109K single / $218K MFJ). **§877A** covered-expat
+  avg-tax help strings $201K (2024) → $206K (2025), matching the family.js constant.
 
 ## Source notes
 

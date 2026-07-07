@@ -42,8 +42,11 @@
     'PFIC': {
       expansion: 'Passive Foreign Investment Company',
       short: 'A US tax classification for non-US-domiciled mutual funds, ETFs, and similar pooled investments. Triggers punitive tax treatment for US persons.',
+      short_jp: '米国居住者にとって、米国外に籍を置くミューチュアルファンド・ETF等のプール型投資商品に適用される米国税法上の分類。米国人に対して懲罰的な課税を招く。',
       long: 'A foreign corporation is a PFIC if 75%+ of gross income is passive (dividends, interest, rents) OR 50%+ of assets produce passive income. Almost all Japanese mutual funds, NISA holdings, and iDeCo investments qualify. US persons holding a PFIC face: (1) tax on "excess distributions" at the highest marginal rate plus an interest charge for each year held; (2) loss of LTCG preferential rates; (3) no step-up in basis at death; (4) annual Form 8621 filings per fund (typical CPA cost: $300-500 per fund per year). The QEF and MTM elections soften but never eliminate the cost.',
+      long_jp: '外国法人は、総所得の75%以上が受動的所得（配当・利子・賃料）である場合、または資産の50%以上が受動的所得を生む場合にPFICとなる。日本のほとんどのミューチュアルファンド、NISA保有商品、iDeCoの投資対象はこれに該当する。PFICを保有する米国人は、(1) 「超過分配金」に対して最高税率での課税に加え保有年数分の利子相当額が課される、(2) 長期キャピタルゲインの優遇税率を失う、(3) 死亡時の含み益の取得価額調整（ステップアップ）がない、(4) ファンドごとに毎年Form 8621の提出が必要（CPA費用の目安：1ファンドあたり年間$300～500）という不利益を受ける。QEF選択やMTM（時価評価）選択によって負担は軽減されるが、完全にはなくならない。',
       why: 'If you are a US person living in Japan, do NOT buy Japanese mutual funds, ETFs, NISA, or iDeCo investments. Stick to US-domiciled funds (VTI, VXUS, etc.) held in US brokerages.',
+      why_jp: '日本在住の米国人は、日本のミューチュアルファンド、ETF、NISA、iDeCoの投資商品を購入してはならない。米国籍のファンド（VTI、VXUSなど）を米国の証券会社で保有すること。',
       category: 'us-tax',
       related: ['NISA', 'iDeCo', 'Form 8621', '投資信託'],
       refs: [
@@ -53,16 +56,22 @@
     'NISA': {
       expansion: '少額投資非課税制度 (Nippon Individual Savings Account)',
       short: 'Japan\'s tax-free investment account, expanded in 2024 to ¥3.6M/yr and ¥18M lifetime cap.',
+      short_jp: '日本の非課税投資制度。2024年の拡充により年間¥3.6M、生涯投資枠¥18Mまで拡大された。',
       long: 'NISA allows Japanese residents to invest in stocks and funds without paying tax on dividends or capital gains. The 新NISA (new NISA) introduced in 2024 has two slots: つみたて投資枠 (Tsumitate, ¥1.2M/yr in approved index funds) and 成長投資枠 (Growth, ¥2.4M/yr in stocks/ETFs). Lifetime contribution cap: ¥18M. Sounds great — except for US persons.',
+      long_jp: 'NISAは、日本居住者が配当や譲渡益に課税されずに株式やファンドに投資できる制度。2024年に導入された新NISAには2つの枠がある。つみたて投資枠（年間¥1.2M、認可されたインデックスファンド対象）と成長投資枠（年間¥2.4M、株式・ETF対象）。生涯投資枠の上限は¥18M。米国人でなければ非常に有利な制度だが。',
       why: 'For US persons, NISA is a TRAP. The investments inside are Japanese funds → PFIC under US law → punitive tax that destroys the JP tax savings. Available cleanly only to non-US-person spouses.',
+      why_jp: '米国人にとってNISAは罠である。中身は日本のファンドであるため米国税法上PFICに該当し、懲罰的な課税により日本側の節税効果が相殺されてしまう。米国人でない配偶者であれば問題なく活用できる。',
       category: 'jp-tax',
       related: ['PFIC', 'iDeCo', '投資信託'],
     },
     'iDeCo': {
       expansion: '個人型確定拠出年金 (Individual Defined Contribution Pension)',
       short: 'Japan\'s individual DC pension — tax-deductible contributions, tax-deferred growth, taxed at withdrawal.',
+      short_jp: '日本の個人型確定拠出年金。拠出額は所得控除の対象となり、運用益は非課税で積み立てられ、受取時に課税される。',
       long: 'iDeCo allows JP residents to contribute to a personal pension account (max varies: ¥144K-¥816K/yr depending on employment status). Contributions reduce JP taxable income dollar-for-dollar; growth is JP-tax-free until age 60+; withdrawal taxed favorably as either a lump sum (退職所得控除) or annuity (公的年金等控除). Like NISA, iDeCo invests in Japanese mutual funds.',
+      long_jp: 'iDeCoは、日本居住者が個人年金口座に拠出できる制度（上限は雇用形態により¥144K～¥816K/年と異なる）。拠出額はそのまま日本の課税所得から控除され、運用益は60歳以降まで日本非課税で積み上がる。受取時は一時金（退職所得控除）または年金（公的年金等控除）として有利な課税を受けられる。NISAと同様、iDeCoも日本のミューチュアルファンドに投資する。',
       why: 'For US persons: PFIC trap, same as NISA. Skip it. For non-US-person spouses with JP income, it\'s a powerful tax-deferred vehicle.',
+      why_jp: '米国人にとってはNISAと同様のPFICの罠であるため利用を避けるべき。日本での所得がある米国人でない配偶者にとっては、強力な税繰延べ手段となる。',
       category: 'jp-tax',
       related: ['PFIC', 'NISA', '厚生年金'],
     },
@@ -108,16 +117,22 @@
     'RMD': {
       expansion: 'Required Minimum Distribution',
       short: 'Mandatory annual withdrawal from pre-tax retirement accounts (Traditional IRA, 401k, TSP) starting at age 73.',
+      short_jp: '税繰延べ型の退職口座（Traditional IRA、401(k)、TSP）から73歳以降に義務付けられる年次の最低引き出し。',
       long: 'IRS requires annual minimum distributions from Traditional IRAs, 401(k)s, 403(b)s, and TSP starting the year you turn 73 (was 70½ before SECURE; raised to 72 by SECURE 1.0; raised to 73 by SECURE 2.0; rises to 75 in 2033). Amount = prior-year balance ÷ IRS life-expectancy factor. Failure to take an RMD triggers a 25% excise tax (was 50% before SECURE 2.0). Roth IRAs are EXEMPT during the owner\'s lifetime; Roth 401(k)s also exempt as of SECURE 2.0.',
+      long_jp: 'IRSは、Traditional IRA、401(k)、403(b)、TSPについて、73歳になる年から毎年最低限の引き出しを義務付けている（SECURE法以前は70½歳、SECURE 1.0で72歳に引き上げ、SECURE 2.0で73歳に引き上げ、2033年には75歳に引き上げ予定）。金額は「前年末残高 ÷ IRSの平均余命係数」で計算される。RMDを受け取らなかった場合は25%の物品税（SECURE 2.0以前は50%）が課される。Roth IRAは本人の生存中は対象外。Roth 401(k)もSECURE 2.0以降は対象外となった。',
       why: 'Drives Roth conversion strategy: convert pre-tax → Roth in low-income years BEFORE 73 to reduce future RMDs. The Projections engine flags your first RMD year in the Tax Strategy tab.',
+      why_jp: 'Roth転換戦略の判断材料となる。73歳になる前の低所得の年に税繰延べ口座からRothへ転換しておくことで、将来のRMDを減らせる。Projectionsエンジンは「Tax Strategy」タブで最初のRMD発生年を表示する。',
       category: 'retirement',
       related: ['Traditional IRA', '401(k)', 'Roth IRA', 'Roth Conversion', 'SECURE 2.0'],
     },
     'Roth Conversion': {
       expansion: 'Traditional → Roth IRA conversion',
       short: 'Move money from a pre-tax (Traditional IRA / 401k) account into a Roth account, paying ordinary income tax on the converted amount today in exchange for tax-free withdrawals later.',
+      short_jp: '税繰延べ口座（Traditional IRA・401(k)）からRoth口座へ資金を移すこと。転換した金額に対して今、通常所得税を支払う代わりに、将来の引き出しが非課税になる。',
       long: 'A Roth conversion is taxed as ordinary income in the year of conversion. After conversion, the money grows tax-free in the Roth account and qualified withdrawals are tax-free. Strategic value: pay tax in low-bracket years (early retirement, between salary and SS) to avoid higher-bracket tax later AND eliminate RMDs on the converted balance.',
+      long_jp: 'Roth転換は、転換を行った年に通常所得として課税される。転換後は、資金はRoth口座内で非課税で運用され、要件を満たす引き出しも非課税となる。戦略的な価値は、低い税率帯の年（早期リタイア後、給与とSocial Securityの間の期間など）に課税を済ませることで、将来のより高い税率帯での課税を回避し、かつ転換した残高にかかるRMDをなくせる点にある。',
       why: 'For US persons in Japan: must convert BEFORE 住民票 registration. After 住民票, Japan also taxes the conversion as ordinary income (20-45% national + 10% local) on top of US tax — making the conversion 35-55% expensive. The Projections Tax Strategy tab includes a conversion ladder editor.',
+      why_jp: '日本在住の米国人の場合、住民票の登録前に転換を済ませる必要がある。住民票登録後は、日本側でも転換額が通常所得として課税され（国税20～45%＋地方税10%）、米国側の課税に上乗せされる結果、実質35～55%ものコストになってしまう。Projectionsの「Tax Strategy」タブには転換ラダー（段階的転換）の編集機能がある。',
       category: 'us-tax',
       related: ['Roth IRA', 'Traditional IRA', '住民票', 'Bracket Fill', 'SOFA'],
     },
@@ -132,7 +147,9 @@
     'Roth IRA': {
       expansion: 'Roth Individual Retirement Account',
       short: 'Post-tax US retirement account; contributions are not deductible but qualified withdrawals (after age 59½ + 5-year rule) are entirely tax-free.',
+      short_jp: '米国の税引後retirement口座。拠出額は所得控除の対象にならないが、要件を満たす引き出し（59歳半以降かつ5年ルールを満たした場合）は全額非課税となる。',
       long: 'Annual contribution limit $7K (2024, indexed). Income limits apply (single < $161K, MFJ < $240K). Contributions can be withdrawn at any time tax-free; earnings withdrawn before 59½ subject to penalty + tax. Conversions from Traditional accounts have a 5-year clock per conversion. NOT recognized by Japan — JP taxes Roth distributions as ordinary income.',
+      long_jp: '年間拠出限度額は$7K（2024年、以後インフレ調整）。所得制限あり（独身者は$161K未満、夫婦合算申告は$240K未満）。拠出元本はいつでも非課税で引き出せるが、運用益を59歳半より前に引き出すとペナルティと課税の対象になる。Traditional口座からの転換にはそれぞれ5年ルールが適用される。日本ではRothという仕組み自体が認識されず、Roth口座からの分配は通常所得として課税される。',
       category: 'us-tax',
       related: ['Roth Conversion', 'Backdoor Roth', 'Traditional IRA', 'RMD'],
     },
@@ -218,29 +235,38 @@
     'NIIT': {
       expansion: 'Net Investment Income Tax',
       short: 'A 3.8% US tax on investment income above MAGI thresholds ($200K single / $250K MFJ).',
+      short_jp: 'MAGI（修正調整後総所得）が閾値（独身者$200K／夫婦合算申告$250K）を超える場合に投資所得へ課される3.8%の米国税。',
       long: 'Applies to interest, dividends, capital gains, rental income, and royalties. Stacks on top of regular income tax + LTCG. Cannot be offset by foreign tax credit.',
+      long_jp: '利子、配当、キャピタルゲイン、賃貸収入、ロイヤルティ収入に適用される。通常の所得税および長期キャピタルゲイン課税に上乗せされる形で課される。外国税額控除では相殺できない。',
       category: 'us-tax',
       related: ['LTCG', 'AMT'],
     },
     'IRMAA': {
       expansion: 'Income-Related Monthly Adjustment Amount',
       short: 'Higher Medicare Part B and Part D premiums for retirees with income above thresholds.',
-      long: 'Determined from your tax return two years prior (2024 IRMAA based on 2022 income). Tiered surcharges from $0 to $400+/month per person above thresholds starting at $103K single / $206K MFJ.',
+      short_jp: '所得が一定の閾値を超えるリタイア世代に課される、より高額なMedicare Part BおよびPart Dの保険料。',
+      long: 'Determined from your tax return two years prior (2026 IRMAA is based on 2024 income). Tiered surcharges from $0 to $400+/month per person above thresholds starting at $109K single / $218K MFJ (2026).',
+      long_jp: '2年前の確定申告に基づいて判定される（2026年のIRMAAは2024年の所得が基準）。閾値（2026年で独身者$109K／夫婦合算申告$218Kから開始）を超えると、段階的に1人当たり月$0～$400超の追加保険料が課される。',
       why: 'A big income year (Roth conversion, RSU vest) two years before Medicare enrollment can spike your Part B premiums. Time conversions accordingly.',
+      why_jp: 'Medicare加入の2年前に大きな所得（Roth転換やRSUのvestingなど）が発生すると、Part Bの保険料が急増する可能性がある。転換のタイミングはそれを踏まえて計画すること。',
       category: 'retirement',
       related: ['Medicare', 'RMD', 'Roth Conversion'],
     },
     'Medicare': {
       expansion: 'US Medicare program',
       short: 'US federal health insurance for age 65+ and certain disabilities. Part A (hospital) typically free; Part B (medical) $202.90/month (2026, standard); Part D (drugs) varies.',
+      short_jp: '65歳以上および特定の障害を持つ人向けの米国連邦健康保険制度。Part A（入院）は通常無料、Part B（通院医療）は月額$202.90（2026年、標準額）、Part D（処方薬）は状況により異なる。',
       long: 'Eligibility at 65 if you have 40+ quarters of Medicare-covered employment. Coordinates with US-Japan Totalization Agreement. Premiums increase via IRMAA for higher-income retirees. Does NOT cover medical care abroad except in specific border situations.',
+      long_jp: 'Medicare対象就労期間が40四半期（10年）以上あれば65歳から受給資格を得る。米日社会保障協定（totalization agreement）と連動する。所得が高いリタイア世代はIRMAAにより保険料が引き上げられる。特定の国境地域の状況を除き、海外での医療は対象外。',
       category: 'retirement',
       related: ['IRMAA', 'Social Security'],
     },
     'Social Security': {
       expansion: 'US Social Security retirement benefit',
       short: 'US federal retirement income program. Claim age 62-70; full retirement age (FRA) is 67 for those born 1960+.',
+      short_jp: '米国連邦政府の退職所得制度。62～70歳の間で受給開始でき、1960年以降生まれの完全受給年齢（FRA）は67歳。',
       long: 'Benefit is calculated from your highest 35 years of inflation-adjusted earnings. Claim early at 62 = ~70% of FRA benefit. Claim late at 70 = 124% of FRA benefit. SS is taxed as ordinary income above income thresholds. US-Japan totalization agreement prevents loss of benefits for splitting career between countries.',
+      long_jp: '給付額は、インフレ調整後の収入が最も高かった35年間の実績から計算される。62歳での早期受給はFRA受給額の約70%、70歳まで遅らせるとFRA受給額の124%になる。Social Securityは、一定の所得閾値を超えると通常所得として課税される。米日社会保障協定（totalization agreement）により、両国にまたがってキャリアを積んだ場合でも受給資格の喪失を防げる。',
       category: 'retirement',
       related: ['FRA', 'Medicare', 'Totalization Agreement'],
     },
@@ -254,8 +280,11 @@
     'FBAR': {
       expansion: 'Report of Foreign Bank and Financial Accounts (FinCEN Form 114)',
       short: 'Annual US disclosure of foreign financial accounts when their aggregate maximum value during the year exceeded $10,000.',
+      short_jp: '年間を通じて海外金融口座の合計最高残高が$10,000を超えた場合に必要となる、米国への年次開示。',
       long: 'Required of US persons (citizens, green-card holders, residents) with signature authority over foreign accounts. Filed electronically with FinCEN by April 15 (auto-extended to October 15). Penalties for non-filing: up to $16,536 per report for non-willful, and the greater of $165,353 or 50% of the account balance for willful (figures inflation-adjusted annually; non-willful is per report, not per account, after Bittner 2023). The Taigan Bridge FBAR Tracker module helps you stay compliant.',
+      long_jp: '海外口座に対する署名権限を持つ米国人（市民権保持者、グリーンカード保持者、居住者）に義務付けられる。FinCENへ4月15日までに電子申告（自動延長で10月15日まで）。未申告の罰則は、非故意の場合は1件（レポート）あたり最大$16,536、故意の場合は$165,353または口座残高の50%のいずれか大きい方（金額は毎年インフレ調整され、非故意の罰則はBittner判決（2023年）以降、口座ごとではなくレポートごとに算定される）。Taigan BridgeのFBAR Trackerモジュールがコンプライアンス管理をサポートする。',
       why: 'If you have ANY Japanese bank or brokerage account and you\'re a US person, you almost certainly need to file FBAR every year.',
+      why_jp: '日本の銀行口座や証券口座を一つでも持っている米国人であれば、ほぼ間違いなく毎年FBARの申告が必要になる。',
       category: 'us-tax',
       related: ['Form 8938', 'FATCA', 'FinCEN'],
       refs: [
@@ -265,14 +294,18 @@
     'Form 8938': {
       expansion: 'Statement of Specified Foreign Financial Assets',
       short: 'IRS form attached to your 1040 reporting foreign financial assets above thresholds. Separate from FBAR.',
+      short_jp: '一定の閾値を超える海外金融資産を報告するため1040に添付するIRSの様式。FBARとは別の制度。',
       long: 'Required when aggregate foreign asset value exceeds: $50K single / $100K MFJ (US-resident); $200K single / $400K MFJ (foreign-resident). Year-end + max during year both matter. Penalties: $10K per failure, additional $50K for continued failure. Filed with your 1040, NOT with FinCEN.',
+      long_jp: '海外資産の合計額が次の閾値を超える場合に必要：米国居住者は独身$50K／夫婦合算申告$100K、海外居住者は独身$200K／夫婦合算申告$400K。年末時点の残高と年間の最高残高の両方が判定に関わる。罰則は違反1件につき$10K、是正しない場合はさらに$50Kが追加される。FinCENではなく1040と一緒に提出する。',
       category: 'us-tax',
       related: ['FBAR', 'FATCA'],
     },
     'FATCA': {
       expansion: 'Foreign Account Tax Compliance Act',
       short: 'US law requiring foreign financial institutions to report US-person account holders to the IRS.',
+      short_jp: '海外の金融機関に対し、米国人の口座保有者情報をIRSへ報告することを義務付ける米国法。',
       long: 'Passed 2010. JP banks ask US persons to fill out a W-9 and disclose to the IRS via the Japanese government. Why some JP banks decline US-person customers entirely. Drives the need for Forms 8938 and 8621.',
+      long_jp: '2010年に成立。日本の銀行は米国人にW-9の記入を求め、日本政府を通じてIRSへ情報開示を行う。これが理由で、米国人の顧客を一切受け付けない日本の銀行もある。Form 8938やForm 8621の提出義務にもつながっている。',
       category: 'us-tax',
       related: ['FBAR', 'Form 8938'],
     },
@@ -286,8 +319,11 @@
     'FEIE': {
       expansion: 'Foreign Earned Income Exclusion',
       short: 'Excludes up to ~$126K (2024) of foreign-earned income from US taxation if you meet residency tests.',
+      short_jp: '居住要件を満たせば、外国で得た勤労所得のうち約$126K（2024年）までを米国課税から除外できる制度。',
       long: 'Claimed on Form 2555. Two qualifying tests: bona fide residence (full tax year abroad) or physical presence (330 days in any 12-month period). Excludes earned income only, not investment income. Can\'t be used in conjunction with Foreign Tax Credit on the same income — usually FTC wins for high earners in Japan since JP rates exceed US rates.',
+      long_jp: 'Form 2555で申請する。適格要件は2種類：ボナファイド居住（課税年度を通じて海外に居住）または物理的滞在（任意の12か月間で330日以上海外に滞在）のいずれかを満たす必要がある。除外対象は勤労所得のみで、投資所得は対象外。同じ所得に対して外国税額控除（FTC）と併用することはできない。日本のように税率が米国より高い国の高所得者にとっては、通常FTCの方が有利。',
       why: 'Most US persons in Japan use FTC instead of FEIE because JP tax rates are higher than US — the FTC fully offsets US tax. FEIE is better only for low-income or zero-tax-jurisdiction folks.',
+      why_jp: '日本在住の米国人の多くは、日本の税率が米国より高いためFEIEではなくFTCを利用する。FTCなら米国税を全額相殺できる。FEIEが有利になるのは、低所得者または無税国・地域に住む人に限られる。',
       category: 'us-tax',
       related: ['FTC', 'Article 17'],
     },
@@ -570,8 +606,11 @@
     '住民票': {
       expansion: 'juminhyou — Japanese Resident Registration Card',
       short: 'The official Japanese resident registration. Marks the binary line where you become a Japan tax resident.',
+      short_jp: '日本の公式な住民登録。日本の税務上の居住者になるかどうかを分ける境界線となる。',
       long: 'Filed at your local 市役所 (city office) when you take up residence in Japan. SOFA-status individuals are NOT registered as residents and instead use military ID. Once 住民票 is filed, you become a Japan tax resident, subject to Japanese national + local taxes on worldwide income, NHI premiums, and the 5/10/year residency clocks for exit tax / inheritance tax.',
+      long_jp: '日本に居住を開始する際、地元の市役所で届け出る。SOFAステータスを持つ人は住民登録を行わず、代わりに軍のIDを使用する。住民票を届け出ると日本の税務上の居住者となり、全世界所得に対する国税・地方税、国民健康保険（NHI）の保険料、そして出国税・相続税に関わる5年／10年の居住年数カウントの対象となる。',
       why: 'For US expats, 住民票 registration is THE event that switches the tax math. Pre-住民票: most distributions and gains are US-tax-only. Post-住民票: Japan ALSO taxes them, often at higher rates and without recognizing US tax wrappers (Roth, HSA, §121).',
+      why_jp: '米国からの駐在者・移住者にとって、住民票の登録は税務上の計算を根本的に変えるイベントである。住民票登録前は、ほとんどの分配金や譲渡益は米国税のみが課される。登録後は日本もこれらに課税し、多くの場合より高い税率で、しかも米国の税制上の優遇措置（Roth、HSA、§121控除など）を一切認めない形で課税される。',
       category: 'jp-tax',
       related: ['住民税', 'SOFA', '出国税', 'NHI'],
     },
@@ -623,8 +662,11 @@
     'SOFA': {
       expansion: 'Status of Forces Agreement',
       short: 'US-Japan agreement giving US military, DoD civilians, and certain DoD contractors special legal status while stationed in Japan.',
+      short_jp: '在日米軍、国防総省（DoD）文民職員、および一部のDoD請負業者に対し、日本駐留中に特別な法的地位を与える米日間の協定。',
       long: 'SOFA-status individuals are NOT Japanese tax residents and don\'t register 住民票. They use military ID, file US taxes only, and are exempt from JP NHI / 厚生年金. Status is tied to military orders or DoD employment. Family members generally derive status from the principal.',
+      long_jp: 'SOFAステータスを持つ人は日本の税務上の居住者ではなく、住民票の登録も行わない。軍のIDを使用し、米国税のみを申告し、日本の国民健康保険（NHI）・厚生年金は免除される。ステータスは軍の命令やDoDでの雇用に紐づく。家族はふつう本人（principal）のステータスから派生してSOFAステータスを得る。',
       why: 'SOFA status is the foundation of the SOFA Roth Sequencing strategy: while SOFA, you\'re US-tax-only; transitioning out of SOFA and into 住民票 registration triggers Japanese tax on distributions / conversions.',
+      why_jp: 'SOFAステータスは「SOFA Rothシーケンシング戦略」の土台となる。SOFAである間は米国税のみが課される一方、SOFAを離れて住民票を登録すると、分配や転換に対して日本の課税が発生するようになる。',
       category: 'sofa',
       related: ['住民票', 'DoD', 'TSP'],
     },
@@ -652,7 +694,9 @@
     '永住権': {
       expansion: 'eijuken — Japanese Permanent Residency',
       short: 'Permanent resident status in Japan. Removes visa-renewal requirements but does not affect tax treatment.',
+      short_jp: '日本における永住者の在留資格。ビザ更新の必要がなくなるが、税務上の取り扱いには影響しない。',
       long: 'Granted typically after 10 years residency (less for spouses and high-skilled professionals). Doesn\'t change tax residency status — that\'s based on physical presence, not visa type.',
+      long_jp: '通常は10年間の在留実績を経て許可される（配偶者や高度専門職の場合はより短い期間で取得可能）。税務上の居住者ステータスは在留資格の種類ではなく物理的な滞在実態に基づくため、永住権を取得しても変わらない。',
       category: 'jp-tax',
       related: ['住民票'],
     },
@@ -688,8 +732,11 @@
     'MAGI': {
       expansion: 'Modified Adjusted Gross Income',
       short: 'Your AGI plus certain add-backs (foreign earned income exclusion, tax-exempt interest, etc.). Drives multiple income-based phaseouts.',
+      short_jp: 'AGI（調整後総所得）に特定の項目（外国勤労所得控除、非課税利子など）を加算し直したもの。複数の所得連動型の制度の段階的縮小・適用除外の判定基準となる。',
       long: 'Used to determine eligibility/limits for: Roth IRA contributions, NIIT, IRMAA, traditional IRA deductibility, premium tax credits, student loan interest deduction. Each program has slightly different add-backs, but for projection purposes we approximate it as: taxable income + Roth conversions + 85% of Social Security benefits.',
+      long_jp: 'Roth IRA拠出の可否、NIIT、IRMAA、Traditional IRA拠出の控除可否、保険料税額控除、学生ローン利子控除など、多くの制度の適用可否・限度額の判定に使われる。制度ごとに加算項目は微妙に異なるが、当ツールの試算上は「課税所得＋Roth転換額＋Social Security給付額の85%」として近似している。',
       why: 'A "big income year" (Roth conversion, RSU vest, large distribution) drives up MAGI and can trigger NIIT, IRMAA, or kick you out of Roth eligibility. Time large income events to manage MAGI.',
+      why_jp: '「大きな所得が発生する年」（Roth転換、RSUのvesting、多額の分配など）はMAGIを押し上げ、NIITやIRMAAの発生、あるいはRoth拠出資格の喪失を招くことがある。大きな所得イベントのタイミングを調整してMAGIを管理すること。',
       category: 'us-tax',
       related: ['NIIT', 'IRMAA', 'Roth IRA', 'Roth Conversion'],
     },
@@ -765,8 +812,11 @@
     '相続税': {
       expansion: 'sozokuze — Japanese Inheritance Tax',
       short: 'Japan\'s inheritance tax. Among the world\'s most aggressive: 10-55% progressive rates with low thresholds.',
+      short_jp: '日本の相続税。10～55%の累進税率かつ基礎控除額が低く、世界でも最も厳しい部類に入る。',
       long: 'Tax-free threshold = ¥30M base + ¥6M per statutory heir. For a typical family of 4 (spouse + 2 kids): ¥30M + 3×¥6M = ¥48M (~$315K) before any tax. Rates are progressive: 10% under ¥10M taxable → 55% over ¥600M. Foreign nationals: applies only to JP-situs assets for the first 10 years of residency, then expands to worldwide assets.',
+      long_jp: '基礎控除額＝¥30M＋法定相続人1人あたり¥6M。典型的な4人家族（配偶者＋子供2人）の場合：¥30M＋3人×¥6M＝¥48M（約$315K）までは非課税。税率は累進で、課税価格¥10M以下は10%から、¥600M超は55%まで。外国籍の場合、居住開始から最初の10年間は日本国内にある財産のみが課税対象で、それ以降は全世界の財産に対象が拡大する。',
       why: 'For long-term JP-resident US persons with US 401(k)/IRA/brokerage holdings, this is THE single largest tax exposure in retirement planning. Multiple legal mitigation strategies exist — see the Inheritance tax mitigation section in the Tax Strategy tab.',
+      why_jp: '米国の401(k)・IRA・証券口座を保有する長期日本居住の米国人にとって、これはリタイアメントプランニングにおける最大の税務リスクである。合法的な軽減策は複数存在する。Tax Strategyタブの「相続税軽減」セクションを参照。',
       category: 'jp-tax',
       related: ['生前贈与', '配偶者控除', '養子縁組', '小規模宅地等の特例', '路線価', '住民票'],
       refs: [
@@ -834,8 +884,11 @@
     '確定申告': {
       expansion: 'kakutei shinkoku — Japan annual tax return',
       short: 'Annual Japan income tax filing for the prior calendar year. Window: February 16 — March 15.',
+      short_jp: '前年（暦年）分の所得について行う日本の年次確定申告。申告期間は2月16日～3月15日。',
       long: 'Required for: self-employed, those with multiple employers, those with foreign-source income (US persons usually), those wanting to claim deductions not handled by year-end adjustment (医療費控除, ふるさと納税, 住宅ローン控除, 雑損控除, etc.). File via e-Tax (online) or paper to your local 税務署. Late filing penalty: 5-15% delinquent tax + interest. US persons in Japan must reconcile JP income with US 1040 — claim Foreign Tax Credit on US side for JP tax paid.',
+      long_jp: '次のような人に必要：自営業者、複数の勤務先がある人、国外源泉所得がある人（通常は米国人が該当）、年末調整では対応されない控除（医療費控除、ふるさと納税、住宅ローン控除、雑損控除など）を申請したい人。e-Tax（電子申告）または最寄りの税務署への書面提出で行う。期限後申告の罰則：延滞税5～15%＋利子。日本在住の米国人は、日本での所得を米国の1040と整合させ、日本で支払った税額について米国側で外国税額控除（FTC）を申請する必要がある。',
       why: 'For US-person JP residents: filing 確定申告 is the JP-side leg of dual-country tax compliance. Coordinate with your US CPA so the FTC math (Form 1116) lines up with what you reported in JP.',
+      why_jp: '日本在住の米国人にとって、確定申告は二か国間の税務コンプライアンスの日本側の手続きにあたる。日本側で申告した内容とForm 1116のFTC計算が整合するよう、米国側のCPAと連携すること。',
       category: 'jp-tax',
       related: ['住民税', '住民票', 'FTC', 'ふるさと納税', '住宅ローン控除'],
       refs: [
@@ -1357,7 +1410,7 @@
       shortP.style.fontSize = 'var(--tb-fs-16)';
       shortP.style.fontWeight = '500';
       shortP.style.marginTop = '0';
-      shortP.textContent = entry.short;
+      shortP.textContent = isJp ? (entry.short_jp || entry.short) : entry.short;
       modal.appendChild(shortP);
     }
 
@@ -1366,7 +1419,7 @@
       const longP = document.createElement('p');
       longP.style.color = 'var(--tb-text)';
       longP.style.lineHeight = 'var(--tb-lh-loose)';
-      longP.textContent = entry.long;
+      longP.textContent = isJp ? (entry.long_jp || entry.long) : entry.long;
       modal.appendChild(longP);
     }
 
@@ -1388,7 +1441,7 @@
       whyLabel.textContent = isJp ? 'なぜ重要か' : 'Why it matters';
       whyBox.appendChild(whyLabel);
       const whyP = document.createElement('div');
-      whyP.textContent = entry.why;
+      whyP.textContent = isJp ? (entry.why_jp || entry.why) : entry.why;
       whyBox.appendChild(whyP);
       modal.appendChild(whyBox);
     }
@@ -1480,16 +1533,10 @@
     return labels[cat] || cat;
   }
 
-  // List of all glossary keys — useful for a future "View full glossary" page.
-  function listKeys() {
-    return SORTED_KEYS.slice().sort();
-  }
-
   window.TB = window.TB || {};
   window.TB.glossary = {
     GLOSSARY,
     annotate,
     show,
-    listKeys,
   };
 })();

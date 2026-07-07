@@ -179,12 +179,12 @@
     const daily = usage.daily || {};
 
     const today = new Date();
-    const monthKey = today.toISOString().slice(0, 7);
+    const monthKey = TB.utils.localIsoDate(today).slice(0, 7);
     let mtdCost = 0, mtdCalls = 0;
     let last30Cost = 0, last30Calls = 0;
     const cutoff = new Date(today);
     cutoff.setDate(cutoff.getDate() - 29); // last 30 days incl. today
-    const cutoffKey = cutoff.toISOString().slice(0, 10);
+    const cutoffKey = TB.utils.localIsoDate(cutoff);
 
     for (const [day, info] of Object.entries(daily)) {
       if (day.startsWith(monthKey)) {
@@ -244,7 +244,7 @@
     for (let i = daysBack - 1; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
-      const key = d.toISOString().slice(0, 10);
+      const key = TB.utils.localIsoDate(d);
       const info = daily[key] || { cost_usd: 0, calls: 0 };
       days.push({ key, cost: Number(info.cost_usd) || 0, calls: Number(info.calls) || 0 });
     }
@@ -365,7 +365,7 @@
     for (let i = 29; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
-      last30Keys.push(d.toISOString().slice(0, 10));
+      last30Keys.push(TB.utils.localIsoDate(d));
     }
 
     const rows = ids.map((fid) => {
@@ -1029,11 +1029,15 @@
       type: 'password',
       class: 'tb-input',
       placeholder: 'sk-ant-api03-…',
-      value: current,
       autocomplete: 'off',
       spellcheck: 'false',
       style: { flex: '1 1 auto' },
     });
+    // Set the key as a DOM *property*, not an attribute: TB.utils.el routes
+    // unknown attrs through setAttribute, which would serialize the raw key
+    // into the element's value= attribute (visible in devtools "Inspect
+    // element", outerHTML, and "Save page as"). type=password only masks pixels.
+    input.value = current;
 
     const intro = el('p', { class: 'tb-card-meta', style: { marginBottom: 'var(--tb-sp-3)' } },
       t('settings.api.intro.before'),
@@ -1297,7 +1301,7 @@
 
     const reconciledNote = c.last_reconciled_at
       ? '✓ ' + t('settings.ai.credits.reconciledOn', {
-          date: String(c.last_reconciled_at).slice(0, 10),
+          date: TB.utils.localIsoDate(c.last_reconciled_at),
         })
       : '';
 
@@ -1367,7 +1371,7 @@
   function buildTopupFormBlock() {
     const el = TB.utils.el;
     const t = TB.i18n.t;
-    const today = new Date().toISOString().slice(0, 10);
+    const today = TB.utils.localIsoDate();
 
     const purchaseDateInput = el('input', { type: 'date', class: 'tb-input', value: today });
     const amountInput = el('input', { type: 'number', step: '0.01', min: '0', class: 'tb-input', placeholder: t('settings.ai.topup.amountPlaceholder') });
@@ -1857,14 +1861,47 @@
     // Shared handler for both file-picker selection and drag-drop.
     async function processBackupFile(file) {
       if (!file) return;
+      // Restoring REPLACES all current data — same destructive outcome as the
+      // Danger Zone, which requires a typed DELETE. Gate it behind a confirm so
+      // one wrong dropped file can't silently wipe years of records.
+      // No i18n key exists for these restore prompts (this file may not add
+      // keys to i18n.js), so fall back to an inline string when the key is
+      // absent — TB.i18n.t returns the key itself on a miss.
+      const importT = (key, fallback) => {
+        const s = t(key);
+        return s === key ? fallback : s;
+      };
+      const confirmMsg = importT('settings.import.confirm',
+        'Restoring this backup will REPLACE all of your current Taigan Bridge data. This cannot be undone except via the undo prompt shown right after. Continue?');
+      if (!confirm(confirmMsg)) return;
+      let text;
       try {
-        const text = await TB.utils.readFileAsText(file);
-        TB.state.import(text);
-        alert(t('settings.import.success'));
-        rerender();
+        text = await TB.utils.readFileAsText(file);
       } catch (err) {
         alert(t('settings.import.failed') + ': ' + err.message);
+        return;
       }
+      try {
+        // TB.state.import validates the input and throws on garbage; it also
+        // saves a pre-import backup so we can offer an undo below.
+        TB.state.import(text);
+      } catch (err) {
+        // Validation failed — the state was NOT replaced. Surface the error and
+        // leave the app in its current, working state (no reload/rerender).
+        alert(t('settings.import.failed') + ': ' + err.message);
+        return;
+      }
+      // Success. Offer an undo that restores the pre-import backup.
+      const undoMsg = importT('settings.import.successUndo',
+        'Backup restored successfully. Press OK to UNDO and return to your previous data, or Cancel to keep the restored backup.');
+      if (TB.state.hasPreviousBackup() && confirm(undoMsg)) {
+        if (TB.state.restorePrevious()) {
+          alert(importT('settings.import.undone', 'Restore undone — your previous data is back.'));
+        }
+      } else {
+        alert(t('settings.import.success'));
+      }
+      rerender();
     }
 
     const fileInput = el('input', {

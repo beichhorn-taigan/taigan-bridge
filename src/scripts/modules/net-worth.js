@@ -35,6 +35,127 @@
   const id = 'net-worth';
 
   // ====================================================================
+  // i18n — wizard step-result strings + Action Center generator strings
+  //
+  // These get PERSISTED (wizard results are saved verbatim into
+  // net_worth.reviews[].steps[].result) or shown as Action Center
+  // items, so they must go through TB.i18n.t() rather than staying as
+  // hardcoded English literals. Registered here via TB.i18n.extend()
+  // so this module can self-contain its own translation table instead
+  // of touching the shared i18n.js dictionary.
+  // ====================================================================
+
+  TB.i18n.extend('en', {
+    'nw.wizard.fx.treasury_years':      'Treasury: {{years}}y',
+    'nw.wizard.fx.treasury_failed':     'Treasury: failed',
+    'nw.wizard.fx.current_ok':          'Current: ✓',
+    'nw.wizard.fx.current_failed':      'Current: failed',
+    'nw.wizard.fx.nothing_to_refresh':  'Nothing to refresh',
+
+    'nw.wizard.snapshot.noAssets':      'No assets to snapshot — add accounts first',
+    'nw.wizard.snapshot.saved':         'Snapshot saved · {{amount}}',
+
+    'nw.wizard.balances.noActive':      'No active accounts',
+    'nw.wizard.balances.allFresh':      'All {{count}} balances are fresh (<90d)',
+    'nw.wizard.balances.someStale':     '{{stale}} of {{total}} accounts have stale balances — open Assets to update',
+
+    'nw.wizard.pfic.noAccounts':        'No accounts to scan',
+    'nw.wizard.pfic.noFlags':           '✓ No PFIC flags',
+    'nw.wizard.pfic.flagged':           '⚠ {{count}} flag(s): {{names}}{{more}}',
+
+    'nw.wizard.fbar.required':          '⚠ FBAR REQUIRED — aggregate {{amount}}{{suffix}}',
+    'nw.wizard.fbar.incomplete':        '○ Aggregate {{amount}}{{suffix}} — some year-max balances missing; verdict incomplete',
+    'nw.wizard.fbar.belowThreshold':    '✓ Below threshold — {{amount}} / $10,000{{suffix}}',
+    'nw.wizard.fbar.assetsUnavailable': 'Assets module not available',
+    'nw.wizard.fbar.roughEstimate':     '○ ~{{amount}} rough estimate from current balances — enter year-max balances in the FBAR tracker for the real test (aggregate of each account\'s year-max at the Treasury year-end rate vs $10,000)',
+    'nw.wizard.fbar.suffix.withYear':   ' ({{year}} year-max, Treasury rate)',
+    'nw.wizard.fbar.suffix.noYear':     ' (year-max, Treasury rate)',
+
+    'nw.wizard.family.noMembers':       'No family members tracked yet',
+    'nw.wizard.family.noExpiring':      '✓ {{count}} members tracked, no passport expiries in next 12mo',
+    'nw.wizard.family.expiring':        '⚠ {{count}} passport(s) expire <12mo: {{names}}',
+
+    'nw.wizard.healthcare.noDob':       'Add date of birth to enable Medicare IEP detection',
+    'nw.wizard.healthcare.ready':       'Healthcare module ready — open to review premiums',
+    'nw.wizard.healthcare.iepOpensSoon':'🩺 Medicare IEP opens in ~{{months}} months — start gathering paperwork now',
+    'nw.wizard.healthcare.iepWindow':   '⚠ Medicare IEP window — enroll before age 65 + 3 months',
+
+    'nw.wizard.report.downloaded':      '✓ Year-end report downloaded',
+    'nw.wizard.report.failed':          'Report generation failed: {{error}}',
+
+    'nw.gen.snapshotFirst.title':       'Take your first net worth snapshot',
+    'nw.gen.snapshotFirst.body':        'You have {{count}} accounts in your Asset tracker but no net-worth snapshots yet. A snapshot freezes today\'s totals so you can chart growth over time.',
+    'nw.gen.snapshotStale.title':       'Net-worth snapshot is {{days}} days old',
+    'nw.gen.snapshotStale.body':        'Take a fresh snapshot to capture current balances. Snapshots are how the chart shows growth over time.',
+
+    'nw.gen.reviewFirst.title.window':  'Run your first year-end checkup',
+    'nw.gen.reviewFirst.title.normal':  'Try the year-end checkup wizard',
+    'nw.gen.reviewFirst.body':          'A 12-step guided flow that refreshes FX rates, takes a net-worth snapshot, runs the PFIC scanner, checks FBAR threshold, and generates a year-end report — all inline. ~15 minutes.',
+    'nw.gen.reviewDueWindow.title':     'Year-end checkup due — last run {{days}} days ago',
+    'nw.gen.reviewDueWindow.body':      'Year-end is the right moment for FBAR aggregation, snapshot capture, and CPA-prep doc gathering. Run the wizard before Dec 31 to lock in your annual record.',
+    'nw.gen.reviewOverdue.title':       'Year-end checkup overdue (last: {{years}}y ago)',
+    'nw.gen.reviewOverdue.body':        'Run the year-end checkup wizard to refresh FX, snapshot net worth, scan for PFIC drift, and confirm FBAR threshold status.',
+
+    'nw.gen.reportNotGenerated.title':  'Year-end report for {{year}} not yet generated',
+    'nw.gen.reportNotGenerated.body':   'Generate the year-end annual report to bundle tax package + asset summary + estate state into one Markdown document. Useful for CPA review, year-end archive, or sharing with spouse.',
+  });
+
+  TB.i18n.extend('ja', {
+    'nw.wizard.fx.treasury_years':      '財務省レート: {{years}}年分',
+    'nw.wizard.fx.treasury_failed':     '財務省レート: 失敗',
+    'nw.wizard.fx.current_ok':          '現在レート: ✓',
+    'nw.wizard.fx.current_failed':      '現在レート: 失敗',
+    'nw.wizard.fx.nothing_to_refresh':  '更新対象なし',
+
+    'nw.wizard.snapshot.noAssets':      'スナップショット対象の資産がありません — 先に口座を追加してください',
+    'nw.wizard.snapshot.saved':         'スナップショット保存済み · {{amount}}',
+
+    'nw.wizard.balances.noActive':      'アクティブな口座がありません',
+    'nw.wizard.balances.allFresh':      '{{count}} 件すべての残高が最新です(90日以内)',
+    'nw.wizard.balances.someStale':     '{{total}} 件中 {{stale}} 件の口座残高が古くなっています — Assets を開いて更新してください',
+
+    'nw.wizard.pfic.noAccounts':        'スキャン対象の口座がありません',
+    'nw.wizard.pfic.noFlags':           '✓ PFIC の該当なし',
+    'nw.wizard.pfic.flagged':           '⚠ {{count}} 件該当: {{names}}{{more}}',
+
+    'nw.wizard.fbar.required':          '⚠ FBAR 提出が必要 — 合計 {{amount}}{{suffix}}',
+    'nw.wizard.fbar.incomplete':        '○ 合計 {{amount}}{{suffix}} — 一部の年間最高残高が未入力のため判定不完全',
+    'nw.wizard.fbar.belowThreshold':    '✓ 基準額未満 — {{amount}} / $10,000{{suffix}}',
+    'nw.wizard.fbar.assetsUnavailable': 'Assets モジュールが利用できません',
+    'nw.wizard.fbar.roughEstimate':     '○ ~{{amount}}(現在残高からの概算) — 正式な判定には FBAR トラッカーで各口座の年間最高残高(財務省年末レート、$10,000 基準)を入力してください',
+    'nw.wizard.fbar.suffix.withYear':   '({{year}} 年間最高残高、財務省レート)',
+    'nw.wizard.fbar.suffix.noYear':     '(年間最高残高、財務省レート)',
+
+    'nw.wizard.family.noMembers':       'まだ家族が登録されていません',
+    'nw.wizard.family.noExpiring':      '✓ {{count}} 名を管理中、今後12ヶ月以内の パスポート期限切れはありません',
+    'nw.wizard.family.expiring':        '⚠ {{count}} 件のパスポートが12ヶ月以内に期限切れ: {{names}}',
+
+    'nw.wizard.healthcare.noDob':       '生年月日を登録すると Medicare IEP を検出できます',
+    'nw.wizard.healthcare.ready':       'Healthcare モジュール準備完了 — 開いて保険料を確認してください',
+    'nw.wizard.healthcare.iepOpensSoon':'🩺 Medicare IEP は約 {{months}} ヶ月後に開始 — 今から書類準備を',
+    'nw.wizard.healthcare.iepWindow':   '⚠ Medicare IEP 期間中 — 65歳+3ヶ月までに登録してください',
+
+    'nw.wizard.report.downloaded':      '✓ 年末レポートをダウンロードしました',
+    'nw.wizard.report.failed':          'レポート生成に失敗しました: {{error}}',
+
+    'nw.gen.snapshotFirst.title':       '最初の純資産スナップショットを取得',
+    'nw.gen.snapshotFirst.body':        'Asset トラッカーに {{count}} 件の口座がありますが、純資産スナップショットはまだありません。スナップショットで本日時点の合計を記録すると、推移をグラフ化できます。',
+    'nw.gen.snapshotStale.title':       '純資産スナップショットが {{days}} 日前のものです',
+    'nw.gen.snapshotStale.body':        '最新の残高を反映したスナップショットを取得してください。グラフの推移表示はスナップショットに基づきます。',
+
+    'nw.gen.reviewFirst.title.window':  '初めての年末チェックアップを実行',
+    'nw.gen.reviewFirst.title.normal':  '年末チェックアップ・ウィザードを試す',
+    'nw.gen.reviewFirst.body':          'FX レート更新・純資産スナップショット・PFIC スキャン・FBAR 基準チェック・年末レポート生成をその場で行う 12 ステップガイド。所要約15分。',
+    'nw.gen.reviewDueWindow.title':     '年末チェックアップ推奨 — 前回から {{days}} 日経過',
+    'nw.gen.reviewDueWindow.body':      '年末は FBAR 集計・スナップショット取得・CPA 提出書類準備に最適なタイミングです。12月31日までにウィザードを実行し、年次記録を確定してください。',
+    'nw.gen.reviewOverdue.title':       '年末チェックアップ期限超過(前回: 約{{years}}年前)',
+    'nw.gen.reviewOverdue.body':        '年末チェックアップ・ウィザードを実行し、FX 更新・純資産スナップショット・PFIC ドリフトのスキャン・FBAR 基準状況の確認を行ってください。',
+
+    'nw.gen.reportNotGenerated.title':  '{{year}} 年の年末レポートが未生成です',
+    'nw.gen.reportNotGenerated.body':   '年末レポートを生成し、税務パッケージ・資産サマリー・相続状況を1つの Markdown 文書にまとめてください。CPA レビュー・年末アーカイブ・配偶者との共有に便利です。',
+  });
+
+  // ====================================================================
   // State accessors
   // ====================================================================
 
@@ -314,7 +435,7 @@
     const el = TB.utils.el;
     const t = TB.i18n.t;
     const root = document.getElementById('tb-modal-root');
-    let label = new Date().toISOString().slice(0, 10);
+    let label = TB.utils.todayIso();
 
     const backdrop = el('div', { class: 'tb-modal-backdrop' });
     const modal = el('div', { class: 'tb-modal' });
@@ -467,7 +588,7 @@
     [points[0], points[Math.floor(points.length / 2)], points[points.length - 1]]
       .forEach((p) => {
         const x = xFor(p.ts);
-        const date = new Date(p.ts).toISOString().slice(0, 10);
+        const date = TB.utils.localIsoDate(new Date(p.ts));
         const label = svgEl('text', {
           x, y: H - PAD_B + 18,
           'text-anchor': 'middle', 'font-size': '10',
@@ -817,17 +938,17 @@
             try {
               const r = await TB.fbar.refreshTreasuryRates();
               const yrs = Object.keys(r.fetched || {}).length;
-              if (yrs > 0) out.push('Treasury: ' + yrs + 'y');
-            } catch (e) { out.push('Treasury: failed'); }
+              if (yrs > 0) out.push(t('nw.wizard.fx.treasury_years', { years: yrs }));
+            } catch (e) { out.push(t('nw.wizard.fx.treasury_failed')); }
           }
           // Current spot rates (FX module)
           if (TB.utils && typeof TB.utils.refreshCurrentFx === 'function') {
             try {
               await TB.utils.refreshCurrentFx();
-              out.push('Current: ✓');
-            } catch (e) { out.push('Current: failed'); }
+              out.push(t('nw.wizard.fx.current_ok'));
+            } catch (e) { out.push(t('nw.wizard.fx.current_failed')); }
           }
-          return out.join(' · ') || 'Nothing to refresh';
+          return out.join(' · ') || t('nw.wizard.fx.nothing_to_refresh');
         },
       },
       {
@@ -836,8 +957,8 @@
         action: async () => {
           const yr = new Date().getFullYear();
           const snap = takeSnapshot('Year-end ' + yr);
-          if (!snap) return 'No assets to snapshot — add accounts first';
-          return 'Snapshot saved · $' + Math.round(snap.total_usd).toLocaleString();
+          if (!snap) return t('nw.wizard.snapshot.noAssets');
+          return t('nw.wizard.snapshot.saved', { amount: '$' + Math.round(snap.total_usd).toLocaleString() });
         },
       },
       {
@@ -846,14 +967,14 @@
         module: 'assets',
         action: async () => {
           const accts = (TB.state.get('assets.accounts') || []).filter(a => a.active);
-          if (accts.length === 0) return 'No active accounts';
+          if (accts.length === 0) return t('nw.wizard.balances.noActive');
           const cutoff = Date.now() - 90 * 24 * 3600 * 1000;
           const stale = accts.filter(a => {
-            if (!a.balance_updated_at) return true;
-            return new Date(a.balance_updated_at).getTime() < cutoff;
+            if (!a.updated_at) return true;
+            return new Date(a.updated_at).getTime() < cutoff;
           });
-          if (stale.length === 0) return 'All ' + accts.length + ' balances are fresh (<90d)';
-          return stale.length + ' of ' + accts.length + ' accounts have stale balances — open Assets to update';
+          if (stale.length === 0) return t('nw.wizard.balances.allFresh', { count: accts.length });
+          return t('nw.wizard.balances.someStale', { stale: stale.length, total: accts.length });
         },
       },
       {
@@ -862,7 +983,7 @@
         module: 'tax-coordinator',
         action: async () => {
           const accts = (TB.state.get('assets.accounts') || []);
-          if (accts.length === 0) return 'No accounts to scan';
+          if (accts.length === 0) return t('nw.wizard.pfic.noAccounts');
           const KEYWORDS = ['投資信託', '学資保険', 'mutual fund', 'fund', 'etf', 'NISA', 'iDeCo'];
           const flagged = [];
           for (const a of accts) {
@@ -873,9 +994,12 @@
               if (!isJustBank) flagged.push(a.institution || a.name || '?');
             }
           }
-          if (flagged.length === 0) return '✓ No PFIC flags';
-          return '⚠ ' + flagged.length + ' flag(s): ' + flagged.slice(0, 3).join(', ') +
-            (flagged.length > 3 ? '…' : '');
+          if (flagged.length === 0) return t('nw.wizard.pfic.noFlags');
+          return t('nw.wizard.pfic.flagged', {
+            count: flagged.length,
+            names: flagged.slice(0, 3).join(', '),
+            more: flagged.length > 3 ? '…' : '',
+          });
         },
       },
       {
@@ -883,19 +1007,35 @@
         label_key: 'nw.review2.step.fbar_threshold',
         module: 'fbar',
         action: async () => {
+          // Prefer the real FBAR test: aggregate of each account's year-max
+          // balance at the Treasury year-end rate (TB.fbar.aggregateForYear),
+          // not current balances at the current spot rate.
+          if (TB.fbar && typeof TB.fbar.aggregateForYear === 'function') {
+            const agg = TB.fbar.aggregateForYear();
+            if (agg && agg.status !== 'no_data') {
+              const usd = '$' + Math.round(agg.aggregate_usd || 0).toLocaleString();
+              const yr = agg.year ? String(agg.year) : '';
+              const suffix = yr
+                ? t('nw.wizard.fbar.suffix.withYear', { year: yr })
+                : t('nw.wizard.fbar.suffix.noYear');
+              if (agg.any_filer_over || agg.status === 'at_or_over') {
+                return t('nw.wizard.fbar.required', { amount: usd, suffix });
+              }
+              if (agg.status === 'insufficient_data') {
+                return t('nw.wizard.fbar.incomplete', { amount: usd, suffix });
+              }
+              return t('nw.wizard.fbar.belowThreshold', { amount: usd, suffix });
+            }
+          }
+          // No FBAR data: current balances are only a rough proxy — do NOT
+          // render a pass/fail verdict from them.
           const accts = (TB.state.get('assets.accounts') || []).filter(a => a.active && a.country !== 'US');
-          if (!TB.assets || typeof TB.assets.toUsd !== 'function') return 'Assets module not available';
+          if (!TB.assets || typeof TB.assets.toUsd !== 'function') return t('nw.wizard.fbar.assetsUnavailable');
           let total = 0;
           for (const a of accts) {
             total += TB.assets.toUsd(a.balance_native, a.currency);
           }
-          if (total >= 10000) {
-            return '⚠ FBAR REQUIRED — aggregate $' + Math.round(total).toLocaleString() + ' (threshold $10,000)';
-          }
-          if (total >= 7500) {
-            return '○ Approaching threshold — $' + Math.round(total).toLocaleString() + ' / $10,000';
-          }
-          return '✓ Below threshold — $' + Math.round(total).toLocaleString() + ' / $10,000';
+          return t('nw.wizard.fbar.roughEstimate', { amount: '$' + Math.round(total).toLocaleString() });
         },
       },
       {
@@ -904,7 +1044,7 @@
         module: 'family',
         action: async () => {
           const members = (TB.state.get('family.members') || []);
-          if (members.length === 0) return 'No family members tracked yet';
+          if (members.length === 0) return t('nw.wizard.family.noMembers');
           // Find passports expiring in next 12 months
           const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() + 12);
           const expiring = [];
@@ -916,8 +1056,8 @@
               }
             }
           }
-          if (expiring.length === 0) return '✓ ' + members.length + ' members tracked, no passport expiries in next 12mo';
-          return '⚠ ' + expiring.length + ' passport(s) expire <12mo: ' + expiring.slice(0, 3).join(', ');
+          if (expiring.length === 0) return t('nw.wizard.family.noExpiring', { count: members.length });
+          return t('nw.wizard.family.expiring', { count: expiring.length, names: expiring.slice(0, 3).join(', ') });
         },
       },
       {
@@ -937,19 +1077,19 @@
           // Surface Medicare IEP if user is approaching 65.
           const profile = TB.state.get('profile') || {};
           const dob = profile.dob || profile.birth_year;
-          if (!dob) return 'Add date of birth to enable Medicare IEP detection';
+          if (!dob) return t('nw.wizard.healthcare.noDob');
           const dobDate = typeof dob === 'string' && dob.length >= 4 ? new Date(dob.slice(0, 10)) : null;
-          if (!dobDate || isNaN(dobDate.getTime())) return 'Healthcare module ready — open to review premiums';
+          if (!dobDate || isNaN(dobDate.getTime())) return t('nw.wizard.healthcare.ready');
           const sixtyFive = new Date(dobDate);
           sixtyFive.setFullYear(sixtyFive.getFullYear() + 65);
           const monthsTo65 = Math.round((sixtyFive - new Date()) / (30 * 24 * 3600 * 1000));
           if (monthsTo65 > 6 && monthsTo65 < 9) {
-            return '🩺 Medicare IEP opens in ~' + (monthsTo65 - 3) + ' months — start gathering paperwork now';
+            return t('nw.wizard.healthcare.iepOpensSoon', { months: monthsTo65 - 3 });
           }
           if (monthsTo65 >= -3 && monthsTo65 <= 6) {
-            return '⚠ Medicare IEP window — enroll before age 65 + 3 months';
+            return t('nw.wizard.healthcare.iepWindow');
           }
-          return 'Healthcare module ready — open to review premiums';
+          return t('nw.wizard.healthcare.ready');
         },
       },
       {
@@ -978,9 +1118,9 @@
         action: async () => {
           try {
             generateAndDownloadReport();
-            return '✓ Year-end report downloaded';
+            return t('nw.wizard.report.downloaded');
           } catch (e) {
-            return 'Report generation failed: ' + (e.message || e);
+            return t('nw.wizard.report.failed', { error: e.message || e });
           }
         },
       },
@@ -1180,13 +1320,21 @@
     return card;
   }
 
+  // The "report year" a given date targets: in January, the report is
+  // for the prior (just-ended) calendar year; otherwise it's the
+  // current year. Shared with genYearEndReport's nag logic below so
+  // the report generator and the nag always agree on which year is due.
+  function reportYearFor(date) {
+    return date.getMonth() + 1 === 1 ? date.getFullYear() - 1 : date.getFullYear();
+  }
+
   // Generates a year-end Markdown report bundling state from all
   // modules. Downloads as .md. Logs metadata in net_worth.annual_reports.
   function generateAndDownloadReport() {
     const profile = TB.state.get('profile') || {};
     const today = new Date();
-    const year = today.getFullYear();
-    const dateStr = today.toISOString().slice(0, 10);
+    const year = reportYearFor(today);
+    const dateStr = TB.utils.todayIso();
     const prefs = getPrefs();
     const currency = prefs.chart_currency || 'usd';
     const snaps = getSnapshots();
@@ -1428,6 +1576,7 @@
   // ====================================================================
 
   function genSnapshotStale() {
+    const t = TB.i18n.t;
     const days = daysSinceLastSnapshot();
     if (days == null) {
       // Have accounts but never snapshotted?
@@ -1439,8 +1588,8 @@
         group: 'history',
         urgency: 'low',
         icon: '📸',
-        title: 'Take your first net worth snapshot',
-        body: 'You have ' + accounts.length + ' accounts in your Asset tracker but no net-worth snapshots yet. A snapshot freezes today\'s totals so you can chart growth over time.',
+        title: t('nw.gen.snapshotFirst.title'),
+        body: t('nw.gen.snapshotFirst.body', { count: accounts.length }),
         module: 'net-worth',
         snoozable: true,
       }];
@@ -1452,14 +1601,15 @@
       group: 'history',
       urgency,
       icon: '📸',
-      title: 'Net-worth snapshot is ' + days + ' days old',
-      body: 'Take a fresh snapshot to capture current balances. Snapshots are how the chart shows growth over time.',
+      title: t('nw.gen.snapshotStale.title', { days }),
+      body: t('nw.gen.snapshotStale.body'),
       module: 'net-worth',
       snoozable: true,
     }];
   }
 
   function genAnnualReviewDue() {
+    const t = TB.i18n.t;
     const reviews = getReviews();
     // The "year-end window" — Nov 15 → Jan 31 — is when the checkup
     // matters most (FBAR aggregation, year-end balances, year-end
@@ -1482,9 +1632,9 @@
         urgency: inYearEndWindow ? 'medium' : 'low',
         icon: '🔄',
         title: inYearEndWindow
-          ? 'Run your first year-end checkup'
-          : 'Try the year-end checkup wizard',
-        body: 'A 12-step guided flow that refreshes FX rates, takes a net-worth snapshot, runs the PFIC scanner, checks FBAR threshold, and generates a year-end report — all inline. ~15 minutes.',
+          ? t('nw.gen.reviewFirst.title.window')
+          : t('nw.gen.reviewFirst.title.normal'),
+        body: t('nw.gen.reviewFirst.body'),
         module: 'net-worth',
         snoozable: true,
       }];
@@ -1501,8 +1651,8 @@
         group: 'history',
         urgency: 'high',
         icon: '🔄',
-        title: 'Year-end checkup due — last run ' + days + ' days ago',
-        body: 'Year-end is the right moment for FBAR aggregation, snapshot capture, and CPA-prep doc gathering. Run the wizard before Dec 31 to lock in your annual record.',
+        title: t('nw.gen.reviewDueWindow.title', { days }),
+        body: t('nw.gen.reviewDueWindow.body'),
         module: 'net-worth',
         snoozable: true,
       }];
@@ -1515,14 +1665,15 @@
       group: 'history',
       urgency: 'medium',
       icon: '🔄',
-      title: 'Year-end checkup overdue (last: ' + Math.floor(days / 365) + 'y ago)',
-      body: 'Run the year-end checkup wizard to refresh FX, snapshot net worth, scan for PFIC drift, and confirm FBAR threshold status.',
+      title: t('nw.gen.reviewOverdue.title', { years: Math.floor(days / 365) }),
+      body: t('nw.gen.reviewOverdue.body'),
       module: 'net-worth',
       snoozable: true,
     }];
   }
 
   function genYearEndReport() {
+    const t = TB.i18n.t;
     const today = new Date();
     const month = today.getMonth() + 1;
     const day = today.getDate();
@@ -1530,7 +1681,7 @@
     const inWindow = (month === 12 && day >= 15) || (month === 1);
     if (!inWindow) return [];
     const reports = getReports();
-    const year = month === 1 ? today.getFullYear() - 1 : today.getFullYear();
+    const year = reportYearFor(today);
     const alreadyGenerated = reports.some((r) => r.year === year);
     if (alreadyGenerated) return [];
     return [{
@@ -1538,8 +1689,8 @@
       group: 'history',
       urgency: 'low',
       icon: '📄',
-      title: 'Year-end report for ' + year + ' not yet generated',
-      body: 'Generate the year-end annual report to bundle tax package + asset summary + estate state into one Markdown document. Useful for CPA review, year-end archive, or sharing with spouse.',
+      title: t('nw.gen.reportNotGenerated.title', { year }),
+      body: t('nw.gen.reportNotGenerated.body'),
       module: 'net-worth',
       snoozable: true,
     }];

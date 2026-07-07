@@ -570,7 +570,10 @@
       }
       // SS taxable portion if claimed
       if (inputs.ss_start_age && age >= inputs.ss_start_age) {
-        const monthly = (inputs.ss_monthly_at_70_usd || 0) * ssBenefitMultiplier(inputs.ss_start_age);
+        // Normalize the age-70 input by ssBenefitMultiplier(70) before
+        // re-scaling to the start age (matches the main projection).
+        const monthly = (inputs.ss_monthly_at_70_usd || 0) *
+          (ssBenefitMultiplier(inputs.ss_start_age) / ssBenefitMultiplier(70));
         baseTaxableIncome += taxableSsForOptimizer(monthly, baseTaxableIncome, filingStatus);
       }
       // Subtract standard deduction
@@ -844,7 +847,11 @@
       // user can model COLA suppression scenarios).
       let ssAnnual = 0;
       if (age >= inputs.ss_start_age) {
-        const baseBenefit = inputs.ss_monthly_at_70_usd * 12 * ssBenefitMultiplier(inputs.ss_start_age);
+        // ss_monthly_at_70_usd is the benefit AT AGE 70, so divide by
+        // ssBenefitMultiplier(70) to recover PIA before re-scaling to the
+        // actual start age — otherwise the age-70 input is double-boosted.
+        const baseBenefit = inputs.ss_monthly_at_70_usd * 12 *
+          (ssBenefitMultiplier(inputs.ss_start_age) / ssBenefitMultiplier(70));
         const yearsCollecting = age - inputs.ss_start_age;
         const cola = (inputs.ss_cola_pct || 0) / 100;
         ssAnnual = baseBenefit * Math.pow(1 + cola, yearsCollecting);
@@ -3955,16 +3962,12 @@
     const sofaProfile = TB.state.get('sofa.profile') || {};
     const taxAssump = TB.state.get('sofa.tax_assumptions') || {};
 
-    // Temporarily override conversions to []. computeProjection reads
-    // from state, so we save + restore.
-    const savedConversions = TB.state.get('projections.conversions');
-    TB.state.set('projections.conversions', []);
-    let baseline;
-    try {
-      baseline = computeProjection(inputs, accounts, sofaProfile, taxAssump);
-    } finally {
-      TB.state.set('projections.conversions', savedConversions);
-    }
+    // computeProjection reads the ladder from inputs.roth_conversions
+    // (not from state), so build a deep-cloned "no conversions" baseline
+    // rather than mutating the live inputs/state.
+    const baselineInputs = JSON.parse(JSON.stringify(inputs));
+    baselineInputs.roth_conversions = [];
+    const baseline = computeProjection(baselineInputs, accounts, sofaProfile, taxAssump);
     if (!baseline || !baseline.rows.length) return el('div');
 
     let curUs = 0, curJp = 0, baseUs = 0, baseJp = 0;

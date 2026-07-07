@@ -2303,8 +2303,7 @@
 
   window.TB = window.TB || {};
   window.TB.sampleData = {
-    PROFILES,
-    buildSampleState, loadProfile, loadInteractive,
-    exit, isDemoActive, activeProfile,
+    buildSampleState, loadInteractive,
+    exit, isDemoActive,
   };
 })();

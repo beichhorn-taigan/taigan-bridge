@@ -41,12 +41,13 @@ npm run build    # produces dist/taigan-bridge.html
 9. Writes the result to `dist/taigan-bridge.html` and prints the
    build hash, file size, and output path.
 
-## Production obfuscation (planned, not yet wired)
+## Production obfuscation (deferred post-launch)
 
-The production distribution should run the inlined `<script>` blocks
-through `javascript-obfuscator` using `tools/obfuscate.config.js`.
-The hook lives in `build.js` as a clearly-marked TODO. The intended
-sequence:
+Obfuscation remains a non-goal post-v1.0.3. The production distribution
+*could* run the inlined `<script>` blocks through `javascript-obfuscator`
+using `tools/obfuscate.config.js` — the hook exists in `build.js` as a
+TODO — but the cost/benefit doesn't justify the added build complexity
+until demand warrants it. The intended sequence (if implemented) would be:
 
 1. Extract each `<script data-source="...">` block.
 2. Run its contents through `javascript-obfuscator` with the
@@ -61,10 +62,12 @@ canary UUIDs make unauthorized redistributions traceable.
 
 ## Distribution channel
 
-- Gumroad listing, free with required email collection.
-- Fresh build hash per release. The Gumroad listing notes the current
-  build hash in the description so users can verify their downloaded
-  file matches.
+- **GitHub Releases**: The dist build is attached to each Git release
+  tag as a single HTML file (`taigan-bridge-v1.0.3.html`).
+- **Hosted demo**: Fresh build is published to `taiganjp.com/tools/taigan-bridge/`
+  with analytics injection (GoatCounter) to track active users.
+- Build hash: Each release embeds a fresh `BUILD_HASH` in version.json
+  and version.js so users can verify authenticity if distributing copies.
 - Each new release bumps `version` in `package.json` and adds an
   entry to `CHANGELOG.md` before a build.
 

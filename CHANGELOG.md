@@ -25,6 +25,10 @@ most in modules the earlier fact-check passes hadn't touched.
 - **国籍留保 added.** New coverage of the 3-month overseas-birth nationality-
   reservation deadline — which, unlike the age-20 choice, is actually enforced
   — closing a gap the site covered and the tool didn't. EN + JP + glossary.
+- **Offline FX + minor figures.** The 2025 Treasury FX fallback is now the full
+  official rate set (all currencies; matches the FBAR calculator). IRMAA
+  thresholds updated to 2026 ($109K / $218K); the §877A covered-expatriate
+  average-tax figure aligned to $206K (2025).
 
 ## [1.0.2] — 2026-06-08 — Nationality-choice framing + calendar fix
 

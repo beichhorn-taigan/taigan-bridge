@@ -29,6 +29,25 @@
   const id = 'sharing-backup';
 
   // ====================================================================
+  // i18n — Action Center generator strings (self-registered so this
+  // module doesn't need to touch the shared i18n.js dictionary file).
+  // ====================================================================
+
+  TB.i18n.extend('en', {
+    'sb.genBackupOverdue.never.title': 'Back up your Taigan Bridge data',
+    'sb.genBackupOverdue.never.body': 'You\'ve entered substantial data but haven\'t backed up yet. A single-file backup downloads as one JSON you can store anywhere. Click to back up now.',
+    'sb.genBackupOverdue.overdue.title': 'Last backup was {{days}} days ago',
+    'sb.genBackupOverdue.overdue.body': 'Consider downloading a fresh backup. The export is a single JSON file with everything you\'ve entered — store it where you keep your other important records.',
+  });
+
+  TB.i18n.extend('ja', {
+    'sb.genBackupOverdue.never.title': 'Taigan Bridge のデータをバックアップしましょう',
+    'sb.genBackupOverdue.never.body': 'かなりの量のデータを入力済みですが、まだバックアップしていません。バックアップは 1 つの JSON ファイルとしてダウンロードされ、どこにでも保存できます。クリックして今すぐバックアップ。',
+    'sb.genBackupOverdue.overdue.title': '前回のバックアップから {{days}} 日経過',
+    'sb.genBackupOverdue.overdue.body': '最新のバックアップのダウンロードをご検討ください。エクスポートは入力済みの全データを含む単一の JSON ファイルです — 他の重要な記録と同じ場所に保管してください。',
+  });
+
+  // ====================================================================
   // State accessors
   // ====================================================================
 
@@ -1096,8 +1115,8 @@
       out.push({
         id: 'backup_never',
         group: 'maintenance', urgency: 'medium', icon: '💾',
-        title: 'Back up your Taigan Bridge data',
-        body: 'You\'ve entered substantial data but haven\'t backed up yet. A single-file backup downloads as one JSON you can store anywhere. Click to back up now.',
+        title: TB.i18n.t('sb.genBackupOverdue.never.title'),
+        body: TB.i18n.t('sb.genBackupOverdue.never.body'),
         module: 'sharing-backup', snoozable: true,
       });
       return out;
@@ -1110,8 +1129,8 @@
     out.push({
       id: 'backup_overdue',
       group: 'maintenance', urgency, icon: '💾',
-      title: 'Last backup was ' + days + ' days ago',
-      body: 'Consider downloading a fresh backup. The export is a single JSON file with everything you\'ve entered — store it where you keep your other important records.',
+      title: TB.i18n.t('sb.genBackupOverdue.overdue.title', { days }),
+      body: TB.i18n.t('sb.genBackupOverdue.overdue.body'),
       deadline: null,
       module: 'sharing-backup', snoozable: true,
     });

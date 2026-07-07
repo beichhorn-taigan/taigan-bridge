@@ -19,6 +19,45 @@
   const id = 'veteran';
 
   // ====================================================================
+  // Action Center i18n — self-registered strings for genDD214Missing,
+  // genGiBillExpiring, genVgliConversion, genAnnualReevalDue. Keys
+  // follow vet.<generatorName>.<field> (title/body only; other fields
+  // on the pushed items aren't user-facing strings).
+  // ====================================================================
+
+  TB.i18n.extend('en', {
+    'vet.genDD214Missing.title': 'DD-214 not in your Document Vault',
+    'vet.genDD214Missing.body': 'Your DD-214 is the master proof of US military service — required for VA benefits, security clearances, GI Bill claims, VA loans, government employment, and survivor benefits. Add it to the vault so your family can find it.',
+
+    'vet.genGiBillExpiring.title': 'GI Bill benefits expire {{date}} ({{months}}mo)',
+    'vet.genGiBillExpiring.body': 'Use it or lose it. Pre-2013 dischargees have a 15-year window from separation. Use the months remaining ({{monthsRemaining}} / 36) on a degree, certificate, or training program — OR transfer to a dependent if eligible.',
+
+    'vet.genVgliConversion.easy.title': 'VGLI conversion window — {{days}} days left (no medical questions)',
+    'vet.genVgliConversion.easy.body': 'Within 240 days of separation, you can convert SGLI → VGLI without any medical underwriting (up to your SGLI amount, max $400K). After 240 days you still have until day 485 but must answer medical questions and may be denied.',
+    'vet.genVgliConversion.late.title': 'VGLI late window — {{days}} days left (medical questions required)',
+    'vet.genVgliConversion.late.body': 'You missed the 240-day no-medical window but can still apply for VGLI through day 485. Health questions may result in denial. After day 485 the option is permanently lost.',
+
+    'vet.genAnnualReevalDue.title': 'VA disability evaluation is {{years}} years old',
+    'vet.genAnnualReevalDue.body': 'If your service-connected conditions have worsened, file for an increase. The VA can also schedule re-examinations on its own — keep records of all medical visits in your Document Vault for the next claim.',
+  });
+
+  TB.i18n.extend('ja', {
+    'vet.genDD214Missing.title': 'DD-214 がドキュメント保管庫に未登録です',
+    'vet.genDD214Missing.body': 'DD-214 は米軍兵役の基本証明書です — VA 給付、セキュリティクリアランス、GI Bill 申請、VA ローン、政府機関への就職、遺族給付に必要となります。ご家族がすぐ見つけられるよう保管庫に追加してください。',
+
+    'vet.genGiBillExpiring.title': 'GI Bill 給付は {{date}} に失効します(残り{{months}}ヶ月)',
+    'vet.genGiBillExpiring.body': '使わなければ失効します。2013 年以前の除隊者は除隊から 15 年の期限があります。残月数({{monthsRemaining}} / 36)を学位・資格・研修プログラムに使うか、対象であれば扶養家族に移転してください。',
+
+    'vet.genVgliConversion.easy.title': 'VGLI 切替期間 — 残り{{days}}日(医療審査なし)',
+    'vet.genVgliConversion.easy.body': '除隊から240日以内であれば、医療審査なしで SGLI → VGLI に切替できます(SGLI 額まで、最大 $400K)。240日を過ぎても485日目までは申請可能ですが、健康状態の質問に回答が必要で、断られる場合があります。',
+    'vet.genVgliConversion.late.title': 'VGLI 後期切替期間 — 残り{{days}}日(医療審査が必要)',
+    'vet.genVgliConversion.late.body': '医療審査なしの240日以内の期間は過ぎましたが、485日目までは VGLI の申請が可能です。健康状態の質問により却下される場合があります。485日を過ぎると権利は永久に失われます。',
+
+    'vet.genAnnualReevalDue.title': 'VA 障害認定の検査から{{years}}年が経過しています',
+    'vet.genAnnualReevalDue.body': '兵役関連状態が悪化している場合は増額請求を行ってください。VA が自主的に再検査を行うこともあります — 次回請求のため、すべての通院記録をドキュメント保管庫に保存しておきましょう。',
+  });
+
+  // ====================================================================
   // Reference tables
   // ====================================================================
 
@@ -1147,6 +1186,7 @@
 
   function genDD214Missing() {
     const out = [];
+    const t = TB.i18n.t;
     const status = vetStatus();
     if (!status || status === 'no' || status === 'active') return out; // not separated yet
     const s = getService();
@@ -1157,8 +1197,8 @@
     out.push({
       id: 'veteran_dd214_missing',
       group: 'veteran', urgency: 'medium', icon: '📋',
-      title: 'DD-214 not in your Document Vault',
-      body: 'Your DD-214 is the master proof of US military service — required for VA benefits, security clearances, GI Bill claims, VA loans, government employment, and survivor benefits. Add it to the vault so your family can find it.',
+      title: t('vet.genDD214Missing.title'),
+      body: t('vet.genDD214Missing.body'),
       module: 'document-vault', snoozable: true,
     });
     return out;
@@ -1166,6 +1206,7 @@
 
   function genGiBillExpiring() {
     const out = [];
+    const t = TB.i18n.t;
     const e = getEducation();
     // Skip if no benefit, "none" benefit, or no months left.
     if (!e.benefit_type || e.benefit_type === 'none') return out;
@@ -1178,8 +1219,8 @@
     out.push({
       id: 'veteran_gibill_expiring',
       group: 'veteran', urgency, icon: '🎓',
-      title: 'GI Bill benefits expire ' + e.expiration_date + ' (' + Math.floor(days / 30) + 'mo)',
-      body: 'Use it or lose it. Pre-2013 dischargees have a 15-year window from separation. Use the months remaining (' + (e.months_remaining || '?') + ' / 36) on a degree, certificate, or training program — OR transfer to a dependent if eligible.',
+      title: t('vet.genGiBillExpiring.title', { date: e.expiration_date, months: Math.floor(days / 30) }),
+      body: t('vet.genGiBillExpiring.body', { monthsRemaining: e.months_remaining || '?' }),
       deadline: e.expiration_date, module: 'veteran', snoozable: true,
     });
     return out;
@@ -1187,6 +1228,7 @@
 
   function genVgliConversion() {
     const out = [];
+    const t = TB.i18n.t;
     const status = vetStatus();
     // VGLI only relevant for separated/retired folks. Active duty
     // and drilling reservists have SGLI, not VGLI.
@@ -1205,16 +1247,16 @@
       out.push({
         id: 'veteran_vgli_easy_window',
         group: 'veteran', urgency: 'critical', icon: '🛡️',
-        title: 'VGLI conversion window — ' + (240 - daysSinceSep) + ' days left (no medical questions)',
-        body: 'Within 240 days of separation, you can convert SGLI → VGLI without any medical underwriting (up to your SGLI amount, max $400K). After 240 days you still have until day 485 but must answer medical questions and may be denied.',
+        title: t('vet.genVgliConversion.easy.title', { days: 240 - daysSinceSep }),
+        body: t('vet.genVgliConversion.easy.body'),
         module: 'veteran', snoozable: false,
       });
     } else if (daysSinceSep <= 485) {
       out.push({
         id: 'veteran_vgli_late_window',
         group: 'veteran', urgency: 'high', icon: '🛡️',
-        title: 'VGLI late window — ' + (485 - daysSinceSep) + ' days left (medical questions required)',
-        body: 'You missed the 240-day no-medical window but can still apply for VGLI through day 485. Health questions may result in denial. After day 485 the option is permanently lost.',
+        title: t('vet.genVgliConversion.late.title', { days: 485 - daysSinceSep }),
+        body: t('vet.genVgliConversion.late.body'),
         module: 'veteran', snoozable: false,
       });
     }
@@ -1223,6 +1265,7 @@
 
   function genAnnualReevalDue() {
     const out = [];
+    const t = TB.i18n.t;
     if (!showsDisability()) return out;  // skip for separated_no_dis etc.
     const d = getDisability();
     if (!d.last_evaluation_date || !d.overall_rating_pct) return out;
@@ -1232,8 +1275,8 @@
       out.push({
         id: 'veteran_reeval_due',
         group: 'veteran', urgency: 'low', icon: '📋',
-        title: 'VA disability evaluation is ' + Math.floor(yearsAgo) + ' years old',
-        body: 'If your service-connected conditions have worsened, file for an increase. The VA can also schedule re-examinations on its own — keep records of all medical visits in your Document Vault for the next claim.',
+        title: t('vet.genAnnualReevalDue.title', { years: Math.floor(yearsAgo) }),
+        body: t('vet.genAnnualReevalDue.body'),
         module: 'veteran', snoozable: true,
       });
     }

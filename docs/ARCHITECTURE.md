@@ -101,11 +101,11 @@ MUST NOT mutate state for modules they don't own.
 | `TB.modules`   | Map of `{id: {render, ...}}`.                        |
 | `TB.app`       | Boot + dashboard glue (defined inline in index.html).|
 
-Vanilla JS, no module loader, no bundler. v0.1 is small enough that
-this stays readable; if the script count grows past ~25 we'll
-revisit ES modules.
+Vanilla JS, no module loader, no bundler. The single-file build is
+small enough that this stays readable; if the script count grows past
+~25 we'll revisit ES modules.
 
-## FBAR data model (v0.2.1+)
+## FBAR data model
 
 `state.fbar` uses normalized tables, not nested per-year structures:
 

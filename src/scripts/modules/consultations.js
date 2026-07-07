@@ -19,6 +19,38 @@
   const id = 'consultations';
 
   // ====================================================================
+  // i18n — small literals not covered by the shared dictionary
+  // (Action Center generator strings + log-row fallback labels).
+  // Registered here via TB.i18n.extend() so this module can
+  // self-contain its own translation table instead of touching the
+  // shared i18n.js dictionary.
+  // ====================================================================
+
+  TB.i18n.extend('en', {
+    'consult.log.no_topic':                    '(no topic)',
+    'consult.log.unknown_professional':         '(unknown professional)',
+
+    'consult.action.recommended_type':          'Recommended type: {{type}}',
+
+    'consult.action.followup_overdue.title':    'Follow-up overdue: {{topic}} with {{name}}',
+    'consult.action.followup_overdue.default_topic': '(consultation)',
+    'consult.action.followup_overdue.default_name':  '(unknown)',
+    'consult.action.followup_overdue.body':     'Originally scheduled to follow up by {{date}}. Overdue by {{days}} days. Open Consultations module to update or schedule new consultation.',
+  });
+
+  TB.i18n.extend('ja', {
+    'consult.log.no_topic':                    '(トピックなし)',
+    'consult.log.unknown_professional':         '(専門家不明)',
+
+    'consult.action.recommended_type':          '推奨種別: {{type}}',
+
+    'consult.action.followup_overdue.title':    'Follow-up 期限超過: {{name}} との {{topic}}',
+    'consult.action.followup_overdue.default_topic': '(相談)',
+    'consult.action.followup_overdue.default_name':  '(不明)',
+    'consult.action.followup_overdue.body':     '当初 {{date}} までの follow-up 予定でした。{{days}} 日超過しています。Consultations モジュールを開いて更新するか、新しい相談を予約してください。',
+  });
+
+  // ====================================================================
   // Reference data
   // ====================================================================
 
@@ -39,9 +71,9 @@
   ];
 
   const RETAINER_STATUS = [
-    { id: 'engaged',   label_en: 'Currently engaged' },
-    { id: 'on_call',   label_en: 'On call (no active engagement)' },
-    { id: 'past',      label_en: 'Past engagement' },
+    { id: 'engaged',   label_en: 'Currently engaged',                label_jp: '現在依頼中' },
+    { id: 'on_call',   label_en: 'On call (no active engagement)',   label_jp: 'オンコール(現在契約なし)' },
+    { id: 'past',      label_en: 'Past engagement',                  label_jp: '過去の依頼' },
   ];
 
   const RELATED_MODULES = [
@@ -100,7 +132,7 @@
       const cutoff = withinDays
         ? Date.now() - withinDays * 86400000 : 0;
       return log.some((c) => {
-        if (c.date && new Date(c.date).getTime() < cutoff) return false;
+        if (c.date && TB.utils.parseLocalDate(c.date).getTime() < cutoff) return false;
         const t = (c.topic || '') + ' ' + (c.summary || '') + ' ' + (c.notes || '');
         return t.toLowerCase().indexOf(topic.toLowerCase()) !== -1;
       });
@@ -187,7 +219,7 @@
     // Engaged professional with stale follow-up
     log.forEach((c) => {
       if (!c.follow_up_needed || !c.follow_up_date) return;
-      const days = Math.floor((Date.now() - new Date(c.follow_up_date).getTime()) / 86400000);
+      const days = Math.floor((Date.now() - TB.utils.parseLocalDate(c.follow_up_date).getTime()) / 86400000);
       if (days < 0) return;  // future date
       if (days > 30) {
         const pro = professionals.find((p) => p.id === c.professional_id);
@@ -256,6 +288,7 @@
   function buildRemindersCard() {
     const el = TB.utils.el;
     const t = TB.i18n.t;
+    const lang = TB.i18n.getLang();
     const reminders = buildReminders();
 
     const card = el('div', { class: 'tb-card', 'data-track': 'consult' });
@@ -294,7 +327,7 @@
           t(r.body_key, r.body_data || {})),
         proType
           ? el('div', { class: 'tb-field-help', style: { marginTop: '6px' } },
-              t('consult.reminder.recommended') + ': ' + proType.label_en)
+              t('consult.reminder.recommended') + ': ' + (lang === 'ja' ? proType.label_jp : proType.label_en))
           : null,
       ));
     });
@@ -356,7 +389,7 @@
         ),
         el('div', { style: { display: 'flex', alignItems: 'center', gap: 'var(--tb-sp-2)' } },
           el('span', { style: { color: statusColor, fontSize: 'var(--tb-fs-12)', fontWeight: '600' } },
-            statusMeta.label_en || '—'),
+            (lang === 'ja' ? statusMeta.label_jp : statusMeta.label_en) || '—'),
           el('button', { class: 'tb-btn tb-btn--ghost', type: 'button',
             style: { padding: '2px 8px', fontSize: 'var(--tb-fs-12)' },
             onclick: () => openConsultationModal(null, p.id) }, '＋ ' + t('consult.log_consult')),
@@ -440,7 +473,7 @@
         onchange: (e) => { draft.retainer_status = e.target.value; } },
         ...RETAINER_STATUS.map((s) => el('option', {
           value: s.id, selected: draft.retainer_status === s.id,
-        }, s.label_en)),
+        }, lang === 'ja' ? s.label_jp : s.label_en)),
       )));
 
     modal.appendChild(field(t('consult.field.notes'),
@@ -500,7 +533,7 @@
     log.slice(0, 30).forEach((c) => {
       const pro = professionals.find((p) => p.id === c.professional_id);
       const followUpStale = c.follow_up_needed && c.follow_up_date &&
-        new Date(c.follow_up_date) < new Date();
+        TB.utils.parseLocalDate(c.follow_up_date) < new Date();
       card.appendChild(el('div', {
         style: {
           padding: 'var(--tb-sp-2) var(--tb-sp-3)',
@@ -511,9 +544,9 @@
       },
         el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 'var(--tb-sp-2)' } },
           el('div', null,
-            el('div', { style: { fontWeight: '600' } }, c.topic || '(no topic)'),
+            el('div', { style: { fontWeight: '600' } }, c.topic || t('consult.log.no_topic')),
             el('div', { class: 'tb-field-help', style: { marginTop: '2px' } },
-              (pro ? pro.name + (pro.firm ? ' · ' + pro.firm : '') : '(unknown professional)') +
+              (pro ? pro.name + (pro.firm ? ' · ' + pro.firm : '') : t('consult.log.unknown_professional')) +
               ' · ' + (c.date || '—') +
               (c.related_module ? ' · ' + c.related_module : '')),
           ),
@@ -550,7 +583,7 @@
     const draft = Object.assign({
       id: uuid('cons-'),
       professional_id: defaultProfessionalId || (getProfessionals()[0] && getProfessionals()[0].id) || '',
-      date: new Date().toISOString().slice(0, 10),
+      date: TB.utils.todayIso(),
       topic: '',
       summary: '',
       follow_up_needed: false,
@@ -704,18 +737,22 @@
 
   function genFollowUpOverdue() {
     const out = [];
+    const t = TB.i18n.t;
     getConsultLog().forEach((c) => {
       if (!c.follow_up_needed || !c.follow_up_date) return;
-      const days = Math.floor((Date.now() - new Date(c.follow_up_date).getTime()) / 86400000);
-      if (days < 0 || days > 365) return;
+      const days = Math.floor((Date.now() - TB.utils.parseLocalDate(c.follow_up_date).getTime()) / 86400000);
+      if (days < 0) return;
       const pro = getProfessionals().find((p) => p.id === c.professional_id);
       out.push({
         id: 'consult_followup_' + c.id,
         group: 'consult',
-        urgency: days > 60 ? 'high' : 'medium',
+        urgency: days > 365 ? 'critical' : days > 60 ? 'high' : 'medium',
         icon: '⏰',
-        title: 'Follow-up overdue: ' + (c.topic || '(consultation)') + ' with ' + (pro ? pro.name : '(unknown)'),
-        body: 'Originally scheduled to follow up by ' + c.follow_up_date + '. Overdue by ' + days + ' days. Open Consultations module to update or schedule new consultation.',
+        title: t('consult.action.followup_overdue.title', {
+          topic: c.topic || t('consult.action.followup_overdue.default_topic'),
+          name: pro ? pro.name : t('consult.action.followup_overdue.default_name'),
+        }),
+        body: t('consult.action.followup_overdue.body', { date: c.follow_up_date, days }),
         deadline: c.follow_up_date,
         module: 'consultations', snoozable: true,
       });
@@ -725,10 +762,12 @@
 
   function genSpecialistRecommended() {
     const out = [];
+    const lang = TB.i18n.getLang();
     const reminders = buildReminders();
     reminders.forEach((r) => {
       // Skip the follow-up reminder — that's covered by genFollowUpOverdue
       if (r.title_key === 'consult.reminder.followup.title') return;
+      const typeMeta = PROFESSIONAL_TYPES.find((p) => p.id === r.recommended_type) || {};
       out.push({
         id: 'consult_recommended_' + (r.title_key || '').replace(/\W/g, '_'),
         group: 'consult',
@@ -737,7 +776,7 @@
         title: TB.i18n.t(r.title_key, r.title_data || {}),
         body: TB.i18n.t(r.body_key, r.body_data || {}) +
           (r.recommended_type
-            ? ' Recommended type: ' + (PROFESSIONAL_TYPES.find((p) => p.id === r.recommended_type) || {}).label_en
+            ? ' ' + TB.i18n.t('consult.action.recommended_type', { type: lang === 'ja' ? typeMeta.label_jp : typeMeta.label_en })
             : ''),
         module: 'consultations', snoozable: true,
       });

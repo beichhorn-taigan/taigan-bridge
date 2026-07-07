@@ -10,14 +10,27 @@
  *                runtime — it works on the dev server and from the
  *                hosted demo, but silently fails for ~90% of real users.
  *
- *   Workaround:  cross-origin <script src=...> tags ARE allowed even
- *                from file://. We publish a tiny version.js (built to
- *                the repo root, committed + tagged each release) and
- *                serve it via jsDelivr from the latest tag. It just
- *                assigns a payload object onto a global. The runtime
- *                injects a <script> tag, waits for onload, and reads
- *                the payload back. Bonus: jsDelivr's public hit stats
- *                give a coarse, anonymous active-install count.
+ *   Approach:    we fetch() a static, pure-JSON version.json (built to
+ *                the repo root, committed + tagged each release) served
+ *                via jsDelivr from the latest tag, and JSON.parse it
+ *                (res.json()). We do NOT inject a cross-origin <script>
+ *                tag: a remote script would EXECUTE with full page
+ *                privileges in an app that holds a live Claude API key
+ *                and financial/health PII, so a compromised repo /
+ *                release / CDN — or a MITM — could run arbitrary code
+ *                (REVIEW.md C6). fetch()+JSON.parse is inert data, and
+ *                the payload is STRICTLY validated before any field is
+ *                used. The forthcoming CSP allows connect-src to
+ *                jsdelivr.net but blocks remote script-src, which is
+ *                exactly this design.
+ *
+ *                Trade-off: on file:// the browser blocks cross-origin
+ *                fetch, so the check simply CANNOT run there. That is
+ *                acceptable — we fail silently (no check, no error, no
+ *                remote code) rather than reintroduce script injection.
+ *                Dev server and hosted demo (same-origin/CORS-ok) still
+ *                check normally. Bonus: jsDelivr's public hit stats give
+ *                a coarse, anonymous active-install count.
  *
  * Privacy:
  *   - Off by default until the user answers a one-time consent
@@ -34,7 +47,7 @@
  * Rate-limiting:
  *   - Auto-checks fire at most once per 24h per browser, even if the
  *     toggle is on and the app is launched twenty times that day.
- *   - The version.js URL gets a cache-buster query so we don't see
+ *   - The version.json URL gets a cache-buster query so we don't see
  *     a stale CDN copy.
  *
  * Banner:
@@ -59,8 +72,12 @@
   // ─── Constants ─────────────────────────────────────────────────────
   const STATE_NS = 'settings.updateCheck';
   const RELEASES_URL = 'https://github.com/beichhorn-taigan/taigan-bridge/releases/latest';
-  // Where version.js lives. Served by jsDelivr from the LATEST release
-  // tag (build.js writes version.js at the repo root; it's committed
+  // Any payload `url` MUST start with this prefix or we reject it and
+  // fall back to RELEASES_URL — a hard guard against a tampered payload
+  // smuggling a javascript:/data: URL into the download link.
+  const TRUSTED_URL_PREFIX = 'https://github.com/beichhorn-taigan/';
+  // Where version.json lives. Served by jsDelivr from the LATEST release
+  // tag (build.js writes version.json at the repo root; it's committed
   // and tagged with each release). Two reasons for jsDelivr over
   // GitHub Pages:
   //   1. jsDelivr publishes public, aggregate hit statistics
@@ -73,12 +90,16 @@
   // Caveat: jsDelivr caches @latest aliases (revalidated; up to ~7d
   // worst case), so a brand-new release can take a little while to be
   // announced to existing installs. Fine for occasional releases.
-  const VERSION_URL = 'https://cdn.jsdelivr.net/gh/beichhorn-taigan/taigan-bridge@latest/version.js';
+  const VERSION_URL = 'https://cdn.jsdelivr.net/gh/beichhorn-taigan/taigan-bridge@latest/version.json';
   // 24h between auto-checks (manual "Check now" bypasses this).
   const AUTO_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
-  // Payload schema the runtime understands. Bump if the version.js
+  // Payload schema the runtime understands. Bump if the version.json
   // format changes incompatibly.
   const SUPPORTED_SCHEMAS = [1];
+  // Strict shape of a stable version triple, e.g. "1.2.0".
+  const SEMVER_RE = /^\d+\.\d+\.\d+$/;
+  // ISO date (YYYY-MM-DD), what build.js emits for `date`.
+  const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
   // ─── Helpers ───────────────────────────────────────────────────────
   function isHostedDemo() {
@@ -104,7 +125,7 @@
   // Tolerant semver-ish compare. Strips any pre-release suffix
   // (`-rc1`, `-beta.2`) so we compare on the stable triple only. We
   // ship stable-only today; if/when prereleases become a thing,
-  // version.js should expose a separate `beta` field rather than
+  // version.json should expose a separate `beta` field rather than
   // making this comparator clever.
   function isNewer(remote, local) {
     if (!remote || !local) return false;
@@ -124,54 +145,51 @@
     return (window.TB && TB.i18n && TB.i18n.t) ? TB.i18n.t(key, vars) : key;
   }
 
-  // ─── Network: load version.js ──────────────────────────────────────
-  // Returns a promise that resolves with the payload object, or
-  // rejects with an Error. Uses <script> injection (not fetch) so it
-  // works from file:// where cross-origin fetch is blocked.
+  // ─── Validation ────────────────────────────────────────────────────
+  // STRICTLY validate a decoded payload before ANY field is trusted.
+  // Returns a sanitized payload (with a guaranteed-safe `url`) on
+  // success, or null on any failure. Never throws. Because the payload
+  // is now inert JSON (fetch()+res.json(), not executed remote code),
+  // this is the whole trust boundary — be conservative.
+  function validatePayload(payload) {
+    if (!payload || typeof payload !== 'object') return null;
+    // schema: expected integer from the supported set.
+    if (typeof payload.schema !== 'number' ||
+        SUPPORTED_SCHEMAS.indexOf(payload.schema) === -1) return null;
+    // stable: strict semver triple.
+    if (typeof payload.stable !== 'string' || !SEMVER_RE.test(payload.stable)) return null;
+    // date: ISO date string (YYYY-MM-DD).
+    if (typeof payload.date !== 'string' || !ISO_DATE_RE.test(payload.date)) return null;
+    // url: must be an https://github.com/beichhorn-taigan/... URL, else
+    // fall back to the releases page. Never let a raw payload value
+    // (which could be javascript:/data:) reach an href.
+    let url = RELEASES_URL;
+    if (typeof payload.url === 'string' && payload.url.indexOf(TRUSTED_URL_PREFIX) === 0) {
+      url = payload.url;
+    }
+    return { schema: payload.schema, stable: payload.stable, date: payload.date, url: url };
+  }
+
+  // ─── Network: fetch version.json ───────────────────────────────────
+  // Returns a promise that resolves with a VALIDATED, sanitized payload
+  // object, or rejects with an Error. Uses fetch()+res.json() — inert
+  // data, no remote code execution. On file:// the browser blocks
+  // cross-origin fetch; that rejection is caught by callers and the
+  // check is skipped silently (see runAutoCheck / checkNow).
   function loadPayload() {
-    return new Promise(function (resolve, reject) {
-      // Reset any prior payload so a stale value can't leak through.
-      try { window.__TB_UPDATE_PAYLOAD__ = null; } catch (_) {}
-      const script = document.createElement('script');
-      // Cache-buster so we never read a stale CDN copy. The hosted
-      // file is small so the cost of always-fresh fetches is trivial.
-      script.src = VERSION_URL + '?_=' + Date.now();
-      script.async = true;
-      let settled = false;
-      const cleanup = function () {
-        if (script.parentNode) script.parentNode.removeChild(script);
-      };
-      const timeout = setTimeout(function () {
-        if (settled) return;
-        settled = true;
-        cleanup();
-        reject(new Error('timeout'));
-      }, 10000);
-      script.onload = function () {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timeout);
-        cleanup();
-        const payload = window.__TB_UPDATE_PAYLOAD__;
-        if (!payload || typeof payload !== 'object') {
-          reject(new Error('no payload'));
-          return;
-        }
-        if (SUPPORTED_SCHEMAS.indexOf(payload.schema) === -1) {
-          reject(new Error('unsupported schema: ' + payload.schema));
-          return;
-        }
-        resolve(payload);
-      };
-      script.onerror = function () {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timeout);
-        cleanup();
-        reject(new Error('network'));
-      };
-      document.head.appendChild(script);
-    });
+    // Cache-buster so we never read a stale CDN copy. The hosted file
+    // is tiny so always-fresh fetches are trivial.
+    const url = VERSION_URL + '?_=' + Date.now();
+    return fetch(url, { method: 'GET', mode: 'cors', credentials: 'omit', cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('http ' + res.status);
+        return res.json(); // parses JSON; rejects on malformed body
+      })
+      .then(function (raw) {
+        const payload = validatePayload(raw);
+        if (!payload) throw new Error('invalid payload');
+        return payload;
+      });
   }
 
   // ─── Banner ────────────────────────────────────────────────────────
@@ -184,30 +202,45 @@
     // Don't paint twice.
     if (document.querySelector('.tb-update-banner')) return;
 
-    const banner = document.createElement('div');
-    banner.className = 'tb-update-banner';
-    banner.setAttribute('role', 'status');
+    // Build with TB.utils.el text nodes (never innerHTML with payload
+    // fields) so no payload string can inject markup, and the href is
+    // the already-validated url (never a raw payload value). Fall back
+    // to a no-op if utils isn't available for some reason.
+    const el = window.TB && TB.utils && TB.utils.el;
+    if (!el) return;
 
     const versionText = payload.stable;
     const dateText = payload.date ? ' · ' + payload.date : '';
+    // href is validated upstream (validatePayload); belt-and-suspenders.
+    const href = (typeof payload.url === 'string' &&
+      payload.url.indexOf(TRUSTED_URL_PREFIX) === 0) ? payload.url : RELEASES_URL;
 
-    banner.innerHTML =
-      '<span class="tb-update-banner__icon" aria-hidden="true">ℹ</span>' +
-      '<span class="tb-update-banner__body">' +
-        '<strong>' + t('updateCheck.banner.label') + '</strong> ' +
-        t('updateCheck.banner.body', { version: versionText }) +
-        '<span class="tb-update-banner__meta">' + dateText + '</span>' +
-      '</span>' +
-      '<span class="tb-update-banner__actions">' +
-        '<a class="tb-update-banner__cta" href="' + (payload.url || RELEASES_URL) + '"' +
-          ' target="_blank" rel="noopener noreferrer">' +
-          '⬇ ' + t('updateCheck.banner.download') + '</a>' +
-        '<button type="button" class="tb-update-banner__dismiss" aria-label="' +
-          t('updateCheck.banner.dismissAria') + '">' +
-          t('updateCheck.banner.dismiss') + '</button>' +
-      '</span>';
+    const dismissBtn = el('button', {
+      type: 'button',
+      class: 'tb-update-banner__dismiss',
+      'aria-label': t('updateCheck.banner.dismissAria'),
+    }, t('updateCheck.banner.dismiss'));
 
-    banner.querySelector('.tb-update-banner__dismiss').addEventListener('click', function () {
+    const banner = el('div', { class: 'tb-update-banner', role: 'status' },
+      el('span', { class: 'tb-update-banner__icon', 'aria-hidden': 'true' }, 'ℹ'),
+      el('span', { class: 'tb-update-banner__body' },
+        el('strong', null, t('updateCheck.banner.label')),
+        ' ',
+        t('updateCheck.banner.body', { version: versionText }),
+        el('span', { class: 'tb-update-banner__meta' }, dateText),
+      ),
+      el('span', { class: 'tb-update-banner__actions' },
+        el('a', {
+          class: 'tb-update-banner__cta',
+          href: href,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+        }, '⬇ ' + t('updateCheck.banner.download')),
+        dismissBtn,
+      ),
+    );
+
+    dismissBtn.addEventListener('click', function () {
       patchState({ dismissedVersion: payload.stable });
       if (banner.parentNode) banner.parentNode.removeChild(banner);
     });
@@ -396,9 +429,6 @@
   // ─── Expose + wire boot ────────────────────────────────────────────
   window.TB = window.TB || {};
   window.TB.updateCheck = {
-    checkNow: checkNow,
-    isNewer: isNewer,
-    getState: getState,
     // Internal hooks settings.js uses.
     _showConsentPrompt: showConsentPrompt,
     _repaintIfPending: repaintIfPending,

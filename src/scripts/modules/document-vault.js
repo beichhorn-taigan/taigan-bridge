@@ -27,6 +27,54 @@
   const id = 'document-vault';
 
   // ====================================================================
+  // i18n — Action Center generator strings
+  // ====================================================================
+
+  TB.i18n.extend('en', {
+    'dv.genPassportExpiring.expired.title':  '{{name}} EXPIRED',
+    'dv.genPassportExpiring.expired.body':   '{{name}} expired {{date}}. Renew immediately — most countries require 6 months validity beyond travel dates.',
+    'dv.genPassportExpiring.critical.title': '{{name}} expires in {{days}} days',
+    'dv.genPassportExpiring.critical.body':  'US/JP renewal currently takes 6-10 weeks. Many countries deny entry within 6 months of passport expiry. Start renewal NOW.',
+    'dv.genPassportExpiring.soon.title':     '{{name}} expires in {{days}} days',
+    'dv.genPassportExpiring.soon.body':      'Many countries require 6 months passport validity beyond your travel dates. Renew within the next 60 days to avoid travel disruption.',
+
+    'dv.genVisaResidenceExpiring.expired.title':  '{{name}} EXPIRED',
+    'dv.genVisaResidenceExpiring.expired.body':   'Expired on {{date}}. Renew or replace immediately to avoid status / driving / banking issues.',
+    'dv.genVisaResidenceExpiring.soon.title':     '{{name}} expires in {{days}} days',
+    'dv.genVisaResidenceExpiring.soon.body':      'Renewal often requires in-person appointment + waiting period. Start within the next 30 days.',
+    'dv.genVisaResidenceExpiring.warning.title':  '{{name}} expires in {{days}} days',
+    'dv.genVisaResidenceExpiring.warning.body':   'Plan the renewal — check requirements, schedule appointment if needed.',
+
+    'dv.genWillStale.title': 'Will is {{years}} years old — review recommended',
+    'dv.genWillStale.body':  'Wills should be reviewed every 3-5 years OR after life events: marriage, divorce, birth/death of family member, big asset change, move to new jurisdiction. Confirm beneficiaries + executor still appropriate.',
+
+    'dv.genCriticalDocsMissing.title': 'Critical documents not in your vault: {{missing}}',
+    'dv.genCriticalDocsMissing.body':  'Add these to the Document Vault so your family / executor can find them in an emergency. Use the upload button to auto-extract metadata from a photo.',
+  });
+
+  TB.i18n.extend('ja', {
+    'dv.genPassportExpiring.expired.title':  '{{name}}の有効期限切れ',
+    'dv.genPassportExpiring.expired.body':   '{{name}}は{{date}}に期限切れになりました。直ちに更新してください — ほとんどの国は渡航日から6ヶ月以上の残存有効期間を要求します。',
+    'dv.genPassportExpiring.critical.title': '{{name}}はあと{{days}}日で期限切れです',
+    'dv.genPassportExpiring.critical.body':  '米国/日本のパスポート更新には現在6〜10週間かかります。多くの国は有効期限まで6ヶ月未満だと入国を拒否します。今すぐ更新手続きを開始してください。',
+    'dv.genPassportExpiring.soon.title':     '{{name}}はあと{{days}}日で期限切れです',
+    'dv.genPassportExpiring.soon.body':      '多くの国は渡航日から6ヶ月以上のパスポート有効期間を要求します。渡航の混乱を避けるため、60日以内に更新してください。',
+
+    'dv.genVisaResidenceExpiring.expired.title':  '{{name}}の有効期限切れ',
+    'dv.genVisaResidenceExpiring.expired.body':   '{{date}}に期限切れになりました。在留資格・運転・銀行取引に支障が出ないよう、直ちに更新または再発行してください。',
+    'dv.genVisaResidenceExpiring.soon.title':     '{{name}}はあと{{days}}日で期限切れです',
+    'dv.genVisaResidenceExpiring.soon.body':      '更新には対面での手続きと待機期間が必要になることが多いです。30日以内に手続きを開始してください。',
+    'dv.genVisaResidenceExpiring.warning.title':  '{{name}}はあと{{days}}日で期限切れです',
+    'dv.genVisaResidenceExpiring.warning.body':   '更新の計画を立ててください — 必要書類を確認し、必要であれば予約を取りましょう。',
+
+    'dv.genWillStale.title': '遺言書は作成から{{years}}年が経過しています — 見直しを推奨します',
+    'dv.genWillStale.body':  '遺言書は3〜5年ごと、または結婚・離婚・家族の誕生/死亡・大きな資産の変動・新しい管轄への転居などのライフイベントの後に見直すべきです。受益者と遺言執行者が今も適切か確認してください。',
+
+    'dv.genCriticalDocsMissing.title': 'ボールトに保管されていない重要書類があります: {{missing}}',
+    'dv.genCriticalDocsMissing.body':  '緊急時に家族や遺言執行者が見つけられるよう、これらをDocument Vaultに追加してください。アップロードボタンを使えば写真からメタデータを自動抽出できます。',
+  });
+
+  // ====================================================================
   // Taxonomy
   // ====================================================================
 
@@ -1410,33 +1458,35 @@
   // ====================================================================
 
   function genPassportExpiring() {
+    const t = TB.i18n.t;
     const out = [];
     const items = getItems();
     for (const it of items) {
       if (!/^passport_/.test(it.type) || !it.expiry_date) continue;
       const days = daysUntil(it.expiry_date);
+      const name = it.title || 'Passport';
       if (days < 0) {
         out.push({
           id: 'docvault_passport_expired_' + it.id,
           group: 'docvault', urgency: 'critical', icon: '🛂',
-          title: (it.title || 'Passport') + ' EXPIRED',
-          body: (it.title || 'Passport') + ' expired ' + it.expiry_date + '. Renew immediately — most countries require 6 months validity beyond travel dates.',
+          title: t('dv.genPassportExpiring.expired.title', { name }),
+          body: t('dv.genPassportExpiring.expired.body', { name, date: it.expiry_date }),
           deadline: it.expiry_date, module: 'document-vault', snoozable: false,
         });
       } else if (days <= 90) {
         out.push({
           id: 'docvault_passport_critical_' + it.id,
           group: 'docvault', urgency: 'critical', icon: '🛂',
-          title: (it.title || 'Passport') + ' expires in ' + days + ' days',
-          body: 'US/JP renewal currently takes 6-10 weeks. Many countries deny entry within 6 months of passport expiry. Start renewal NOW.',
+          title: t('dv.genPassportExpiring.critical.title', { name, days }),
+          body: t('dv.genPassportExpiring.critical.body'),
           deadline: it.expiry_date, module: 'document-vault', snoozable: false,
         });
       } else if (days <= 180) {
         out.push({
           id: 'docvault_passport_soon_' + it.id,
           group: 'docvault', urgency: 'high', icon: '🛂',
-          title: (it.title || 'Passport') + ' expires in ' + days + ' days',
-          body: 'Many countries require 6 months passport validity beyond your travel dates. Renew within the next 60 days to avoid travel disruption.',
+          title: t('dv.genPassportExpiring.soon.title', { name, days }),
+          body: t('dv.genPassportExpiring.soon.body'),
           deadline: it.expiry_date, module: 'document-vault', snoozable: true,
         });
       }
@@ -1445,34 +1495,36 @@
   }
 
   function genVisaResidenceExpiring() {
+    const t = TB.i18n.t;
     const out = [];
     const items = getItems();
     const watched = ['visa', 'residence_card_jp', 'green_card', 'drivers_license_us', 'drivers_license_jp', 'my_number_card_jp'];
     for (const it of items) {
       if (watched.indexOf(it.type) === -1 || !it.expiry_date) continue;
       const days = daysUntil(it.expiry_date);
+      const name = it.title || typeLabel(it.type, 'en');
       if (days < 0) {
         out.push({
           id: 'docvault_id_expired_' + it.id,
           group: 'docvault', urgency: 'critical', icon: '🪪',
-          title: (it.title || typeLabel(it.type, 'en')) + ' EXPIRED',
-          body: 'Expired on ' + it.expiry_date + '. Renew or replace immediately to avoid status / driving / banking issues.',
+          title: t('dv.genVisaResidenceExpiring.expired.title', { name }),
+          body: t('dv.genVisaResidenceExpiring.expired.body', { date: it.expiry_date }),
           deadline: it.expiry_date, module: 'document-vault', snoozable: false,
         });
       } else if (days <= 60) {
         out.push({
           id: 'docvault_id_soon_' + it.id,
           group: 'docvault', urgency: 'high', icon: '🪪',
-          title: (it.title || typeLabel(it.type, 'en')) + ' expires in ' + days + ' days',
-          body: 'Renewal often requires in-person appointment + waiting period. Start within the next 30 days.',
+          title: t('dv.genVisaResidenceExpiring.soon.title', { name, days }),
+          body: t('dv.genVisaResidenceExpiring.soon.body'),
           deadline: it.expiry_date, module: 'document-vault', snoozable: false,
         });
       } else if (days <= 120) {
         out.push({
           id: 'docvault_id_warning_' + it.id,
           group: 'docvault', urgency: 'medium', icon: '🪪',
-          title: (it.title || typeLabel(it.type, 'en')) + ' expires in ' + days + ' days',
-          body: 'Plan the renewal — check requirements, schedule appointment if needed.',
+          title: t('dv.genVisaResidenceExpiring.warning.title', { name, days }),
+          body: t('dv.genVisaResidenceExpiring.warning.body'),
           deadline: it.expiry_date, module: 'document-vault', snoozable: true,
         });
       }
@@ -1481,6 +1533,7 @@
   }
 
   function genWillStale() {
+    const t = TB.i18n.t;
     const out = [];
     const items = getItems();
     const wills = items.filter((it) => it.type === 'will');
@@ -1494,8 +1547,8 @@
         out.push({
           id: 'docvault_will_stale_' + w.id,
           group: 'docvault', urgency: 'medium', icon: '📜',
-          title: 'Will is ' + Math.floor(ageDays / 365) + ' years old — review recommended',
-          body: 'Wills should be reviewed every 3-5 years OR after life events: marriage, divorce, birth/death of family member, big asset change, move to new jurisdiction. Confirm beneficiaries + executor still appropriate.',
+          title: t('dv.genWillStale.title', { years: Math.floor(ageDays / 365) }),
+          body: t('dv.genWillStale.body'),
           module: 'document-vault', snoozable: true,
         });
       }
@@ -1504,6 +1557,7 @@
   }
 
   function genCriticalDocsMissing() {
+    const t = TB.i18n.t;
     const out = [];
     const items = getItems();
     const types = new Set(items.map((it) => it.type));
@@ -1518,8 +1572,8 @@
     out.push({
       id: 'docvault_critical_missing',
       group: 'docvault', urgency: 'low', icon: '📋',
-      title: 'Critical documents not in your vault: ' + missing.join(', '),
-      body: 'Add these to the Document Vault so your family / executor can find them in an emergency. Use the upload button to auto-extract metadata from a photo.',
+      title: t('dv.genCriticalDocsMissing.title', { missing: missing.join(', ') }),
+      body: t('dv.genCriticalDocsMissing.body'),
       module: 'document-vault', snoozable: true,
     });
     return out;
