@@ -1847,7 +1847,7 @@
       'health.nhi.assessment':         'Prior-year premium assessment',
       'health.nhi.point.universal':    'NHI (国民健康保険) is mandatory for JP residents not covered by employer SHI. Enroll at city hall (市役所/区役所).',
       'health.nhi.point.30pct_copay':  'Standard 30% copay; reduced for elderly (10-20%) and children (often 0% with municipal subsidy).',
-      'health.nhi.point.high_cost_subsidy': '高額療養費 — out-of-pocket capped at roughly ¥80K/mo for typical earners (income-tiered; the exact caps are under active government revision for 2026-27). Covers catastrophic medical events.',
+      'health.nhi.point.high_cost_subsidy': '高額療養費 — out-of-pocket capped at ~¥86K/mo for typical earners (raised from ~¥80K for treatment from 1 Aug 2026); covers catastrophic medical events.',
       'health.nhi.point.shi_alternative': 'Employer SHI (社会保険) replaces NHI when employed. Premium split with employer; covers dependents.',
       'health.nhi.point.sofa_exception': 'SOFA-status individuals (active military, DoD civilians, contractors) are exempt — covered by US military health system instead.',
 
@@ -6163,7 +6163,7 @@
       'health.nhi.assessment':         '前年保険料額決定通知',
       'health.nhi.point.universal':    'NHI(国民健康保険)は雇用主 SHI 未加入の日本居住者に強制適用。市役所・区役所で加入。',
       'health.nhi.point.30pct_copay':  '通常 3 割負担;高齢者は減額(1-2 割)、子供は自治体補助で 0 割が多い。',
-      'health.nhi.point.high_cost_subsidy': '高額療養費 — 一般所得者の自己負担上限は月およそ ¥8 万(所得区分で変動。上限額は 2026〜27 年に向けて見直しが進行中)。重大な医療費を補償。',
+      'health.nhi.point.high_cost_subsidy': '高額療養費 — 一般所得者の自己負担上限は月 ~¥8.6 万（2026年8月1日診療分から引き上げ）;重大医療費を補償。',
       'health.nhi.point.shi_alternative': '雇用主 SHI(社会保険)は雇用時に NHI を代替。保険料は雇用主と折半;扶養家族カバー。',
       'health.nhi.point.sofa_exception': 'SOFA(現役軍人・国防総省文官・契約者)は対象外 — 米軍医療制度でカバー。',
 

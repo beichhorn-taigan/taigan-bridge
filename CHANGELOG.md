@@ -2,6 +2,31 @@
 
 All notable changes to Taigan Bridge will be documented in this file.
 
+## [1.0.4] — 2026-08-24 — Two figures caught by a TaiganJP tool audit
+
+### Accuracy
+
+- **高額療養費 monthly out-of-pocket cap — ~¥80K → ~¥86K** (EN + JA strings,
+  `health.nhi.point.high_cost_subsidy`). Stage 1 of the reform landed
+  **2026-08-01**; the general-earner cap is now `85,800 + (cost − 286,000) × 1%`.
+  The old copy hedged ("under active government revision for 2026-27") — that
+  revision has now partly landed, so the hedge was stale as well as low. Caps
+  bind by **month of treatment** (暦月). Stage 2 (2027-08-01) subdivides the
+  under-70 brackets into 12 bands and will need another pull.
+  Tracks TaiganJP watched fact `kougaku-ryouyouhi-cap` (tier A, MHLW).
+- **US federal estate-tax exclusion** — confirmed at **$15,000,000 for 2026**
+  (OBBBA made it permanent, then inflation-indexed; the TCJA sunset to ~$7M did
+  not happen). The estate module already carried this; this release is what
+  finally ships it, replacing a hardcoded `>$13.99M` string in the deceased-
+  checklist generator with a value computed from `US_ESTATE_EXEMPTION_2026`.
+  Tracks TaiganJP watched fact `us-estate-exemption` (tier A, IRS).
+
+### Notes
+
+Both figures had been hand-patched into the hosted TaiganJP demo copy without
+going upstream, so the downloadable release still carried the old values. Fixed
+at source instead; see the ship procedure in the TaiganJP README.
+
 ## [1.0.3] — 2026-06-08 — Site-consistency pass (drift audit vs TaiganJP)
 
 ### Accuracy
