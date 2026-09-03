@@ -12,8 +12,8 @@
     window.__TB_UPDATE_PAYLOAD__ = {
   "schema": 1,
   "stable": "1.0.4",
-  "date": "2026-08-24",
-  "buildHash": "4878108f",
+  "date": "2026-09-03",
+  "buildHash": "ebf06302",
   "url": "https://github.com/beichhorn-taigan/taigan-bridge/releases/latest",
   "notes": null,
   "beta": null
