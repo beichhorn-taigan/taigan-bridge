@@ -2,8 +2,15 @@
  *
  * SOFA Roth Sequencing Planner (v0.3.x — Phase 1)
  *
- * The window between active SOFA status and 住民票 (juminhyou)
- * registration in Japan is where U.S. expats can do certain
+ * CORRECTED 2026-09-03: the window closes when SOFA STATUS ENDS, not at the
+ * 住民票 registration that follows it. Registration drives 住民税 and National
+ * Health Insurance; income-tax residency turns on the facts of where you live,
+ * and the SOFA disregard that held those facts off ends with the status.
+ * Anchoring on registration overstated the window by the separation-to-
+ * registration gap — up to 60 days under the immigration clock.
+ *
+ * The window while SOFA status is active, before it ends and
+ * a 住民票 follows, is where U.S. expats can do certain
  * tax-efficient moves — Roth conversions, capital-gains realization,
  * RSU/option exercises, US asset cleanups — at U.S.-only tax cost.
  * After 住民票, those same moves are subject to Japanese national +
@@ -145,15 +152,29 @@
     const sep = profile.separation_date || null;
     const jum = profile.juminhyou_target_date || null;
 
-    // The deadline anchor for "do this BEFORE 住民票" items is whichever
-    // is earliest of (juminhyou target) or (separation + 14 days, the
-    // typical legal deadline for Japan-resident registration after losing
-    // SOFA status). If neither is set, leave deadline null and surface
-    // a warning to the user that timing can't be computed yet.
-    function preJuminhyouDeadline() {
-      if (jum) return jum;
-      if (sep) return addDays(sep, -1);
-      return null;
+    // CORRECTED 2026-09-03. The deadline for these items is the end of SOFA
+    // STATUS, not the 住民票 registration that follows it.
+    //
+    // WHAT WAS WRONG. This preferred the juminhyou target date whenever the user
+    // had set one, and only fell back to separation. Registration comes AFTER
+    // separation — Japanese law allows up to 60 days to remain and 30 to apply
+    // for a status of residence — so preferring it handed the user a deadline
+    // that could be weeks too late, in the one place where being late is the
+    // whole problem. (The old comment described "separation + 14 days" while the
+    // code did separation MINUS one; the comment was describing a rule the
+    // function never implemented.)
+    //
+    // WHY SEPARATION IS THE RIGHT ANCHOR. The SOFA disregard applies while the
+    // status lasts, and the status is tied to the role — it ends when the role
+    // does. After that the ordinary facts test governs, and the gap before
+    // registration is not shelter. So take the EARLIEST of the two dates the
+    // user has given, which is separation whenever it is known.
+    function preStatusEndDeadline() {
+      const candidates = [];
+      if (sep) candidates.push(addDays(sep, -1));
+      if (jum) candidates.push(addDays(jum, -1));
+      if (!candidates.length) return null;
+      return candidates.sort()[0];
     }
 
     function emit(step) {
@@ -173,18 +194,21 @@
       emit({
         id: 'roth_conversion_window',
         type: 'roth_conversion',
-        title_en: 'Complete Roth conversions BEFORE registering 住民票',
-        title_jp: '住民票登録前に Roth コンバージョンを完了させる',
+        title_en: 'Complete Roth conversions BEFORE your SOFA status ends',
+        title_jp: 'SOFA ステータス終了前に Roth コンバージョンを完了させる',
         summary_en:
-          'While SOFA-status (or pre-住民票), traditional IRA / 401(k) / TSP conversions to Roth are taxed at U.S. ordinary income rates only. ' +
-          'After 住民票 registration Japan does not recognize the Roth tax wrapper — every conversion becomes Japan-taxable as ordinary income at your Japan marginal rate (often 20-45% national + 10% local). ' +
-          'Convert the amount you can absorb at favorable U.S. brackets in calendar years that close BEFORE your 住民票 target date.',
+          'While your SOFA status is live, traditional IRA / 401(k) / TSP conversions to Roth are taxed at U.S. ordinary income rates only. ' +
+          'Once it ends, Japan does not recognize the Roth tax wrapper — every conversion becomes Japan-taxable as ordinary income at your Japan marginal rate (often 20-45% national + 10% local). ' +
+          'Convert the amount you can absorb at favorable U.S. brackets in calendar years that close BEFORE your status ends. ' +
+          'The 住民票 is NOT the deadline: it comes after separation (Japanese law allows up to 60 days to remain and 30 to apply for a status of residence), and that gap is not shelter — ' +
+          'income-tax residency turns on the facts of where you live once the SOFA disregard has stopped.',
         summary_jp:
-          'SOFA 適用中(または住民票登録前)は、Traditional IRA / 401(k) / TSP から Roth への変換は米国の通常所得税のみで課税されます。' +
-          '住民票登録後は、日本側は Roth の税制優遇を認めず、変換額の全額を日本の通常所得として課税します(国税 20-45% + 住民税 10%)。' +
-          '住民票登録予定日より前に締まる暦年で、米国側で許容できる金額を変換しておきましょう。',
+          'SOFA ステータスが有効な間は、Traditional IRA / 401(k) / TSP から Roth への変換は米国の通常所得税のみで課税されます。' +
+          'ステータス終了後は、日本側は Roth の税制優遇を認めず、変換額の全額を日本の通常所得として課税します(国税 20-45% + 住民税 10%)。' +
+          'ステータス終了日より前に締まる暦年で、米国側で許容できる金額を変換しておきましょう。' +
+          '期限は住民票登録日ではありません。登録は離職後(最大60日の在留・30日以内の在留資格申請)となり、その間も免除は及びません。',
         severity: 'critical',
-        deadline_iso: preJuminhyouDeadline(),
+        deadline_iso: preStatusEndDeadline(),
         amount_usd: tradBalance,
       });
     }
@@ -208,7 +232,7 @@
           '住民票登録後は、同じ売却が日本側でも 20.315%(申告分離課税)の対象となり、しかも取得価額の引き上げ(step-up)は通常認められません。' +
           '簿価の低い保有銘柄ほど差額は大きくなります。CPA と相談の上、部分利確+即時再取得などを検討してください。',
         severity: 'high',
-        deadline_iso: preJuminhyouDeadline(),
+        deadline_iso: preStatusEndDeadline(),
         amount_usd: unrealizedGain,
       });
     }
@@ -230,7 +254,7 @@
           'RSU・SO の所得は、権利確定期間の労働実施地で按分されます。住民票登録後は日本側勤務分が日本所得となり、その部分が日本で課税されます。' +
           '住民票登録直後に確定する付与は、想定以上の日本所得割合になることがあります。住民票登録前に、勤務先給与部門と W-2 / 給与所得の按分について調整してください。',
         severity: 'high',
-        deadline_iso: preJuminhyouDeadline(),
+        deadline_iso: preStatusEndDeadline(),
         amount_usd: rsuValue + optValue,
       });
     }
@@ -252,7 +276,7 @@
           '日本には米国型の繰延税制がなく、住民票登録後に一括受取とすると当該年度に全額が課税される可能性があります。' +
           '住民票登録前に、プラン管理者と受取方法を確定してください。',
         severity: 'high',
-        deadline_iso: preJuminhyouDeadline(),
+        deadline_iso: preStatusEndDeadline(),
         amount_usd: defComp,
       });
     }
@@ -276,7 +300,7 @@
           '住民票登録後は日本側も売却益を課税対象とし(取得原価は円ベースで再計算され米国ベースと異なることが多い)、§121 除外は認められません。' +
           '値上がりの大きい物件ほど日本側課税が米国側を大きく上回ることがあります。売却の意思決定は売出し前に行ってください。',
         severity: reGain > 200000 ? 'critical' : 'high',
-        deadline_iso: preJuminhyouDeadline(),
+        deadline_iso: preStatusEndDeadline(),
         amount_usd: reGain || reValue,
       });
     }
@@ -297,7 +321,7 @@
           'Schwab International(Schwab One International)や Interactive Brokers は在日居住者の受け入れを明記しています。' +
           '移管手続きは数週間を要し、その間口座が凍結されることもあります。住民票登録前に開始してください。',
         severity: 'high',
-        deadline_iso: preJuminhyouDeadline(),
+        deadline_iso: preStatusEndDeadline(),
       });
     }
 
@@ -319,7 +343,7 @@
           'TSP 自体は部分的な内部 Roth 変換を許容していないため、IRA に移すと Roth 変換の自由度が高まります。' +
           '移管も変換も住民票登録前に行うことで、米国課税のみで完結します。',
         severity: 'high',
-        deadline_iso: preJuminhyouDeadline(),
+        deadline_iso: preStatusEndDeadline(),
         amount_usd: tspBalance,
       });
     }
@@ -380,7 +404,7 @@
           '住民票登録前に米国居住の相続人へ贈与した場合、当該贈与は日本の贈与税対象外です。' +
           'これから受ける相続については、家族側のタイミング判断と本人の居住時計の関係を、CPA と日本側の相続専門家に並行して相談してください。',
         severity: 'medium',
-        deadline_iso: preJuminhyouDeadline(),
+        deadline_iso: preStatusEndDeadline(),
       });
     }
 
